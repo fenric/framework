@@ -208,16 +208,6 @@ final class Fenric
 		};
 
 		/**
-		 * Путь к директории с языковыми файлами
-		 *
-		 * @var Closure : string
-		 */
-		$this->options['paths']['i18n'] = function()
-		{
-			return $this->path('app') . 'i18n' . DIRECTORY_SEPARATOR;
-		};
-
-		/**
 		 * Путь к директории с логами
 		 *
 		 * @var Closure : string
