@@ -2,9 +2,8 @@
 /**
  * (c) Fenric Lab, 2010-2016
  *
+ * @author       Anatoly Nekhay
  * @product      Fenric Framework
- * @author       Nekhay Anatoly E.
- * @email        support@fenric.ru
  * @site         http://fenric.ru/
  */
 
