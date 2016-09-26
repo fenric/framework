@@ -64,13 +64,6 @@ final class Fenric
 		$this->options['env'] = 'development';
 
 		/**
-		 * Строгий режим
-		 *
-		 * @var bool
-		 */
-		$this->options['strict'] = true;
-
-		/**
 		 * Автозагрузка внешних библиотек
 		 *
 		 * @var bool
@@ -148,7 +141,7 @@ final class Fenric
 		$this->options['handling']['fatality']['mode'] = E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_USER_ERROR;
 
 		/**
-		 * Обработчик аварийной остановки приложения
+		 * Обработчик аварийной остановки
 		 *
 		 * @var callable
 		 */
@@ -768,12 +761,7 @@ final class Fenric
 	{
 		if ($type & error_reporting())
 		{
-			if ($this->options['strict'] === true)
-			{
-				throw new ErrorException($message, 0, $type, $file, $line);
-			}
-
-			$this->eLog($type, sprintf('%s (%s #%d)', $message, $file, $line));
+			throw new ErrorException($message, 0, $type, $file, $line);
 		}
 	}
 
@@ -787,9 +775,7 @@ final class Fenric
 	 */
 	public function exceptionHandler($exception)
 	{
-		$severity = ($exception instanceof ErrorException) ? $exception->getSeverity() : E_USER_ERROR;
-
-		$this->eLog($severity, sprintf('%s (%s #%d)', $exception->getMessage(), $exception->getFile(), $exception->getLine()));
+		$this->eLog(E_USER_ERROR, sprintf('%s (%s #%d)', $exception->getMessage(), $exception->getFile(), $exception->getLine()));
 
 		$this->crash($exception->getMessage(), $exception->getFile(), $exception->getLine());
 	}
