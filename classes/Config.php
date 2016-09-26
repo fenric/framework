@@ -1,10 +1,11 @@
 <?php
 /**
- * (c) Fenric Lab, 2010-2016
+ * It is free open-source software released under the MIT License.
  *
- * @author       Anatoly Nekhay
- * @product      Fenric Framework
- * @site         http://fenric.ru/
+ * @author       Anatoly Nekhay <a.fenric@gmail.com>
+ * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
+ * @license      http://fenric.ru/license/
+ * @link         http://fenric.ru/
  */
 
 namespace Fenric;
@@ -46,7 +47,7 @@ class Config extends Collection
 	 */
 	protected function findConfigurationGroup()
 	{
-		$filename = fenric()->path('config', $this->group);
+		$filename = fenric()->path('configs', $this->group);
 
 		$extensions = ['php', 'ini', 'json', 'yml'];
 

@@ -1,10 +1,11 @@
 <?php
 /**
- * (c) Fenric Lab, 2010-2016
+ * It is free open-source software released under the MIT License.
  *
- * @author       Anatoly Nekhay
- * @product      Fenric Framework
- * @site         http://fenric.ru/
+ * @author       Anatoly Nekhay <a.fenric@gmail.com>
+ * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
+ * @license      http://fenric.ru/license/
+ * @link         http://fenric.ru/
  */
 
 use Fenric\Config;
@@ -21,7 +22,7 @@ final class Fenric
 	/**
 	 * Версия фреймворка
 	 */
-	const VERSION = '1.5.1-dev';
+	const VERSION = '1.6.0-dev';
 
 	/**
 	 * Параметры фреймворка
@@ -70,28 +71,28 @@ final class Fenric
 		$this->options['strict'] = true;
 
 		/**
-		 * Автозагрузка ресурсов
+		 * Автозагрузка внешних библиотек
 		 *
 		 * @var bool
 		 */
 		$this->options['autoload']['vendor'] = true;
 
 		/**
-		 * Автозагрузка классов
+		 * Автозагрузка внутренних классов
 		 *
 		 * @var bool
 		 */
 		$this->options['autoload']['enabled'] = true;
 
 		/**
-		 * Автозагрузчик классов
+		 * Автозагрузчик внутренних классов
 		 *
 		 * @var callable
 		 */
 		$this->options['autoload']['loader'] = null;
 
 		/**
-		 * Пути в порядке приоритетности по которым осуществляется поиск и загрузка классов
+		 * Пути в порядке приоритетности по которым осуществляется поиск и загрузка внутренних классов
 		 *
 		 * @var array
 		 */
@@ -147,6 +148,13 @@ final class Fenric
 		$this->options['handling']['fatality']['mode'] = E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_USER_ERROR;
 
 		/**
+		 * Обработчик аварийной остановки приложения
+		 *
+		 * @var callable
+		 */
+		$this->options['handling']['crash'] = null;
+
+		/**
 		 * Путь к родительской директории фреймворка
 		 *
 		 * @var Closure : string
@@ -167,6 +175,16 @@ final class Fenric
 		};
 
 		/**
+		 * Путь к публичной директории фреймворка
+		 *
+		 * @var Closure : string
+		 */
+		$this->options['paths']['public'] = function()
+		{
+			return $this->path('.') . 'public' . DIRECTORY_SEPARATOR;
+		};
+
+		/**
 		 * Путь к системной директории фреймворка
 		 *
 		 * @var Closure : string
@@ -177,7 +195,7 @@ final class Fenric
 		};
 
 		/**
-		 * Путь к директории с ресурсными файлами
+		 * Путь к директории с внешними библиотеками
 		 *
 		 * @var Closure : string
 		 */
@@ -201,29 +219,9 @@ final class Fenric
 		 *
 		 * @var Closure : string
 		 */
-		$this->options['paths']['config'] = function()
+		$this->options['paths']['configs'] = function()
 		{
-			return $this->path('app') . 'config' . DIRECTORY_SEPARATOR;
-		};
-
-		/**
-		 * Путь к директории с логами
-		 *
-		 * @var Closure : string
-		 */
-		$this->options['paths']['log'] = function()
-		{
-			return $this->path('app') . 'log' . DIRECTORY_SEPARATOR;
-		};
-
-		/**
-		 * Путь к директории с мусором
-		 *
-		 * @var Closure : string
-		 */
-		$this->options['paths']['tmp'] = function()
-		{
-			return $this->path('app') . 'tmp' . DIRECTORY_SEPARATOR;
+			return $this->path('app') . 'configs' . DIRECTORY_SEPARATOR;
 		};
 
 		/**
@@ -402,7 +400,7 @@ final class Fenric
 	 * Определение пути
 	 *
 	 * @access  public
-	 * @return  string
+	 * @return  mixed
 	 */
 	public function path()
 	{
@@ -564,14 +562,14 @@ final class Fenric
 	{
 		$this->registerSharedService($alias, function() use($callable)
 		{
-			static $result;
+			static $output;
 
-			if (empty($result))
+			if (empty($output))
 			{
-				$result = call_user_func_array($callable, func_get_args());
+				$output = call_user_func_array($callable, func_get_args());
 			}
 
-			return $result;
+			return $output;
 		});
 	}
 
@@ -588,14 +586,14 @@ final class Fenric
 	{
 		$this->registerSharedService($alias, function($resolver = null) use($callable)
 		{
-			static $results = [];
+			static $output = [];
 
-			if (empty($results[$resolver]))
+			if (empty($output[$resolver]))
 			{
-				$results[$resolver] = call_user_func_array($callable, func_get_args());
+				$output[$resolver] = call_user_func_array($callable, func_get_args());
 			}
 
-			return $results[$resolver];
+			return $output[$resolver];
 		});
 	}
 
@@ -821,40 +819,19 @@ final class Fenric
 	 * @param   string   $message
 	 * @param   string   $file
 	 * @param   int      $line
+	 * @param   int      $code
 	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function crash($message, $file, $line)
+	public function crash($message, $file, $line, $code = 1)
 	{
-		if ($this->is('console'))
+		if (is_callable($this->options['handling']['crash']))
 		{
-			$this->is('windows') ?
-
-			printf("\r\n%s\r\n%s #%d\r\n\r\n", $message, $file, $line) :
-
-			printf("\033[37;41m\n\n %s\n %s #%d\n\033[0m\n\n", $message, $file, $line);
-
-			debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+			call_user_func($this->options['handling']['crash'], $message, $file, $line);
 		}
 
-		if ($this->is('not console'))
-		{
-			$this->callSharedService('response')->reset()->clean();
-
-			$this->callSharedService('response')->setStatus(503);
-
-			if ($this->is('not production'))
-			{
-				$json = ['message' => $message, 'file' => $file, 'line' => $line];
-
-				$this->callSharedService('response')->setJsonContent($json);
-			}
-
-			$this->callSharedService('response')->send();
-		}
-
-		exit(1);
+		exit($code);
 	}
 }
 
