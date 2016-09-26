@@ -281,7 +281,7 @@ class Router extends Object
 										return strlen($value) > 0;
 									}));
 
-									return ['parameters' => $parameters, 'controller' => $controller, 'satellite' => $satellite];
+									return ['controller' => $controller, 'parameters' => $parameters, 'satellite' => $satellite];
 								}
 							}
 						}
