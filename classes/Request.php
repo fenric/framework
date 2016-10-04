@@ -21,9 +21,6 @@ class Request extends Object
 	 *
 	 * @var     object
 	 * @access  public
-	 *
-	 * @see     http://php.net/manual/reserved.variables.get.php
-	 * @see     http://php.net/manual/language.variables.superglobals.php
 	 */
 	public $query;
 
@@ -32,9 +29,6 @@ class Request extends Object
 	 *
 	 * @var     object
 	 * @access  public
-	 *
-	 * @see     http://php.net/manual/reserved.variables.post.php
-	 * @see     http://php.net/manual/language.variables.superglobals.php
 	 */
 	public $post;
 
@@ -43,9 +37,6 @@ class Request extends Object
 	 *
 	 * @var     object
 	 * @access  public
-	 *
-	 * @see     http://php.net/manual/reserved.variables.files.php
-	 * @see     http://php.net/manual/language.variables.superglobals.php
 	 */
 	public $files;
 
@@ -54,9 +45,6 @@ class Request extends Object
 	 *
 	 * @var     object
 	 * @access  public
-	 *
-	 * @see     http://php.net/manual/reserved.variables.cookies.php
-	 * @see     http://php.net/manual/language.variables.superglobals.php
 	 */
 	public $cookies;
 
@@ -65,42 +53,54 @@ class Request extends Object
 	 *
 	 * @var     object
 	 * @access  public
-	 *
-	 * @see     http://php.net/manual/reserved.variables.environment.php
-	 * @see     http://php.net/manual/reserved.variables.server.php
-	 * @see     http://php.net/manual/language.variables.superglobals.php
 	 */
 	public $environment;
 
 	/**
 	 * {description}
 	 *
+	 * @var     object
+	 * @access  public
+	 */
+	public $parameters;
+
+	/**
+	 * {description}
+	 *
 	 * @var     string
 	 * @access  public
-	 *
-	 * @see     http://php.net/manual/wrappers.php.php
 	 */
 	public $rawBody;
 
 	/**
 	 * Конструктор класса
 	 *
+	 * @param   array   $query
+	 * @param   array   $post
+	 * @param   array   $files
+	 * @param   array   $cookies
+	 * @param   array   $environment
+	 * @param   array   $parameters
+	 * @param   string  $rawBody
+	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function __construct()
+	public function __construct(array $query, array $post, array $files, array $cookies, array $environment, array $parameters, $rawBody)
 	{
-		$this->query = new Collection($_GET);
+		$this->query = new Collection($query);
 
-		$this->post = new Collection($_POST);
+		$this->post = new Collection($post);
 
-		$this->files = new Collection($_FILES);
+		$this->files = new Collection($files);
 
-		$this->cookies = new Collection($_COOKIE);
+		$this->cookies = new Collection($cookies);
 
-		$this->environment = new Collection($_ENV + $_SERVER);
+		$this->environment = new Collection($environment);
 
-		$this->rawBody = file_get_contents('php://input');
+		$this->parameters = new Collection($parameters);
+
+		$this->rawBody = $rawBody;
 	}
 
 	/**
@@ -111,7 +111,7 @@ class Request extends Object
 	 */
 	public function getRoot()
 	{
-		$script = $_SERVER['SCRIPT_NAME'];
+		$script = $this->environment->get('SCRIPT_NAME');
 
 		$dirname = pathinfo($script, PATHINFO_DIRNAME);
 
@@ -126,7 +126,7 @@ class Request extends Object
 	 */
 	public function getHost()
 	{
-		return parse_url('scheme://' . $_SERVER['HTTP_HOST'], PHP_URL_HOST);
+		return parse_url('scheme://' . $this->environment->get('HTTP_HOST'), PHP_URL_HOST);
 	}
 
 	/**
@@ -137,7 +137,7 @@ class Request extends Object
 	 */
 	public function getPort()
 	{
-		return parse_url('scheme://' . $_SERVER['HTTP_HOST'], PHP_URL_PORT);
+		return parse_url('scheme://' . $this->environment->get('HTTP_HOST'), PHP_URL_PORT);
 	}
 
 	/**
@@ -148,7 +148,7 @@ class Request extends Object
 	 */
 	public function getURI()
 	{
-		return urldecode($_SERVER['REQUEST_URI']);
+		return urldecode($this->environment->get('REQUEST_URI'));
 	}
 
 	/**
@@ -181,7 +181,7 @@ class Request extends Object
 	 */
 	public function getMethod()
 	{
-		return strtoupper($_SERVER['REQUEST_METHOD']);
+		return strtoupper($this->environment->get('REQUEST_METHOD'));
 	}
 
 	/**
