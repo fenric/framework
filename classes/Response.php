@@ -11,11 +11,6 @@
 namespace Fenric;
 
 /**
- * Import classes
- */
-use DOMDocument;
-
-/**
  * Response
  */
 class Response extends Object
@@ -32,18 +27,18 @@ class Response extends Object
 	/**
 	 * HTTP заголовки
 	 *
-	 * @var	    object
+	 * @var	    array
 	 * @access  protected
 	 */
-	protected $headers;
+	protected $headers = [];
 
 	/**
 	 * HTTP куки
 	 *
-	 * @var	    object
+	 * @var	    array
 	 * @access  protected
 	 */
-	protected $cookies;
+	protected $cookies = [];
 
 	/**
 	 * Содержимое ответа
@@ -52,18 +47,6 @@ class Response extends Object
 	 * @access  protected
 	 */
 	protected $content;
-
-	/**
-	 * Конструктор класса
-	 *
-	 * @access  public
-	 * @return  void
-	 */
-	public function __construct()
-	{
-		$this->headers = new Collection();
-		$this->cookies = new Collection();
-	}
 
 	/**
 	 * Установка статуса ответа
@@ -102,7 +85,7 @@ class Response extends Object
 	 */
 	public function setHeader($name, $value)
 	{
-		$this->headers->set($name, $value);
+		$this->headers[$name] = $value;
 
 		return $this;
 	}
@@ -133,7 +116,7 @@ class Response extends Object
 	{
 		$options += ['path' => '/', 'domain' => '', 'secure' => false, 'httpOnly' => false];
 
-		$this->cookies->set($name, ['value' => $value, 'expires' => ($expires <> 0 ? $expires + time() : $expires), 'options' => $options]);
+		$this->cookies[$name] = ['value' => $value, 'expires' => ($expires <> 0 ? $expires + time() : $expires), 'options' => $options];
 
 		return $this;
 	}
@@ -159,99 +142,7 @@ class Response extends Object
 	 */
 	public function setContent($content)
 	{
-		$this->content = (string) $content;
-
-		return $this;
-	}
-
-	/**
-	 * Установка содержимого ответа в виде текстовых данных
-	 *
-	 * @param   string   $content
-	 *
-	 * @access  public
-	 * @return  object
-	 */
-	public function setPlainContent($content)
-	{
-		$this->setHeader('Content-Type', 'text/plain; charset=UTF-8');
-
-		$this->setContent($content);
-
-		return $this;
-	}
-
-	/**
-	 * Установка содержимого ответа в виде HTML данных
-	 *
-	 * @param   mixed    $content
-	 *
-	 * @access  public
-	 * @return  object
-	 */
-	public function setHtmlContent($content)
-	{
-		$this->setHeader('Content-Type', 'text/html; charset=UTF-8');
-
-		if (is_string($content))
-		{
-			$this->setContent($content);
-		}
-		else if ($content instanceof View)
-		{
-			$this->setContent($content->render());
-		}
-		else if ($content instanceof DOMDocument)
-		{
-			$this->setContent($content->saveHTML());
-		}
-
-		return $this;
-	}
-
-	/**
-	 * Установка содержимого ответа в виде XML данных
-	 *
-	 * @param   mixed    $content
-	 *
-	 * @access  public
-	 * @return  object
-	 */
-	public function setXmlContent($content)
-	{
-		$this->setHeader('Content-Type', 'application/xml; charset=UTF-8');
-
-		if (is_string($content))
-		{
-			$this->setContent($content);
-		}
-		else if ($content instanceof View)
-		{
-			$this->setContent($content->render());
-		}
-		else if ($content instanceof DOMDocument)
-		{
-			$this->setContent($content->saveXML());
-		}
-
-		return $this;
-	}
-
-	/**
-	 * Установка содержимого ответа в виде JSON данных
-	 *
-	 * @param   mixed    $content
-	 * @param   int      $flags
-	 * @param   int      $depth
-	 *
-	 * @access  public
-	 * @return  object
-	 */
-	public function setJsonContent($content, $flags = 0, $depth = 512)
-	{
-		$this->setHeader('Content-Type', 'application/json; charset=UTF-8');
-
-		$this->setContent(json_encode($content, $flags, $depth));
+		$this->content = $content;
 
 		return $this;
 	}
@@ -276,8 +167,8 @@ class Response extends Object
 	public function reset()
 	{
 		$this->status = 200;
-		$this->headers->clear();
-		$this->cookies->clear();
+		$this->headers = [];
+		$this->cookies = [];
 		$this->content = null;
 
 		return $this;
@@ -307,13 +198,13 @@ class Response extends Object
 	 */
 	public function send()
 	{
-		$this->trigger('beforeSend');
+		$this->dispatchEvent('beforeSend');
 
 		$this->sendHeaders();
 		$this->sendCookies();
 		$this->sendContent();
 
-		$this->trigger('afterSend');
+		$this->dispatchEvent('afterSend');
 	}
 
 	/**
@@ -326,16 +217,16 @@ class Response extends Object
 	{
 		http_response_code($this->status);
 
-		if ($this->headers->count() > 0)
+		if (count($this->headers) > 0)
 		{
-			$this->trigger('beforeSendHeaders');
+			$this->dispatchEvent('beforeSendHeaders');
 
-			foreach ($this->headers->all() as $name => $value)
+			foreach ($this->headers as $name => $value)
 			{
 				header(sprintf('%s: %s', $name, $value), true);
 			}
 
-			$this->trigger('afterSendHeaders');
+			$this->dispatchEvent('afterSendHeaders');
 		}
 	}
 
@@ -347,16 +238,16 @@ class Response extends Object
 	 */
 	protected function sendCookies()
 	{
-		if ($this->cookies->count() > 0)
+		if (count($this->cookies) > 0)
 		{
-			$this->trigger('beforeSendCookies');
+			$this->dispatchEvent('beforeSendCookies');
 
-			foreach ($this->cookies->all() as $name => $cookie)
+			foreach ($this->cookies as $name => $cookie)
 			{
 				setcookie($name, $cookie['value'], $cookie['expires'], $cookie['options']['path'], $cookie['options']['domain'], $cookie['options']['secure'], $cookie['options']['httpOnly']);
 			}
 
-			$this->trigger('afterSendCookies');
+			$this->dispatchEvent('afterSendCookies');
 		}
 	}
 
@@ -370,11 +261,11 @@ class Response extends Object
 	{
 		if (isset($this->content))
 		{
-			$this->trigger('beforeSendContent');
+			$this->dispatchEvent('beforeSendContent');
 
 			echo $this->content;
 
-			$this->trigger('afterSendContent');
+			$this->dispatchEvent('afterSendContent');
 		}
 	}
 }
