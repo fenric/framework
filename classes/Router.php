@@ -11,11 +11,6 @@
 namespace Fenric;
 
 /**
- * Import classes
- */
-use Closure;
-
-/**
  * Router
  */
 class Router extends Object
@@ -30,72 +25,17 @@ class Router extends Object
 	protected $routes = [];
 
 	/**
-	 * Экземпляр HTTP объекта для обработки запросов клиента
-	 *
-	 * @var     object
-	 * @access  protected
-	 */
-	protected $request;
-
-	/**
-	 * Экземпляр HTTP объекта для генерации ответа клиенту
-	 *
-	 * @var     object
-	 * @access  protected
-	 */
-	protected $response;
-
-	/**
-	 * Конструктор класса
-	 *
-	 * @param   object  $request
-	 * @param   object  $response
-	 *
-	 * @access  public
-	 * @return  void
-	 */
-	public function __construct(Request $request, Response $response)
-	{
-		$this->request = $request;
-
-		$this->response = $response;
-	}
-
-	/**
-	 * Получение экземпляра HTTP объекта для обработки запросов клиента
-	 *
-	 * @access  public
-	 * @return  object
-	 */
-	public function getRequest()
-	{
-		return $this->request;
-	}
-
-	/**
-	 * Получение экземпляра HTTP объекта для генерации ответа клиенту
-	 *
-	 * @access  public
-	 * @return  object
-	 */
-	public function getResponse()
-	{
-		return $this->response;
-	}
-
-	/**
 	 * Добавление маршрута соответствующего HTTP методу OPTIONS
 	 *
 	 * @param   string   $location
 	 * @param   string   $controller
-	 * @param   Closure  $satellite
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function options($location, $controller, Closure $satellite = null)
+	public function options($location, $controller)
 	{
-		return $this->add(['OPTIONS'], $location, $controller, $satellite);
+		return $this->add(['OPTIONS'], $location, $controller);
 	}
 
 	/**
@@ -103,14 +43,13 @@ class Router extends Object
 	 *
 	 * @param   string   $location
 	 * @param   string   $controller
-	 * @param   Closure  $satellite
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function head($location, $controller, Closure $satellite = null)
+	public function head($location, $controller)
 	{
-		return $this->add(['HEAD'], $location, $controller, $satellite);
+		return $this->add(['HEAD'], $location, $controller);
 	}
 
 	/**
@@ -118,14 +57,13 @@ class Router extends Object
 	 *
 	 * @param   string   $location
 	 * @param   string   $controller
-	 * @param   Closure  $satellite
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function get($location, $controller, Closure $satellite = null)
+	public function get($location, $controller)
 	{
-		return $this->add(['GET'], $location, $controller, $satellite);
+		return $this->add(['GET'], $location, $controller);
 	}
 
 	/**
@@ -133,14 +71,13 @@ class Router extends Object
 	 *
 	 * @param   string   $location
 	 * @param   string   $controller
-	 * @param   Closure  $satellite
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function post($location, $controller, Closure $satellite = null)
+	public function post($location, $controller)
 	{
-		return $this->add(['POST'], $location, $controller, $satellite);
+		return $this->add(['POST'], $location, $controller);
 	}
 
 	/**
@@ -148,14 +85,13 @@ class Router extends Object
 	 *
 	 * @param   string   $location
 	 * @param   string   $controller
-	 * @param   Closure  $satellite
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function put($location, $controller, Closure $satellite = null)
+	public function put($location, $controller)
 	{
-		return $this->add(['PUT'], $location, $controller, $satellite);
+		return $this->add(['PUT'], $location, $controller);
 	}
 
 	/**
@@ -163,14 +99,13 @@ class Router extends Object
 	 *
 	 * @param   string   $location
 	 * @param   string   $controller
-	 * @param   Closure  $satellite
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function patch($location, $controller, Closure $satellite = null)
+	public function patch($location, $controller)
 	{
-		return $this->add(['PATCH'], $location, $controller, $satellite);
+		return $this->add(['PATCH'], $location, $controller);
 	}
 
 	/**
@@ -178,14 +113,13 @@ class Router extends Object
 	 *
 	 * @param   string   $location
 	 * @param   string   $controller
-	 * @param   Closure  $satellite
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function delete($location, $controller, Closure $satellite = null)
+	public function delete($location, $controller)
 	{
-		return $this->add(['DELETE'], $location, $controller, $satellite);
+		return $this->add(['DELETE'], $location, $controller);
 	}
 
 	/**
@@ -193,14 +127,13 @@ class Router extends Object
 	 *
 	 * @param   string   $location
 	 * @param   string   $controller
-	 * @param   Closure  $satellite
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function safe($location, $controller, Closure $satellite = null)
+	public function safe($location, $controller)
 	{
-		return $this->add(['GET', 'POST'], $location, $controller, $satellite);
+		return $this->add(['GET', 'POST'], $location, $controller);
 	}
 
 	/**
@@ -208,16 +141,15 @@ class Router extends Object
 	 *
 	 * @param   string   $location
 	 * @param   string   $controller
-	 * @param   Closure  $satellite
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function any($location, $controller, Closure $satellite = null)
+	public function any($location, $controller)
 	{
 		$methods = ['OPTIONS', 'HEAD', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
-		return $this->add($methods, $location, $controller, $satellite);
+		return $this->add($methods, $location, $controller);
 	}
 
 	/**
@@ -226,14 +158,13 @@ class Router extends Object
 	 * @param   array    $methods
 	 * @param   string   $location
 	 * @param   string   $controller
-	 * @param   Closure  $satellite
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function add(array $methods, $location, $controller, Closure $satellite = null)
+	public function add(array $methods, $location, $controller)
 	{
-		$this->routes[] = [$methods, $location, $controller, $satellite];
+		$this->routes[] = [$methods, $location, $controller];
 
 		return $this;
 	}
@@ -241,47 +172,39 @@ class Router extends Object
 	/**
 	 * Определение маршрута соответствующего текущему HTTP запросу
 	 *
+	 * @param   object  $request
+	 *
 	 * @access  public
-	 * @return  array
+	 * @return  mixed
 	 */
-	public function match()
+	public function match(Request $request)
 	{
 		if (count($this->routes) > 0)
 		{
 			foreach ($this->routes as $route)
 			{
-				list($methods, $location, $controller, $satellite) = $route;
+				list($methods, $location, $controller) = $route;
 
-				if (in_array($this->getRequest()->getMethod(), $methods, true))
+				if (in_array($request->getMethod(), $methods))
 				{
 					if ($location = parse_url($location))
 					{
-						$location +=
-						[
-							'host' => $this->getRequest()->getHost(),
-							'port' => $this->getRequest()->getPort(),
-							'path' => $this->getRequest()->getPath(),
-						];
+						$location += ['path' => $request->getPath()];
 
-						if (strcmp($this->getRequest()->getHost(), $location['host']) === 0)
+						if (empty($location['host']) || strcmp($request->getHost(), $location['host']) === 0)
 						{
-							if (strcmp($this->getRequest()->getPort(), $location['port']) === 0)
+							if (empty($location['port']) || strcmp($request->getPort(), $location['port']) === 0)
 							{
-								if (strlen($this->getRequest()->getRoot()) > 0)
-								{
-									$location['path'] = $this->getRequest()->getRoot() . $location['path'];
-								}
+								$expression = $this->convertRoutePathToRegularExpression($request->getRoot() . $location['path']);
 
-								$expression = $this->convertRoutePathToRegularExpression($location['path']);
-
-								if (preg_match($expression, $this->getRequest()->getPath(), $parameters))
+								if (preg_match($expression, $request->getPath(), $parameters))
 								{
-									$parameters = new Collection(array_filter($parameters, function($value)
+									$parameters = array_filter($parameters, function($value)
 									{
 										return strlen($value) > 0;
-									}));
+									});
 
-									return ['controller' => $controller, 'parameters' => $parameters, 'satellite' => $satellite];
+									return ['controller' => $controller, 'parameters' => $parameters];
 								}
 							}
 						}
@@ -294,54 +217,42 @@ class Router extends Object
 	/**
 	 * Запуск маршрутизатора
 	 *
+	 * @param   object  $request
+	 * @param   object  $response
+	 *
 	 * @access  public
 	 * @return  bool
-	 *
-	 * @throws  RouterException
 	 */
-	public function run()
+	public function run(Request $request, Response $response, & $code)
 	{
 		$code = 404;
 
-		if ($route = $this->match())
+		if ($match = $this->match($request))
 		{
-			if (is_string($route['controller']))
+			if (is_string($match['controller']))
 			{
-				if (class_exists($route['controller']))
+				if (class_exists($match['controller']))
 				{
-					if (is_subclass_of($route['controller'], Controller::class))
+					if (is_subclass_of($match['controller'], Controller::class))
 					{
-						$controller = new $route['controller']($this, $route['parameters']);
+						$request->parameters->update($match['parameters']);
 
-						if ($route['satellite'] instanceof Closure)
-						{
-							$route['satellite']($controller);
-						}
+						$controller = new $match['controller']($this, $request, $response);
 
 						if ($controller->preInit())
 						{
-							$controller->trigger('beforeInit');
 							$controller->init();
-							$controller->trigger('afterInit');
-
-							$controller->trigger('beforeRun');
 							$controller->run();
-							$controller->trigger('afterRun');
-
-							$controller->trigger('beforeRender');
 							$controller->render();
-							$controller->trigger('afterRender');
 
 							return true;
 						}
 
-						$code = $controller->code;
+						$code = $controller->getCode();
 					}
 				}
 			}
 		}
-
-		throw new RouterException($code);
 	}
 
 	/**
