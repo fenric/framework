@@ -8,11 +8,6 @@
  * @link         http://fenric.ru/
  */
 
-use Fenric\Config;
-use Fenric\Request;
-use Fenric\Response;
-use Fenric\Router;
-
 /**
  * Основной класс фреймворка
  */
@@ -22,7 +17,7 @@ final class Fenric
 	/**
 	 * Версия фреймворка
 	 */
-	const VERSION = '1.6.0-dev';
+	const VERSION = '1.7.0-dev';
 
 	/**
 	 * Параметры фреймворка
@@ -41,6 +36,14 @@ final class Fenric
 	protected $services = [];
 
 	/**
+	 * События фреймворка
+	 *
+	 * @var     array
+	 * @access  protected
+	 */
+	protected $events = [];
+
+	/**
 	 * Журнал фреймворка
 	 *
 	 * @var     array
@@ -57,18 +60,11 @@ final class Fenric
 	public function __construct()
 	{
 		/**
-		 * Окружение
+		 * Окружение фреймворка
 		 *
 		 * @var string
 		 */
 		$this->options['env'] = 'development';
-
-		/**
-		 * Автозагрузка внешних библиотек
-		 *
-		 * @var bool
-		 */
-		$this->options['autoload']['vendor'] = true;
 
 		/**
 		 * Автозагрузка внутренних классов
@@ -82,14 +78,14 @@ final class Fenric
 		 *
 		 * @var callable
 		 */
-		$this->options['autoload']['loader'] = null;
+		$this->options['autoload']['handler'] = null;
 
 		/**
 		 * Пути в порядке приоритетности по которым осуществляется поиск и загрузка внутренних классов
 		 *
 		 * @var array
 		 */
-		$this->options['autoload']['paths'] = [':app/classes/:class.php', ':system/classes/:class.php'];
+		$this->options['autoload']['pathmap'] = [':app/classes/:class.php', ':system/classes/:class.php'];
 
 		/**
 		 * Обработка ошибок
@@ -138,7 +134,7 @@ final class Fenric
 		 *
 		 * @var int
 		 */
-		$this->options['handling']['fatality']['mode'] = E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_USER_ERROR;
+		$this->options['handling']['fatality']['errmode'] = E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_USER_ERROR;
 
 		/**
 		 * Обработчик аварийной остановки
@@ -188,16 +184,6 @@ final class Fenric
 		};
 
 		/**
-		 * Путь к директории с внешними библиотеками
-		 *
-		 * @var Closure : string
-		 */
-		$this->options['paths']['vendor'] = function()
-		{
-			return $this->path('.') . 'vendor' . DIRECTORY_SEPARATOR;
-		};
-
-		/**
 		 * Путь к директории с исполняемыми файлами
 		 *
 		 * @var Closure : string
@@ -243,22 +229,14 @@ final class Fenric
 			$this->options = array_replace_recursive($this->options, $options);
 		}
 
-		if ($this->options['autoload']['vendor'])
-		{
-			if (file_exists($this->path('vendor', 'autoload.php')))
-			{
-				require_once $this->path('vendor', 'autoload.php');
-			}
-		}
-
 		if ($this->options['autoload']['enabled'])
 		{
-			if (! is_callable($this->options['autoload']['loader']))
+			if (! is_callable($this->options['autoload']['handler']))
 			{
-				$this->options['autoload']['loader'] = [$this, 'autoload'];
+				$this->options['autoload']['handler'] = [$this, 'autoload'];
 			}
 
-			spl_autoload_register($this->options['autoload']['loader'], true, true);
+			spl_autoload_register($this->options['autoload']['handler'], true, true);
 		}
 
 		if ($this->options['handling']['error']['enabled'])
@@ -290,28 +268,6 @@ final class Fenric
 
 			register_shutdown_function($this->options['handling']['fatality']['handler']);
 		}
-
-		$this->registerResolveredSharedService('config', function($group = 'app')
-		{
-			return new Config($group);
-		});
-
-		$this->registerDisposableSharedService('request', function()
-		{
-			return new Request();
-		});
-
-		$this->registerDisposableSharedService('response', function()
-		{
-			return new Response();
-		});
-
-		$this->registerDisposableSharedService('router', function()
-		{
-			return new Router(
-				$this->callSharedService('request'),
-					$this->callSharedService('response'));
-		});
 	}
 
 	/**
@@ -591,6 +547,63 @@ final class Fenric
 	}
 
 	/**
+	 * Регистрация слушателя события
+	 *
+	 * @param   string   $groupname
+	 * @param   string   $eventname
+	 * @param   call     $listener
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function registerEventListener($groupname, $eventname, callable $listener)
+	{
+		$this->events[$groupname][$eventname][] = $listener;
+	}
+
+	/**
+	 * Разрегистрация слушателей события
+	 *
+	 * @param   string   $groupname
+	 * @param   string   $eventname
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function unregisterEventListeners($groupname, $eventname)
+	{
+		$this->events[$groupname][$eventname] = null;
+	}
+
+	/**
+	 * Вызов слушателей события
+	 *
+	 * @param   string   $groupname
+	 * @param   string   $eventname
+	 * @param   mixed    $params
+	 *
+	 * @access  public
+	 * @return  bool
+	 */
+	public function dispatchEvent($groupname, $eventname, $params = null)
+	{
+		$params = (array) $params;
+
+		if (isset($this->events[$groupname][$eventname]))
+		{
+			foreach ($this->events[$groupname][$eventname] as $listener)
+			{
+				if (false === call_user_func_array($listener, $params))
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Добавление PHP сообщения в журнал
 	 *
 	 * @param   int      $type
@@ -724,7 +737,7 @@ final class Fenric
 		{
 			$logicalPath = strtr(substr($class, 7), '\\', '/');
 
-			foreach ($this->options['autoload']['paths'] as $maskedPath)
+			foreach ($this->options['autoload']['pathmap'] as $maskedPath)
 			{
 				$search = [':app/', ':system/', ':class', '/'];
 
@@ -790,7 +803,7 @@ final class Fenric
 	{
 		if ($error = error_get_last())
 		{
-			if ($error['type'] & $this->options['handling']['fatality']['mode'])
+			if ($error['type'] & $this->options['handling']['fatality']['errmode'])
 			{
 				$this->eLog($error['type'], sprintf('%s (%s #%d)', $error['message'], $error['file'], $error['line']));
 
@@ -841,14 +854,11 @@ function fenric($alias = null, $params = null)
 
 	if (is_string($alias))
 	{
-		if (is_callable($params))
-		{
-			return $instance->registerSharedService($alias, $params);
-		}
-
 		if (strpos($alias, '::') !== false)
 		{
-			list($alias, $params) = explode('::', $alias, 2);
+			list($alias, $resolver) = explode('::', $alias, 2);
+
+			$params = [$resolver, $params];
 		}
 
 		return $instance->callSharedService($alias, $params);
