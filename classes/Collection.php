@@ -11,14 +11,9 @@
 namespace Fenric;
 
 /**
- * Import classes
- */
-use Countable;
-
-/**
  * Collection
  */
-class Collection extends Object implements Countable
+class Collection extends Object implements \Countable
 {
 
 	/**
