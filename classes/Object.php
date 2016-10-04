@@ -11,92 +11,66 @@
 namespace Fenric;
 
 /**
- * Import classes
- */
-use Closure;
-
-/**
  * Object
  */
 abstract class Object
 {
 
 	/**
-	 * События класса
-	 *
-	 * @var     array
-	 * @access  protected
-	 */
-	protected $events = [];
-
-	/**
 	 * Регистрация слушателя события класса
 	 *
-	 * @param   string   $name
+	 * @param   string   $eventname
 	 * @param   call     $listener
 	 *
 	 * @access  public
-	 * @return  void
+	 * @return  mixed
 	 */
-	final public function on($name, callable $listener)
+	final public function registerEventListener($eventname, callable $listener)
 	{
-		$this->events[$name]['listeners'][] = $listener;
+		return fenric()->registerEventListener(get_class($this), $eventname, $listener);
 	}
 
 	/**
 	 * Разрегистрация слушателей события класса
 	 *
-	 * @param   string   $name
+	 * @param   string   $eventname
 	 *
 	 * @access  public
-	 * @return  void
+	 * @return  mixed
 	 */
-	final public function off($name)
+	final public function unregisterEventListeners($eventname)
 	{
-		$this->events[$name]['listeners'] = null;
+		return fenric()->unregisterEventListeners(get_class($this), $eventname);
 	}
 
 	/**
 	 * Вызов слушателей события класса
 	 *
-	 * @param   string   $name
-	 * @param   mixed    $arguments
+	 * @param   string   $eventname
+	 * @param   mixed    $params
 	 *
 	 * @access  public
-	 * @return  bool
+	 * @return  mixed
 	 */
-	final public function trigger($name, $arguments = null)
+	final public function dispatchEvent($eventname, $params = null)
 	{
-		$arguments = (array) $arguments;
-
-		if (isset($this->events[$name]['listeners']))
-		{
-			foreach ($this->events[$name]['listeners'] as $listener)
-			{
-				if (false === call_user_func_array($listener, $arguments))
-				{
-					return false;
-				}
-			}
-		}
-
-		return true;
+		return fenric()->dispatchEvent(get_class($this), $eventname, $params);
 	}
 
 	/**
 	 * Замыкающееся связывание с экземпляром класса через анонимную функцию
 	 *
 	 * @param   call    $closure
-	 * @param   array   $arguments
+	 * @param   array   $params
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	final public function bind(Closure $closure, array $arguments = [])
+	final public function bindOf(\Closure $closure, array $params = [])
 	{
 		$fn = $closure->bindTo($this, get_class($this));
 
-		call_user_func_array($fn, $arguments);
+		call_user_func_array($fn, $params);
 
 		return $this;
 	}
