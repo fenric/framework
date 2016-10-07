@@ -17,14 +17,6 @@ abstract class Controller extends Object
 {
 
 	/**
-	 * Код возврата
-	 *
-	 * @var     int
-	 * @access  protected
-	 */
-	protected $code = 404;
-
-	/**
 	 * Экземпляр маршрутизатора инициализировавшего контроллер
 	 *
 	 * @var     object
@@ -68,17 +60,6 @@ abstract class Controller extends Object
 
 		// Сохранение экземпляра HTTP объекта для генерации ответа клиенту
 		$this->response = $response;
-	}
-
-	/**
-	 * Получение кода возврата
-	 *
-	 * @access  public
-	 * @return  int
-	 */
-	final public function getCode()
-	{
-		return $this->code;
 	}
 
 	/**
