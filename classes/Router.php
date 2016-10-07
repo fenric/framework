@@ -223,10 +223,8 @@ class Router extends Object
 	 * @access  public
 	 * @return  bool
 	 */
-	public function run(Request $request, Response $response, & $code)
+	public function run(Request $request, Response $response)
 	{
-		$code = 404;
-
 		if ($match = $this->match($request))
 		{
 			if (is_string($match['controller']))
@@ -247,8 +245,6 @@ class Router extends Object
 
 							return true;
 						}
-
-						$code = $controller->getCode();
 					}
 				}
 			}
@@ -276,9 +272,9 @@ class Router extends Object
 
 		$routePath = str_replace('*', '.*', $routePath);
 
-		$routePath = (substr_count($routePath, '(') !== substr_count($routePath, ')')) ? addcslashes($routePath, '()') : str_replace(['(', ')'], ['(?:', ')?'], $routePath);
+		$routePath = str_replace(['(', ')'], ['(?:', ')?'], $routePath);
 
-		$routePath = (substr_count($routePath, '<') !== substr_count($routePath, '>')) ? addcslashes($routePath, '<>') : preg_replace_callback('/<(\w+)>/', $creatingSubpatternsOfParameters, $routePath);
+		$routePath = preg_replace_callback('/<(\w+)>/', $creatingSubpatternsOfParameters, $routePath);
 
 		return '#^' . $routePath . '$#u';
 	}
