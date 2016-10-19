@@ -4,8 +4,8 @@
  *
  * @author       Anatoly Nekhay <a.fenric@gmail.com>
  * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
- * @license      http://fenric.ru/license/
- * @link         http://fenric.ru/
+ * @license      https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link         https://github.com/fenric/framework
  */
 
 namespace Fenric;
@@ -13,24 +13,24 @@ namespace Fenric;
 /**
  * View
  */
-class View extends Object
+class View
 {
 
 	/**
-	 * Имя представления
+	 * Файл представления
 	 *
 	 * @var     string
 	 * @access  protected
 	 */
-	protected $name;
+	protected $filename;
 
 	/**
-	 * Данные представления
+	 * Переменные представления
 	 *
 	 * @var     array
 	 * @access  protected
 	 */
-	protected $data;
+	protected $variables;
 
 	/**
 	 * Секции представления
@@ -38,7 +38,7 @@ class View extends Object
 	 * @var     array
 	 * @access  protected
 	 */
-	protected $sections = [];
+	protected $sections;
 
 	/**
 	 * Макет представления
@@ -49,18 +49,19 @@ class View extends Object
 	protected $layout;
 
 	/**
-	 * Инициализация представления
+	 * Конструктор класса
 	 *
-	 * @param   string   $name
-	 * @param   array    $data
+	 * @param   string   $filename
+	 * @param   array    $variables
 	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function __construct($name, array $data = [])
+	public function __construct($filename, array $variables)
 	{
-		$this->name = $name;
-		$this->data = $data;
+		$this->filename = $filename;
+
+		$this->variables = $variables;
 	}
 
 	/**
@@ -73,13 +74,13 @@ class View extends Object
 	{
 		ob_start();
 
-		extract($this->data, EXTR_REFS);
+		extract($this->variables);
 
-		include fenric()->path('views', $this->name . '.phtml');
+		include $this->filename;
 
 		$content = ob_get_clean();
 
-		if ($this->layout instanceof View)
+		if ($this->layout instanceof self)
 		{
 			$this->layout->sections = $this->sections;
 
@@ -92,80 +93,64 @@ class View extends Object
 	}
 
 	/**
-	 * Получение содержимого секции представления
+	 * Получение содержимого секции
 	 *
-	 * @param   string   $key
-	 *
-	 * @access  protected
-	 * @return  string
-	 */
-	protected function section($key)
-	{
-		if (isset($this->sections[$key]))
-		{
-			return $this->sections[$key];
-		}
-	}
-
-	/**
-	 * Начало записи содержимого секции представления
-	 *
-	 * @param   string   $section
-	 *
-	 * @access  protected
-	 * @return  void
-	 */
-	protected function start($section)
-	{
-		if (ob_start())
-		{
-			$this->sections[] = $section;
-		}
-	}
-
-	/**
-	 * Конец записи содержимого секции представления
-	 *
-	 * @access  protected
-	 * @return  void
-	 */
-	protected function end()
-	{
-		$section = array_pop($this->sections);
-
-		$this->sections[$section] = ob_get_clean();
-	}
-
-	/**
-	 * Наследования макета представления
-	 *
-	 * @param   string   $name
-	 * @param   array    $data
-	 *
-	 * @access  protected
-	 * @return  void
-	 */
-	protected function layout($name, array $data = [])
-	{
-		$this->layout = new static($name, $data);
-	}
-
-	/**
-	 * Получение отрендеренного представления
-	 *
-	 * @param   string   $name
-	 * @param   array    $data
+	 * @param   string   $sectionId
 	 *
 	 * @access  protected
 	 * @return  string
 	 */
-	protected function fetch($name, array $data = [])
+	protected function section($sectionId)
 	{
-		return ( new static($name, $data + $this->data) )->render();
+		if (isset($this->sections[$sectionId]))
+		{
+			return $this->sections[$sectionId];
+		}
 	}
 
 	/**
-	 * Экранирование данных
+	 * Начало записи содержимого секции
+	 *
+	 * @param   string   $sectionId
+	 *
+	 * @access  protected
+	 * @return  void
+	 */
+	protected function start($sectionId)
+	{
+		ob_start();
+
+		$this->sections[$sectionId] = null;
+	}
+
+	/**
+	 * Конец записи содержимого секции
+	 *
+	 * @access  protected
+	 * @return  void
+	 */
+	protected function stop()
+	{
+		$sectionId = end($this->sections);
+
+		$this->sections[$sectionId] = ob_get_clean();
+	}
+
+	/**
+	 * Наследования макета
+	 *
+	 * @param   object   $layout
+	 *
+	 * @access  protected
+	 * @return  void
+	 */
+	protected function layout(self $layout)
+	{
+		$this->layout = $layout;
+	}
+
+	/**
+	 * Экранирование строки
 	 *
 	 * @param   string   $value
 	 *
