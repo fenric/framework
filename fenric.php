@@ -14,6 +14,10 @@
 use Fenric\Collection;
 use Fenric\Event;
 use Fenric\Logger;
+use Fenric\Request;
+use Fenric\Response;
+use Fenric\Router;
+use Fenric\View;
 
 /**
  * Основной класс фреймворка
@@ -312,7 +316,7 @@ final class Fenric
 		 */
 		$this->registerResolvableSharedService('event', function($resolver = 'default')
 		{
-			return new Event($resolver);
+			return new Event();
 		});
 
 		/**
@@ -320,7 +324,7 @@ final class Fenric
 		 */
 		$this->registerResolvableSharedService('logger', function($resolver = 'default')
 		{
-			return new Logger($resolver);
+			return new Logger();
 		});
 
 		/**
@@ -356,6 +360,55 @@ final class Fenric
 
 			throw new RuntimeException(sprintf('Unable to find locale messages «%s» for language: %s => %s.',
 				$resolver, $this->options['locale.language'], $this->options['locale.original']));
+		});
+
+		/**
+		 * Регистрация в контейнере фреймворка службы для обработки запроса клиента
+		 */
+		$this->registerDisposableSharedService('request', function()
+		{
+			$content = file_get_contents('php://input');
+
+			return new Request($_GET, $_POST, $_FILES, $_COOKIE, $_ENV + $_SERVER, [], $content);
+		});
+
+		/**
+		 * Регистрация в контейнере фреймворка службы для генерации ответа клиенту
+		 */
+		$this->registerDisposableSharedService('response', function()
+		{
+			$headers[] = 'X-Powered-By: Fenric framework';
+
+			return new Response(200, $headers);
+		});
+
+		/**
+		 * Регистрация в контейнере фреймворка службы для работы с маршрутизатором
+		 */
+		$this->registerResolvableSharedService('router', function($resolver = 'default')
+		{
+			$router = new Router();
+
+			// @todo ...
+
+			return $router;
+		});
+
+		/**
+		 * Регистрация в контейнере фреймворка службы для работы с представлениями
+		 */
+		$this->registerResolvableSharedService('view', function($resolver, array $variables = null)
+		{
+			if (file_exists($this->path('views', "$resolver.local.phtml")))
+			{
+				return new View($this->path('views', "$resolver.local.phtml"), (array) $variables);
+			}
+			if (file_exists($this->path('views', "$resolver.phtml")))
+			{
+				return new View($this->path('views', "$resolver.phtml"), (array) $variables);
+			}
+
+			throw new RuntimeException(sprintf('Unable to find view «%s».', $resolver));
 		});
 	}
 
