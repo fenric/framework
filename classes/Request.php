@@ -4,8 +4,8 @@
  *
  * @author       Anatoly Nekhay <a.fenric@gmail.com>
  * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
- * @license      http://fenric.ru/license/
- * @link         http://fenric.ru/
+ * @license      https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link         https://github.com/fenric/framework
  */
 
 namespace Fenric;
@@ -13,7 +13,7 @@ namespace Fenric;
 /**
  * Request
  */
-class Request extends Object
+class Request
 {
 
 	/**
@@ -70,7 +70,7 @@ class Request extends Object
 	 * @var     string
 	 * @access  public
 	 */
-	public $rawBody;
+	public $content;
 
 	/**
 	 * Конструктор класса
@@ -81,12 +81,12 @@ class Request extends Object
 	 * @param   array   $cookies
 	 * @param   array   $environment
 	 * @param   array   $parameters
-	 * @param   string  $rawBody
+	 * @param   string  $content
 	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function __construct(array $query, array $post, array $files, array $cookies, array $environment, array $parameters, $rawBody)
+	public function __construct(array $query, array $post, array $files, array $cookies, array $environment, array $parameters, $content)
 	{
 		$this->query = new Collection($query);
 
@@ -100,7 +100,7 @@ class Request extends Object
 
 		$this->parameters = new Collection($parameters);
 
-		$this->rawBody = $rawBody;
+		$this->content = $content;
 	}
 
 	/**
