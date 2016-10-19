@@ -4,8 +4,8 @@
  *
  * @author       Anatoly Nekhay <a.fenric@gmail.com>
  * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
- * @license      http://fenric.ru/license/
- * @link         http://fenric.ru/
+ * @license      https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link         https://github.com/fenric/framework
  */
 
 namespace Fenric;
@@ -13,7 +13,7 @@ namespace Fenric;
 /**
  * Response
  */
-class Response extends Object
+class Response
 {
 
 	/**
@@ -22,7 +22,7 @@ class Response extends Object
 	 * @var	    int
 	 * @access  protected
 	 */
-	protected $status = 200;
+	protected $status;
 
 	/**
 	 * HTTP заголовки
@@ -30,15 +30,7 @@ class Response extends Object
 	 * @var	    array
 	 * @access  protected
 	 */
-	protected $headers = [];
-
-	/**
-	 * HTTP куки
-	 *
-	 * @var	    array
-	 * @access  protected
-	 */
-	protected $cookies = [];
+	protected $headers;
 
 	/**
 	 * Содержимое ответа
@@ -47,6 +39,28 @@ class Response extends Object
 	 * @access  protected
 	 */
 	protected $content;
+
+	/**
+	 * Установка статуса ответа
+	 *
+	 * @param   int      $status
+	 * @param   array    $headers
+	 * @param   string   $content
+	 *
+	 * @access  public
+	 * @return  object
+	 */
+	public function __construct($status = 200, array $headers = [], $content = '')
+	{
+		$this->setStatus($status);
+
+		foreach ($headers as $header)
+		{
+			$this->setHeader($header);
+		}
+
+		$this->setContent($content);
+	}
 
 	/**
 	 * Установка статуса ответа
@@ -77,15 +91,14 @@ class Response extends Object
 	/**
 	 * Установка HTTP заголовка
 	 *
-	 * @param   string   $name
-	 * @param   string   $value
+	 * @param   string   $header
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function setHeader($name, $value)
+	public function setHeader($header)
 	{
-		$this->headers[$name] = $value;
+		$this->headers[] = $header;
 
 		return $this;
 	}
@@ -99,37 +112,6 @@ class Response extends Object
 	public function getHeaders()
 	{
 		return $this->headers;
-	}
-
-	/**
-	 * Установка HTTP куки
-	 *
-	 * @param   string   $name
-	 * @param   string   $value
-	 * @param   int      $expires
-	 * @param   array    $options
-	 *
-	 * @access  public
-	 * @return  object
-	 */
-	public function setCookie($name, $value, $expires = 0, array $options = [])
-	{
-		$options += ['path' => '/', 'domain' => '', 'secure' => false, 'httpOnly' => false];
-
-		$this->cookies[$name] = ['value' => $value, 'expires' => ($expires <> 0 ? $expires + time() : $expires), 'options' => $options];
-
-		return $this;
-	}
-
-	/**
-	 * Получение HTTP кук
-	 *
-	 * @access  public
-	 * @return  object
-	 */
-	public function getCookies()
-	{
-		return $this->cookies;
 	}
 
 	/**
@@ -159,38 +141,6 @@ class Response extends Object
 	}
 
 	/**
-	 * Сброс свойств класса
-	 *
-	 * @access  public
-	 * @return  object
-	 */
-	public function reset()
-	{
-		$this->status = 200;
-		$this->headers = [];
-		$this->cookies = [];
-		$this->content = null;
-
-		return $this;
-	}
-
-	/**
-	 * Очистка буфера вывода
-	 *
-	 * @access  public
-	 * @return  object
-	 */
-	public function clean()
-	{
-		while (ob_get_level() > 0)
-		{
-			ob_end_clean();
-		}
-
-		return $this;
-	}
-
-	/**
 	 * Отправка ответа
 	 *
 	 * @access  public
@@ -198,74 +148,31 @@ class Response extends Object
 	 */
 	public function send()
 	{
-		$this->dispatchEvent('beforeSend');
+		fenric('event::http.response.before.send.status')
+			->notifySubscribers([$this]);
 
-		$this->sendHeaders();
-		$this->sendCookies();
-		$this->sendContent();
+		http_response_code($this->getStatus());
 
-		$this->dispatchEvent('afterSend');
-	}
+		fenric('event::http.response.before.send.headers')
+			->notifySubscribers([$this]);
 
-	/**
-	 * Отправка HTTP заголовков
-	 *
-	 * @access  protected
-	 * @return  void
-	 */
-	protected function sendHeaders()
-	{
-		http_response_code($this->status);
-
-		if (count($this->headers) > 0)
-		{
-			$this->dispatchEvent('beforeSendHeaders');
-
-			foreach ($this->headers as $name => $value)
-			{
-				header(sprintf('%s: %s', $name, $value), true);
-			}
-
-			$this->dispatchEvent('afterSendHeaders');
+		foreach ($this->getHeaders() as $header) {
+			header($header, true);
 		}
-	}
 
-	/**
-	 * Отправка HTTP кук
-	 *
-	 * @access  protected
-	 * @return  void
-	 */
-	protected function sendCookies()
-	{
-		if (count($this->cookies) > 0)
-		{
-			$this->dispatchEvent('beforeSendCookies');
+		fenric('event::http.response.before.send.content')
+			->notifySubscribers([$this]);
 
-			foreach ($this->cookies as $name => $cookie)
-			{
-				setcookie($name, $cookie['value'], $cookie['expires'], $cookie['options']['path'], $cookie['options']['domain'], $cookie['options']['secure'], $cookie['options']['httpOnly']);
-			}
+		echo $this->getContent();
 
-			$this->dispatchEvent('afterSendCookies');
+		fenric('event::http.response.before.close.connection')
+			->notifySubscribers([$this]);
+
+		if (function_exists('fastcgi_finish_request')) {
+			fastcgi_finish_request();
 		}
-	}
 
-	/**
-	 * Отправка контента
-	 *
-	 * @access  protected
-	 * @return  void
-	 */
-	protected function sendContent()
-	{
-		if (isset($this->content))
-		{
-			$this->dispatchEvent('beforeSendContent');
-
-			echo $this->content;
-
-			$this->dispatchEvent('afterSendContent');
-		}
+		fenric('event::http.response.finish')
+			->notifySubscribers([$this]);
 	}
 }
