@@ -328,9 +328,9 @@ final class Fenric
 		 */
 		$this->registerResolvableSharedService('config', function($resolver = 'default')
 		{
-			if (file_exists($this->path('configs', 'local', "$resolver.php")))
+			if (file_exists($this->path('configs', "$resolver.local.php")))
 			{
-				return new Collection(include $this->path('configs', 'local', "$resolver.php"));
+				return new Collection(include $this->path('configs', "$resolver.local.php"));
 			}
 			if (file_exists($this->path('configs', "$resolver.php")))
 			{
@@ -716,11 +716,31 @@ function fenric($alias = null, $params = null)
 
 	if (is_string($alias))
 	{
+		/**
+		 * Idea...
+		 */
+		if (strpos($alias, '?') === 0)
+		{
+			$alias = substr($alias, 1);
+
+			return $instance->is($alias);
+		}
+
+		/**
+		 * Idea...
+		 */
+		if (strpos($alias, '@') === 0)
+		{
+			$alias = substr($alias, 1);
+
+			return $instance->path($alias);
+		}
+
 		if (strpos($alias, '::') !== false)
 		{
 			list($alias, $resolver) = explode('::', $alias, 2);
 
-			$params = [$resolver, $params];
+			return $instance->callSharedService($alias, [$resolver, $params]);
 		}
 
 		return $instance->callSharedService($alias, $params);
