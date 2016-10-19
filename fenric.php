@@ -4,9 +4,16 @@
  *
  * @author       Anatoly Nekhay <a.fenric@gmail.com>
  * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
- * @license      http://fenric.ru/license/
- * @link         http://fenric.ru/
+ * @license      https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link         https://github.com/fenric/framework
  */
+
+/**
+ * Импортирование классов
+ */
+use Fenric\Collection;
+use Fenric\Event;
+use Fenric\Logger;
 
 /**
  * Основной класс фреймворка
@@ -17,10 +24,10 @@ final class Fenric
 	/**
 	 * Версия фреймворка
 	 */
-	const VERSION = '1.7.0-dev';
+	const VERSION = '1.7.1-dev';
 
 	/**
-	 * Параметры фреймворка
+	 * Опции фреймворка
 	 *
 	 * @var     array
 	 * @access  protected
@@ -34,22 +41,6 @@ final class Fenric
 	 * @access  protected
 	 */
 	protected $services = [];
-
-	/**
-	 * События фреймворка
-	 *
-	 * @var     array
-	 * @access  protected
-	 */
-	protected $events = [];
-
-	/**
-	 * Журнал фреймворка
-	 *
-	 * @var     array
-	 * @access  protected
-	 */
-	protected $log = [];
 
 	/**
 	 * Конструктор класса
@@ -71,77 +62,105 @@ final class Fenric
 		 *
 		 * @var bool
 		 */
-		$this->options['autoload']['enabled'] = true;
+		$this->options['autoload.enabled'] = true;
 
 		/**
 		 * Автозагрузчик внутренних классов
 		 *
 		 * @var callable
 		 */
-		$this->options['autoload']['handler'] = null;
+		$this->options['autoload.handler'] = null;
 
 		/**
-		 * Пути в порядке приоритетности по которым осуществляется поиск и загрузка внутренних классов
+		 * Правила в порядке приоритетности по которым осуществляется поиск и загрузка внутренних классов
 		 *
 		 * @var array
 		 */
-		$this->options['autoload']['pathmap'] = [':app/classes/:class.php', ':system/classes/:class.php'];
+		$this->options['autoload.rules'] = [':app/classes/:class.php', ':system/classes/:class.php'];
 
 		/**
 		 * Обработка ошибок
 		 *
 		 * @var bool
 		 */
-		$this->options['handling']['error']['enabled'] = true;
+		$this->options['handling.error.enabled'] = true;
 
 		/**
 		 * Обработчик ошибок
 		 *
 		 * @var callable
 		 */
-		$this->options['handling']['error']['handler'] = null;
+		$this->options['handling.error.handler'] = null;
+
+		/**
+		 * Формат журналирования ошибки
+		 *
+		 * @var string
+		 */
+		$this->options['handling.error.log.format'] = '%s in file `%s` on line `%d`.';
 
 		/**
 		 * Обработка неперехваченных исключений
 		 *
 		 * @var bool
 		 */
-		$this->options['handling']['exception']['enabled'] = true;
+		$this->options['handling.uncaught.exception.enabled'] = true;
 
 		/**
 		 * Обработчик неперехваченных исключений
 		 *
 		 * @var callable
 		 */
-		$this->options['handling']['exception']['handler'] = null;
+		$this->options['handling.uncaught.exception.handler'] = null;
+
+		/**
+		 * Формат журналирования неперехваченного исключения
+		 *
+		 * @var string
+		 */
+		$this->options['handling.uncaught.exception.log.format'] = '%s in file `%s` on line `%d`.';
 
 		/**
 		 * Обработка фатальных ошибок
 		 *
 		 * @var bool
 		 */
-		$this->options['handling']['fatality']['enabled'] = true;
+		$this->options['handling.fatal.error.enabled'] = true;
 
 		/**
 		 * Обработчик фатальных ошибок
 		 *
 		 * @var callable
 		 */
-		$this->options['handling']['fatality']['handler'] = null;
+		$this->options['handling.fatal.error.handler'] = null;
 
 		/**
 		 * Режим протоколирования фатальных ошибок
 		 *
 		 * @var int
 		 */
-		$this->options['handling']['fatality']['errmode'] = E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_USER_ERROR;
+		$this->options['handling.fatal.error.mode'] = E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_USER_ERROR;
 
 		/**
-		 * Обработчик аварийной остановки
+		 * Формат журналирования фатальной ошибки
 		 *
-		 * @var callable
+		 * @var string
 		 */
-		$this->options['handling']['crash'] = null;
+		$this->options['handling.fatal.error.log.format'] = '%s in file `%s` on line `%d`.';
+
+		/**
+		 * Язык локализации
+		 *
+		 * @var string
+		 */
+		$this->options['locale.language'] = 'en_US';
+
+		/**
+		 * Первоисточник языка локализации
+		 *
+		 * @var string
+		 */
+		$this->options['locale.original'] = 'ru_RU';
 
 		/**
 		 * Путь к родительской директории фреймворка
@@ -204,6 +223,16 @@ final class Fenric
 		};
 
 		/**
+		 * Путь к директории с локализационными файлами
+		 *
+		 * @var Closure : string
+		 */
+		$this->options['paths']['locales'] = function()
+		{
+			return $this->path('app') . 'locales' . DIRECTORY_SEPARATOR;
+		};
+
+		/**
 		 * Путь к директории с представлениями
 		 *
 		 * @var Closure : string
@@ -222,52 +251,112 @@ final class Fenric
 	 * @access  public
 	 * @return  void
 	 */
-	public function init(array $options = null)
+	public function init(array $options = [])
 	{
-		if (is_array($options))
-		{
-			$this->options = array_replace_recursive($this->options, $options);
-		}
+		$this->options = array_replace_recursive($this->options, $options);
 
-		if ($this->options['autoload']['enabled'])
+		/**
+		 * Регистрация загрузчика классов
+		 */
+		if ($this->options['autoload.enabled'])
 		{
-			if (! is_callable($this->options['autoload']['handler']))
+			if (! is_callable($this->options['autoload.handler']))
 			{
-				$this->options['autoload']['handler'] = [$this, 'autoload'];
+				$this->options['autoload.handler'] = [$this, 'autoload'];
 			}
 
-			spl_autoload_register($this->options['autoload']['handler'], true, true);
+			spl_autoload_register($this->options['autoload.handler'], true, true);
 		}
 
-		if ($this->options['handling']['error']['enabled'])
+		/**
+		 * Регистрация обработчика ошибок
+		 */
+		if ($this->options['handling.error.enabled'])
 		{
-			if (! is_callable($this->options['handling']['error']['handler']))
+			if (! is_callable($this->options['handling.error.handler']))
 			{
-				$this->options['handling']['error']['handler'] = [$this, 'errorHandler'];
+				$this->options['handling.error.handler'] = [$this, 'handleError'];
 			}
 
-			set_error_handler($this->options['handling']['error']['handler']);
+			set_error_handler($this->options['handling.error.handler']);
 		}
 
-		if ($this->options['handling']['exception']['enabled'])
+		/**
+		 * Регистрация обработчика неперехваченных исключений
+		 */
+		if ($this->options['handling.uncaught.exception.enabled'])
 		{
-			if (! is_callable($this->options['handling']['exception']['handler']))
+			if (! is_callable($this->options['handling.uncaught.exception.handler']))
 			{
-				$this->options['handling']['exception']['handler'] = [$this, 'exceptionHandler'];
+				$this->options['handling.uncaught.exception.handler'] = [$this, 'handleUncaughtException'];
 			}
 
-			set_exception_handler($this->options['handling']['exception']['handler']);
+			set_exception_handler($this->options['handling.uncaught.exception.handler']);
 		}
 
-		if ($this->options['handling']['fatality']['enabled'])
+		/**
+		 * Регистрация обработчика фатальных ошибок
+		 */
+		if ($this->options['handling.fatal.error.enabled'])
 		{
-			if (! is_callable($this->options['handling']['fatality']['handler']))
+			if (! is_callable($this->options['handling.fatal.error.handler']))
 			{
-				$this->options['handling']['fatality']['handler'] = [$this, 'fatalityHandler'];
+				$this->options['handling.fatal.error.handler'] = [$this, 'handleFatalError'];
 			}
 
-			register_shutdown_function($this->options['handling']['fatality']['handler']);
+			register_shutdown_function($this->options['handling.fatal.error.handler']);
 		}
+
+		/**
+		 * Регистрация в контейнере фреймворка службы для работы с событиями
+		 */
+		$this->registerResolvableSharedService('event', function($resolver = 'default')
+		{
+			return new Event($resolver);
+		});
+
+		/**
+		 * Регистрация в контейнере фреймворка службы для работы с журналом
+		 */
+		$this->registerResolvableSharedService('logger', function($resolver = 'default')
+		{
+			return new Logger($resolver);
+		});
+
+		/**
+		 * Регистрация в контейнере фреймворка службы для работы с конфигурационными файлами
+		 */
+		$this->registerResolvableSharedService('config', function($resolver = 'default')
+		{
+			if (file_exists($this->path('configs', 'local', "$resolver.php")))
+			{
+				return new Collection(include $this->path('configs', 'local', "$resolver.php"));
+			}
+			if (file_exists($this->path('configs', "$resolver.php")))
+			{
+				return new Collection(include $this->path('configs', "$resolver.php"));
+			}
+
+			throw new RuntimeException(sprintf('Unable to find config «%s».', $resolver));
+		});
+
+		/**
+		 * Регистрация в контейнере фреймворка службы для работы с локализационными файлами
+		 */
+		$this->registerResolvableSharedService('locale', function($resolver = 'default')
+		{
+			if (file_exists($this->path('locales', $this->options['locale.language'], "$resolver.php")))
+			{
+				return new Collection(include $this->path('locales', $this->options['locale.language'], "$resolver.php"));
+			}
+			if (file_exists($this->path('locales', $this->options['locale.original'], "$resolver.php")))
+			{
+				return new Collection(include $this->path('locales', $this->options['locale.original'], "$resolver.php"));
+			}
+
+			throw new RuntimeException(sprintf('Unable to find locale messages «%s» for language: %s => %s.',
+				$resolver, $this->options['locale.language'], $this->options['locale.original']));
+		});
 	}
 
 	/**
@@ -280,65 +369,24 @@ final class Fenric
 	{
 		switch (func_get_arg(0))
 		{
-			// Загружено ли PHP расширение
-			case 'ext' :
-			case 'extension' :
-				return extension_loaded(func_get_arg(1));
-				break;
-
-			// Запущен ли фреймворк в операционной системе семейства «Windows»
-			case 'win' :
-			case 'windows' :
-				return strncasecmp(PHP_OS, 'win', 3) === 0;
-				break;
-
-			case 'not win' :
-			case 'not windows' :
-				return strncasecmp(PHP_OS, 'win', 3) !== 0;
-				break;
-
-			// Запущен ли фреймворк в консоли
 			case 'cli' :
 			case 'console' :
 				return strcasecmp(PHP_SAPI, 'cli') === 0;
 				break;
 
-			case 'not cli' :
-			case 'not console' :
-				return strcasecmp(PHP_SAPI, 'cli') !== 0;
-				break;
-
-			// Запущен ли фреймворк в режиме отладки
 			case 'test' :
 			case 'debug' :
 				return strcasecmp($this->options['env'], 'test') === 0;
 				break;
 
-			case 'not test' :
-			case 'not debug' :
-				return strcasecmp($this->options['env'], 'test') !== 0;
-				break;
-
-			// Запущен ли фреймворк на «production» сервере
 			case 'prod' :
 			case 'production' :
 				return strcasecmp($this->options['env'], 'production') === 0;
 				break;
 
-			case 'not prod' :
-			case 'not production' :
-				return strcasecmp($this->options['env'], 'production') !== 0;
-				break;
-
-			// Запущен ли фреймворк на «development» сервере
 			case 'dev' :
 			case 'development' :
 				return strcasecmp($this->options['env'], 'development') === 0;
-				break;
-
-			case 'not dev' :
-			case 'not development' :
-				return strcasecmp($this->options['env'], 'development') !== 0;
 				break;
 		}
 
@@ -405,7 +453,7 @@ final class Fenric
 	 */
 	public function unregisterSharedService($alias)
 	{
-		$this->services['shared'][$alias]['service'] = null;
+		unset($this->services['shared'][$alias]['service']);
 	}
 
 	/**
@@ -418,7 +466,7 @@ final class Fenric
 	 */
 	public function unregisterListenersOfSharedService($alias)
 	{
-		$this->services['shared'][$alias]['listeners'] = null;
+		unset($this->services['shared'][$alias]['listeners']);
 	}
 
 	/**
@@ -531,7 +579,7 @@ final class Fenric
 	 * @access  public
 	 * @return  void
 	 */
-	public function registerResolveredSharedService($alias, callable $callable)
+	public function registerResolvableSharedService($alias, callable $callable)
 	{
 		$this->registerSharedService($alias, function($resolver = null) use($callable)
 		{
@@ -544,183 +592,6 @@ final class Fenric
 
 			return $output[$resolver];
 		});
-	}
-
-	/**
-	 * Регистрация слушателя события
-	 *
-	 * @param   string   $groupname
-	 * @param   string   $eventname
-	 * @param   call     $listener
-	 *
-	 * @access  public
-	 * @return  void
-	 */
-	public function registerEventListener($groupname, $eventname, callable $listener)
-	{
-		$this->events[$groupname][$eventname][] = $listener;
-	}
-
-	/**
-	 * Разрегистрация слушателей события
-	 *
-	 * @param   string   $groupname
-	 * @param   string   $eventname
-	 *
-	 * @access  public
-	 * @return  void
-	 */
-	public function unregisterEventListeners($groupname, $eventname)
-	{
-		$this->events[$groupname][$eventname] = null;
-	}
-
-	/**
-	 * Вызов слушателей события
-	 *
-	 * @param   string   $groupname
-	 * @param   string   $eventname
-	 * @param   mixed    $params
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function dispatchEvent($groupname, $eventname, $params = null)
-	{
-		$params = (array) $params;
-
-		if (isset($this->events[$groupname][$eventname]))
-		{
-			foreach ($this->events[$groupname][$eventname] as $listener)
-			{
-				if (false === call_user_func_array($listener, $params))
-				{
-					return false;
-				}
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Добавление PHP сообщения в журнал
-	 *
-	 * @param   int      $type
-	 * @param   string   $message
-	 *
-	 * @access  public
-	 * @return  void
-	 *
-	 * @see     http://php.net/manual/errorfunc.constants.php
-	 */
-	public function eLog($type, $message)
-	{
-		switch ($type)
-		{
-			case E_ERROR :
-			case E_PARSE :
-			case E_CORE_ERROR :
-			case E_COMPILE_ERROR :
-			case E_USER_ERROR :
-			case E_RECOVERABLE_ERROR :
-				$this->error($message);
-				break;
-
-			case E_WARNING :
-			case E_CORE_WARNING :
-			case E_COMPILE_WARNING :
-			case E_USER_WARNING :
-				$this->warning($message);
-				break;
-
-			case E_NOTICE :
-			case E_USER_NOTICE :
-				$this->notice($message);
-				break;
-
-			case E_STRICT :
-			case E_DEPRECATED :
-			case E_USER_DEPRECATED :
-				$this->debug($message);
-				break;
-		}
-	}
-
-	/**
-	 * Добавление сообщения в журнал сгенерированного с целью информирования
-	 *
-	 * @param   string   $message
-	 *
-	 * @access  public
-	 * @return  void
-	 */
-	public function info($message)
-	{
-		$this->log[] = ['info', $message, microtime(true)];
-	}
-
-	/**
-	 * Добавление сообщения в журнал сгенерированного при возникновении ошибки высокого уровня
-	 *
-	 * @param   string   $message
-	 *
-	 * @access  public
-	 * @return  void
-	 */
-	public function error($message)
-	{
-		$this->log[] = ['error', $message, microtime(true)];
-	}
-
-	/**
-	 * Добавление сообщения в журнал сгенерированного при возникновении ошибки среднего уровня
-	 *
-	 * @param   string   $message
-	 *
-	 * @access  public
-	 * @return  void
-	 */
-	public function warning($message)
-	{
-		$this->log[] = ['warning', $message, microtime(true)];
-	}
-
-	/**
-	 * Добавление сообщения в журнал сгенерированного при возникновении ошибки низкого уровня
-	 *
-	 * @param   string   $message
-	 *
-	 * @access  public
-	 * @return  void
-	 */
-	public function notice($message)
-	{
-		$this->log[] = ['notice', $message, microtime(true)];
-	}
-
-	/**
-	 * Добавление сообщения в журнал сгенерированного в процессе отладки
-	 *
-	 * @param   string   $message
-	 *
-	 * @access  public
-	 * @return  void
-	 */
-	public function debug($message)
-	{
-		$this->log[] = ['debug', $message, microtime(true)];
-	}
-
-	/**
-	 * Получение журнала фреймворка
-	 *
-	 * @access  public
-	 * @return  array
-	 */
-	public function log()
-	{
-		return $this->log;
 	}
 
 	/**
@@ -737,7 +608,7 @@ final class Fenric
 		{
 			$logicalPath = strtr(substr($class, 7), '\\', '/');
 
-			foreach ($this->options['autoload']['pathmap'] as $maskedPath)
+			foreach ($this->options['autoload.rules'] as $maskedPath)
 			{
 				$search = [':app/', ':system/', ':class', '/'];
 
@@ -767,14 +638,16 @@ final class Fenric
 	 *
 	 * @access  public
 	 * @return  void
-	 *
-	 * @throws  ErrorException
 	 */
-	public function errorHandler($type, $message, $file, $line)
+	public function handleError($type, $message, $file, $line)
 	{
 		if ($type & error_reporting())
 		{
-			throw new ErrorException($message, 0, $type, $file, $line);
+			$this->callSharedService('logger', 'errors')
+				->php($type, sprintf($this->options['handling.error.log.format'], $message, $file, $line));
+
+			$this->callSharedService('event', 'system.error')
+				->notifySubscribers(func_get_args());
 		}
 	}
 
@@ -786,11 +659,16 @@ final class Fenric
 	 * @access  public
 	 * @return  void
 	 */
-	public function exceptionHandler($exception)
+	public function handleUncaughtException($exception)
 	{
-		$this->eLog(E_USER_ERROR, sprintf('%s (%s #%d)', $exception->getMessage(), $exception->getFile(), $exception->getLine()));
+		$this->callSharedService('logger', 'errors')
+			->error(sprintf($this->options['handling.uncaught.exception.log.format'], $exception->getMessage(), $exception->getFile(), $exception->getLine()));
 
-		$this->crash($exception->getMessage(), $exception->getFile(), $exception->getLine());
+		$this->callSharedService('event', 'system.uncaught.exception')
+			->notifySubscribers([$exception]);
+
+		$this->callSharedService('event', 'system.emergency')
+			->notifySubscribers([$exception->getMessage(), $exception->getFile(), $exception->getLine()]);
 	}
 
 	/**
@@ -799,38 +677,22 @@ final class Fenric
 	 * @access  public
 	 * @return  void
 	 */
-	public function fatalityHandler()
+	public function handleFatalError()
 	{
 		if ($error = error_get_last())
 		{
-			if ($error['type'] & $this->options['handling']['fatality']['errmode'])
+			if ($error['type'] & $this->options['handling.fatal.error.mode'])
 			{
-				$this->eLog($error['type'], sprintf('%s (%s #%d)', $error['message'], $error['file'], $error['line']));
+				$this->callSharedService('logger', 'errors')
+					->php($error['type'], sprintf($this->options['handling.fatal.error.log.format'], $error['message'], $error['file'], $error['line']));
 
-				$this->crash($error['message'], $error['file'], $error['line']);
+				$this->callSharedService('event', 'system.fatal.error')
+					->notifySubscribers([$error]);
+
+				$this->callSharedService('event', 'system.emergency')
+					->notifySubscribers([$error['message'], $error['file'], $error['line']]);
 			}
 		}
-	}
-
-	/**
-	 * Аварийная остановка приложения
-	 *
-	 * @param   string   $message
-	 * @param   string   $file
-	 * @param   int      $line
-	 * @param   int      $code
-	 *
-	 * @access  public
-	 * @return  void
-	 */
-	public function crash($message, $file, $line, $code = 1)
-	{
-		if (is_callable($this->options['handling']['crash']))
-		{
-			call_user_func($this->options['handling']['crash'], $message, $file, $line);
-		}
-
-		exit($code);
 	}
 }
 
