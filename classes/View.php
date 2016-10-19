@@ -120,7 +120,7 @@ class View
 	{
 		ob_start();
 
-		$this->sections[$sectionId] = null;
+		$this->sections[] = $sectionId;
 	}
 
 	/**
