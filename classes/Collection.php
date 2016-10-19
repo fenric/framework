@@ -4,8 +4,8 @@
  *
  * @author       Anatoly Nekhay <a.fenric@gmail.com>
  * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
- * @license      http://fenric.ru/license/
- * @link         http://fenric.ru/
+ * @license      https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link         https://github.com/fenric/framework
  */
 
 namespace Fenric;
@@ -13,7 +13,7 @@ namespace Fenric;
 /**
  * Collection
  */
-class Collection extends Object implements \Countable
+class Collection
 {
 
 	/**
@@ -35,6 +35,21 @@ class Collection extends Object implements \Countable
 	public function __construct(array $items = [])
 	{
 		$this->items = $items;
+	}
+
+	/**
+	 * Добавление элемента коллекции
+	 *
+	 * @param   mixed    $item
+	 *
+	 * @access  public
+	 * @return  object
+	 */
+	public function add($item)
+	{
+		$this->items[] = $item;
+
+		return $this;
 	}
 
 	/**
