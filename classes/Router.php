@@ -4,8 +4,8 @@
  *
  * @author       Anatoly Nekhay <a.fenric@gmail.com>
  * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
- * @license      http://fenric.ru/license/
- * @link         http://fenric.ru/
+ * @license      https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link         https://github.com/fenric/framework
  */
 
 namespace Fenric;
@@ -13,7 +13,7 @@ namespace Fenric;
 /**
  * Router
  */
-class Router extends Object
+class Router
 {
 
 	/**
