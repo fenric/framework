@@ -93,6 +93,17 @@ class View
 	}
 
 	/**
+	 * Отложенный рендеринг представления при преобразования объекта в строку
+	 *
+	 * @access  public
+	 * @return  string
+	 */
+	public function __toString()
+	{
+		return $this->render();
+	}
+
+	/**
 	 * Получение содержимого секции
 	 *
 	 * @param   string   $sectionId
