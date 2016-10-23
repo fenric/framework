@@ -379,7 +379,7 @@ final class Fenric
 		{
 			$headers[] = 'X-Powered-By: Fenric framework';
 
-			return new Response(200, $headers);
+			return new Response(200, $headers, null);
 		});
 
 		/**
@@ -387,11 +387,7 @@ final class Fenric
 		 */
 		$this->registerResolvableSharedService('router', function($resolver = 'default')
 		{
-			$router = new Router();
-
-			// @todo ...
-
-			return $router;
+			return new Router();
 		});
 
 		/**
@@ -399,13 +395,15 @@ final class Fenric
 		 */
 		$this->registerResolvableSharedService('view', function($resolver, array $variables = null)
 		{
+			$variables = (array) $variables;
+
 			if (file_exists($this->path('views', "$resolver.local.phtml")))
 			{
-				return new View($this->path('views', "$resolver.local.phtml"), (array) $variables);
+				return new View($this->path('views', "$resolver.local.phtml"), $variables);
 			}
 			if (file_exists($this->path('views', "$resolver.phtml")))
 			{
-				return new View($this->path('views', "$resolver.phtml"), (array) $variables);
+				return new View($this->path('views', "$resolver.phtml"), $variables);
 			}
 
 			throw new RuntimeException(sprintf('Unable to find view «%s».', $resolver));
@@ -696,10 +694,10 @@ final class Fenric
 	{
 		if ($type & error_reporting())
 		{
-			$this->callSharedService('logger', 'errors')
+			$this->callSharedService('logger')
 				->php($type, sprintf($this->options['handling.error.log.format'], $message, $file, $line));
 
-			$this->callSharedService('event', 'system.error')
+			$this->callSharedService('event', 'fenric.system.error')
 				->notifySubscribers(func_get_args());
 		}
 	}
@@ -714,13 +712,13 @@ final class Fenric
 	 */
 	public function handleUncaughtException($exception)
 	{
-		$this->callSharedService('logger', 'errors')
+		$this->callSharedService('logger')
 			->error(sprintf($this->options['handling.uncaught.exception.log.format'], $exception->getMessage(), $exception->getFile(), $exception->getLine()));
 
-		$this->callSharedService('event', 'system.uncaught.exception')
+		$this->callSharedService('event', 'fenric.system.uncaught.exception')
 			->notifySubscribers([$exception]);
 
-		$this->callSharedService('event', 'system.emergency')
+		$this->callSharedService('event', 'fenric.system.emergency')
 			->notifySubscribers([$exception->getMessage(), $exception->getFile(), $exception->getLine()]);
 	}
 
@@ -736,13 +734,13 @@ final class Fenric
 		{
 			if ($error['type'] & $this->options['handling.fatal.error.mode'])
 			{
-				$this->callSharedService('logger', 'errors')
+				$this->callSharedService('logger')
 					->php($error['type'], sprintf($this->options['handling.fatal.error.log.format'], $error['message'], $error['file'], $error['line']));
 
-				$this->callSharedService('event', 'system.fatal.error')
+				$this->callSharedService('event', 'fenric.system.fatal.error')
 					->notifySubscribers([$error]);
 
-				$this->callSharedService('event', 'system.emergency')
+				$this->callSharedService('event', 'fenric.system.emergency')
 					->notifySubscribers([$error['message'], $error['file'], $error['line']]);
 			}
 		}
@@ -769,26 +767,6 @@ function fenric($alias = null, $params = null)
 
 	if (is_string($alias))
 	{
-		/**
-		 * Idea...
-		 */
-		if (strpos($alias, '?') === 0)
-		{
-			$alias = substr($alias, 1);
-
-			return $instance->is($alias);
-		}
-
-		/**
-		 * Idea...
-		 */
-		if (strpos($alias, '@') === 0)
-		{
-			$alias = substr($alias, 1);
-
-			return $instance->path($alias);
-		}
-
 		if (strpos($alias, '::') !== false)
 		{
 			list($alias, $resolver) = explode('::', $alias, 2);
