@@ -225,6 +225,8 @@ class Router
 	 */
 	public function run(Request $request, Response $response)
 	{
+		$response->setStatus(404);
+
 		if ($match = $this->match($request))
 		{
 			if (is_string($match['controller']))
@@ -234,6 +236,8 @@ class Router
 					if (is_subclass_of($match['controller'], Controller::class))
 					{
 						$request->parameters->update($match['parameters']);
+
+						$response->setStatus(200);
 
 						$controller = new $match['controller']($this, $request, $response);
 
