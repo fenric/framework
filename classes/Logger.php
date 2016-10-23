@@ -59,7 +59,7 @@ class Logger
 	 */
 	public function info($message)
 	{
-	    $this->add(self::INFO, $message);
+		$this->add(self::INFO, $message);
 	}
 
 	/**
@@ -72,7 +72,7 @@ class Logger
 	 */
 	public function error($message)
 	{
-	    $this->add(self::ERROR, $message);
+		$this->add(self::ERROR, $message);
 	}
 
 	/**
@@ -85,7 +85,7 @@ class Logger
 	 */
 	public function warning($message)
 	{
-	    $this->add(self::WARNING, $message);
+		$this->add(self::WARNING, $message);
 	}
 
 	/**
@@ -98,7 +98,7 @@ class Logger
 	 */
 	public function notice($message)
 	{
-	    $this->add(self::NOTICE, $message);
+		$this->add(self::NOTICE, $message);
 	}
 
 	/**
@@ -111,7 +111,7 @@ class Logger
 	 */
 	public function debug($message)
 	{
-	    $this->add(self::DEBUG, $message);
+		$this->add(self::DEBUG, $message);
 	}
 
 	/**
@@ -127,35 +127,35 @@ class Logger
 	 */
 	public function php($type, $message)
 	{
-	    switch ($type)
-	    {
-	        case E_ERROR :
-	        case E_PARSE :
-	        case E_CORE_ERROR :
-	        case E_COMPILE_ERROR :
-	        case E_USER_ERROR :
-	        case E_RECOVERABLE_ERROR :
-	            $this->error($message);
-	            break;
+		switch ($type)
+		{
+			case E_ERROR :
+			case E_PARSE :
+			case E_CORE_ERROR :
+			case E_COMPILE_ERROR :
+			case E_USER_ERROR :
+			case E_RECOVERABLE_ERROR :
+				$this->error($message);
+				break;
 
-	        case E_WARNING :
-	        case E_CORE_WARNING :
-	        case E_COMPILE_WARNING :
-	        case E_USER_WARNING :
-	            $this->warning($message);
-	            break;
+			case E_WARNING :
+			case E_CORE_WARNING :
+			case E_COMPILE_WARNING :
+			case E_USER_WARNING :
+				$this->warning($message);
+				break;
 
-	        case E_NOTICE :
-	        case E_USER_NOTICE :
-	            $this->notice($message);
-	            break;
+			case E_NOTICE :
+			case E_USER_NOTICE :
+				$this->notice($message);
+				break;
 
-	        case E_STRICT :
-	        case E_DEPRECATED :
-	        case E_USER_DEPRECATED :
-	            $this->debug($message);
-	            break;
-	    }
+			case E_STRICT :
+			case E_DEPRECATED :
+			case E_USER_DEPRECATED :
+				$this->debug($message);
+				break;
+		}
 	}
 
 	/**
@@ -169,7 +169,7 @@ class Logger
 	 */
 	public function add($level, $message)
 	{
-	    $this->messages[] = [$level, $message, microtime(true)];
+		$this->messages[] = [$level, $message, microtime(true)];
 	}
 
 	/**
@@ -180,7 +180,7 @@ class Logger
 	 */
 	public function all()
 	{
-	    return $this->messages;
+		return $this->messages;
 	}
 
 	/**
@@ -191,6 +191,6 @@ class Logger
 	 */
 	public function count()
 	{
-	    return count($this->messages);
+		return count($this->messages);
 	}
 }
