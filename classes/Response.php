@@ -2,10 +2,10 @@
 /**
  * It is free open-source software released under the MIT License.
  *
- * @author       Anatoly Nekhay <a.fenric@gmail.com>
- * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
- * @license      https://github.com/fenric/framework/blob/master/LICENSE.md
- * @link         https://github.com/fenric/framework
+ * @author Anatoly Fenric <a.fenric@gmail.com>
+ * @copyright Copyright (c) 2013-2016 by Fenric Laboratory
+ * @license https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link https://github.com/fenric/framework
  */
 
 namespace Fenric;
@@ -22,50 +22,28 @@ class Response
 	 * @var	    int
 	 * @access  protected
 	 */
-	protected $status;
+	protected $status = 200;
 
 	/**
-	 * HTTP заголовки
+	 * Заголовки ответа
 	 *
 	 * @var	    array
 	 * @access  protected
 	 */
-	protected $headers;
+	protected $headers = [];
 
 	/**
-	 * Содержимое ответа
+	 * Тело ответа
 	 *
 	 * @var	    string
 	 * @access  protected
 	 */
-	protected $content;
+	protected $content = null;
 
 	/**
 	 * Установка статуса ответа
 	 *
-	 * @param   int      $status
-	 * @param   array    $headers
-	 * @param   string   $content
-	 *
-	 * @access  public
-	 * @return  object
-	 */
-	public function __construct($status = 200, array $headers = [], $content = '')
-	{
-		$this->setStatus($status);
-
-		foreach ($headers as $header)
-		{
-			$this->setHeader($header);
-		}
-
-		$this->setContent($content);
-	}
-
-	/**
-	 * Установка статуса ответа
-	 *
-	 * @param   int      $status
+	 * @param   int   $status
 	 *
 	 * @access  public
 	 * @return  object
@@ -89,7 +67,7 @@ class Response
 	}
 
 	/**
-	 * Установка HTTP заголовка
+	 * Установка заголовка ответа
 	 *
 	 * @param   string   $header
 	 *
@@ -104,7 +82,7 @@ class Response
 	}
 
 	/**
-	 * Получение HTTP заголовков
+	 * Получение заголовков ответа
 	 *
 	 * @access  public
 	 * @return  object
@@ -115,7 +93,7 @@ class Response
 	}
 
 	/**
-	 * Установка содержимого ответа
+	 * Установка тела ответа
 	 *
 	 * @param   string   $content
 	 *
@@ -130,7 +108,26 @@ class Response
 	}
 
 	/**
-	 * Получение содержимого ответа
+	 * Установка тела ответа в виде JSON данных
+	 *
+	 * @param   mixed   $data
+	 * @param   int     $options
+	 * @param   int     $depth
+	 *
+	 * @access  public
+	 * @return  object
+	 */
+	public function setJsonContent($data, $options = 0, $depth = 512)
+	{
+		$this->setHeader('Content-Type: application/json; charset=UTF-8');
+
+		$this->setContent(json_encode($data, $options, $depth));
+
+		return $this;
+	}
+
+	/**
+	 * Получение тела ответа
 	 *
 	 * @access  public
 	 * @return  string
@@ -148,31 +145,13 @@ class Response
 	 */
 	public function send()
 	{
-		fenric('event::http.response.before.send.status')
-			->notifySubscribers([$this]);
-
 		http_response_code($this->getStatus());
 
-		fenric('event::http.response.before.send.headers')
-			->notifySubscribers([$this]);
-
-		foreach ($this->getHeaders() as $header) {
+		foreach ($this->getHeaders() as $header)
+		{
 			header($header, true);
 		}
 
-		fenric('event::http.response.before.send.content')
-			->notifySubscribers([$this]);
-
 		echo $this->getContent();
-
-		fenric('event::http.response.before.close.connection')
-			->notifySubscribers([$this]);
-
-		if (function_exists('fastcgi_finish_request')) {
-			fastcgi_finish_request();
-		}
-
-		fenric('event::http.response.finish')
-			->notifySubscribers([$this]);
 	}
 }

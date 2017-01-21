@@ -2,10 +2,10 @@
 /**
  * It is free open-source software released under the MIT License.
  *
- * @author       Anatoly Nekhay <a.fenric@gmail.com>
- * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
- * @license      https://github.com/fenric/framework/blob/master/LICENSE.md
- * @link         https://github.com/fenric/framework
+ * @author Anatoly Fenric <a.fenric@gmail.com>
+ * @copyright Copyright (c) 2013-2016 by Fenric Laboratory
+ * @license https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link https://github.com/fenric/framework
  */
 
 namespace Fenric;
@@ -17,12 +17,12 @@ class View
 {
 
 	/**
-	 * Файл представления
+	 * Имя представления
 	 *
 	 * @var     string
 	 * @access  protected
 	 */
-	protected $filename;
+	protected $name;
 
 	/**
 	 * Переменные представления
@@ -33,7 +33,7 @@ class View
 	protected $variables;
 
 	/**
-	 * Секции представления
+	 * Участки представления
 	 *
 	 * @var     array
 	 * @access  protected
@@ -51,45 +51,84 @@ class View
 	/**
 	 * Конструктор класса
 	 *
-	 * @param   string   $filename
+	 * @param   string   $name
 	 * @param   array    $variables
 	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function __construct($filename, array $variables)
+	public function __construct($name, array $variables = null)
 	{
-		$this->filename = $filename;
+		$this->name = $name;
 
 		$this->variables = $variables;
+	}
+
+	/**
+	 * Получение имени представления
+	 *
+	 * @access  public
+	 * @return  string
+	 */
+	public function getName()
+	{
+		return $this->name;
+	}
+
+	/**
+	 * Получение файла представления
+	 *
+	 * @access  public
+	 * @return  string
+	 */
+	public function getFile()
+	{
+		return fenric()->path('views', $this->getName() . '.phtml');
+	}
+
+	/**
+	 * Проверка существования представления
+	 *
+	 * @access  public
+	 * @return  bool
+	 */
+	public function exists()
+	{
+		return file_exists($this->getFile());
 	}
 
 	/**
 	 * Рендеринг представления
 	 *
 	 * @access  public
-	 * @return  string
+	 * @return  mixed
 	 */
 	public function render()
 	{
-		ob_start();
-
-		extract($this->variables);
-
-		include $this->filename;
-
-		$content = ob_get_clean();
-
-		if ($this->layout instanceof self)
+		if ($this->exists())
 		{
-			$this->layout->sections = $this->sections;
+			if (isset($this->variables))
+			{
+				extract($this->variables);
+			}
 
-			$this->layout->sections['content'] = $content;
+			ob_start();
 
-			$content = $this->layout->render();
+			include $this->getFile();
+
+			$content = ob_get_clean();
+
+			if ($this->layout instanceof self)
+			{
+				$this->layout->sections = $this->sections;
+
+				$this->layout->sections['content'] = $content;
+
+				$content = $this->layout->render();
+			}
+
+			return $content;
 		}
-
-		return ltrim($content);
 	}
 
 	/**
@@ -100,16 +139,16 @@ class View
 	 */
 	public function __toString()
 	{
-		return $this->render();
+		return (string) $this->render();
 	}
 
 	/**
-	 * Получение содержимого секции
+	 * Получение содержимого участка представления
 	 *
 	 * @param   string   $sectionId
 	 *
 	 * @access  protected
-	 * @return  string
+	 * @return  mixed
 	 */
 	protected function section($sectionId)
 	{
@@ -120,7 +159,7 @@ class View
 	}
 
 	/**
-	 * Начало записи содержимого секции
+	 * Начало записи содержимого участка представления
 	 *
 	 * @param   string   $sectionId
 	 *
@@ -131,45 +170,89 @@ class View
 	{
 		ob_start();
 
-		$this->sections[] = $sectionId;
+		$this->sections[$sectionId] = null;
 	}
 
 	/**
-	 * Конец записи содержимого секции
+	 * Остановка записи и сохранение содержимого участка представления
 	 *
 	 * @access  protected
 	 * @return  void
 	 */
 	protected function stop()
 	{
-		$sectionId = end($this->sections);
+		end($this->sections);
+
+		$sectionId = key($this->sections);
 
 		$this->sections[$sectionId] = ob_get_clean();
 	}
 
 	/**
-	 * Наследования макета
+	 * Наследование макета представления
 	 *
-	 * @param   object   $layout
+	 * @param   string   $name
+	 * @param   array    $variables
 	 *
 	 * @access  protected
 	 * @return  void
 	 */
-	protected function layout(self $layout)
+	protected function layout($name, array $variables = null)
 	{
-		$this->layout = $layout;
+		$this->layout = $this->make($name, $variables);
+	}
+
+	/**
+	 * Получение отрендеренного представления как фрагмент текущего
+	 *
+	 * @param   string   $name
+	 * @param   array    $variables
+	 *
+	 * @access  protected
+	 * @return  string
+	 */
+	protected function partial($name, array $variables = null)
+	{
+		return $this->make($name, $variables)->render();
+	}
+
+	/**
+	 * Создание нового представления
+	 *
+	 * @param   string   $name
+	 * @param   array    $variables
+	 *
+	 * @access  protected
+	 * @return  object
+	 */
+	protected function make($name, array $variables = null)
+	{
+		return new self($name, $variables);
 	}
 
 	/**
 	 * Экранирование строки
 	 *
-	 * @param   string   $value
+	 * @param   string   $escapable
 	 *
 	 * @access  protected
 	 * @return  string
 	 */
-	protected function e($value)
+	protected function escape($escapable)
 	{
-		return htmlentities($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false);
+		return htmlspecialchars($escapable, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+	}
+
+	/**
+	 * Короткий способ экранирования строки
+	 *
+	 * @param   string   $escapable
+	 *
+	 * @access  protected
+	 * @return  string
+	 */
+	protected function e($escapable)
+	{
+		return $this->escape($escapable);
 	}
 }

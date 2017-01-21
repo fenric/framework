@@ -2,10 +2,10 @@
 /**
  * It is free open-source software released under the MIT License.
  *
- * @author       Anatoly Nekhay <a.fenric@gmail.com>
- * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
- * @license      https://github.com/fenric/framework/blob/master/LICENSE.md
- * @link         https://github.com/fenric/framework
+ * @author Anatoly Fenric <a.fenric@gmail.com>
+ * @copyright Copyright (c) 2013-2016 by Fenric Laboratory
+ * @license https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link https://github.com/fenric/framework
  */
 
 namespace Fenric;
@@ -27,7 +27,7 @@ class Collection
 	/**
 	 * Конструктор класса
 	 *
-	 * @param   array    $items
+	 * @param   array   $items
 	 *
 	 * @access  public
 	 * @return  void
@@ -40,7 +40,7 @@ class Collection
 	/**
 	 * Добавление элемента коллекции
 	 *
-	 * @param   mixed    $item
+	 * @param   mixed   $item
 	 *
 	 * @access  public
 	 * @return  object
@@ -55,8 +55,8 @@ class Collection
 	/**
 	 * Установка элемента коллекции
 	 *
-	 * @param   mixed    $key
-	 * @param   mixed    $value
+	 * @param   mixed   $key
+	 * @param   mixed   $value
 	 *
 	 * @access  public
 	 * @return  object
@@ -71,8 +71,8 @@ class Collection
 	/**
 	 * Получение элемента коллекции
 	 *
-	 * @param   mixed    $key
-	 * @param   mixed    $default
+	 * @param   mixed   $key
+	 * @param   mixed   $default
 	 *
 	 * @access  public
 	 * @return  mixed
@@ -90,7 +90,7 @@ class Collection
 	/**
 	 * Извлечение элемента коллекции
 	 *
-	 * @param   mixed    $key
+	 * @param   mixed   $key
 	 *
 	 * @access  public
 	 * @return  mixed
@@ -110,7 +110,7 @@ class Collection
 	/**
 	 * Проверка существования элемента коллекции
 	 *
-	 * @param   mixed    $key
+	 * @param   mixed   $key
 	 *
 	 * @access  public
 	 * @return  bool
@@ -141,7 +141,7 @@ class Collection
 	/**
 	 * Обновление коллекции
 	 *
-	 * @param   array    $items
+	 * @param   array   $items
 	 *
 	 * @access  public
 	 * @return  object

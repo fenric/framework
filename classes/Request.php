@@ -2,10 +2,10 @@
 /**
  * It is free open-source software released under the MIT License.
  *
- * @author       Anatoly Nekhay <a.fenric@gmail.com>
- * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
- * @license      https://github.com/fenric/framework/blob/master/LICENSE.md
- * @link         https://github.com/fenric/framework
+ * @author Anatoly Fenric <a.fenric@gmail.com>
+ * @copyright Copyright (c) 2013-2016 by Fenric Laboratory
+ * @license https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link https://github.com/fenric/framework
  */
 
 namespace Fenric;
@@ -13,7 +13,7 @@ namespace Fenric;
 /**
  * Request
  */
-class Request
+class Request extends Collection
 {
 
 	/**
@@ -65,42 +65,37 @@ class Request
 	public $parameters;
 
 	/**
-	 * {description}
-	 *
-	 * @var     string
-	 * @access  public
-	 */
-	public $content;
-
-	/**
 	 * Конструктор класса
-	 *
-	 * @param   array   $query
-	 * @param   array   $post
-	 * @param   array   $files
-	 * @param   array   $cookies
-	 * @param   array   $environment
-	 * @param   array   $parameters
-	 * @param   string  $content
 	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function __construct(array $query, array $post, array $files, array $cookies, array $environment, array $parameters, $content)
+	public function __construct()
 	{
-		$this->query = new Collection($query);
+		parent::__construct($_REQUEST);
 
-		$this->post = new Collection($post);
+		$this->query = new Collection($_GET);
 
-		$this->files = new Collection($files);
+		$this->post = new Collection($_POST);
 
-		$this->cookies = new Collection($cookies);
+		$this->files = new Collection($_FILES);
 
-		$this->environment = new Collection($environment);
+		$this->cookies = new Collection($_COOKIE);
 
-		$this->parameters = new Collection($parameters);
+		$this->environment = new Collection($_SERVER);
 
-		$this->content = $content;
+		$this->parameters = new Collection();
+	}
+
+	/**
+	 * Получение тела запроса
+	 *
+	 * @access  public
+	 * @return  string
+	 */
+	public function getBody()
+	{
+		return file_get_contents('php://input');
 	}
 
 	/**

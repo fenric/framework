@@ -2,10 +2,10 @@
 /**
  * It is free open-source software released under the MIT License.
  *
- * @author       Anatoly Nekhay <a.fenric@gmail.com>
- * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
- * @license      https://github.com/fenric/framework/blob/master/LICENSE.md
- * @link         https://github.com/fenric/framework
+ * @author Anatoly Fenric <a.fenric@gmail.com>
+ * @copyright Copyright (c) 2013-2016 by Fenric Laboratory
+ * @license https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link https://github.com/fenric/framework
  */
 
 namespace Fenric;
@@ -172,7 +172,7 @@ class Router
 	/**
 	 * Определение маршрута соответствующего текущему HTTP запросу
 	 *
-	 * @param   object  $request
+	 * @param   object   $request
 	 *
 	 * @access  public
 	 * @return  mixed
@@ -217,8 +217,8 @@ class Router
 	/**
 	 * Запуск маршрутизатора
 	 *
-	 * @param   object  $request
-	 * @param   object  $response
+	 * @param   object   $request
+	 * @param   object   $response
 	 *
 	 * @access  public
 	 * @return  bool

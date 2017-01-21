@@ -2,10 +2,10 @@
 /**
  * It is free open-source software released under the MIT License.
  *
- * @author       Anatoly Nekhay <a.fenric@gmail.com>
- * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
- * @license      https://github.com/fenric/framework/blob/master/LICENSE.md
- * @link         https://github.com/fenric/framework
+ * @author Anatoly Fenric <a.fenric@gmail.com>
+ * @copyright Copyright (c) 2013-2016 by Fenric Laboratory
+ * @license https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link https://github.com/fenric/framework
  */
 
 namespace Fenric;
@@ -42,6 +42,14 @@ class Logger
 	const DEBUG = 'debug';
 
 	/**
+	 * Имя журнала
+	 *
+	 * @var     string
+	 * @access  protected
+	 */
+	protected $name;
+
+	/**
 	 * Сообщения журнала
 	 *
 	 * @var     array
@@ -50,72 +58,134 @@ class Logger
 	protected $messages = [];
 
 	/**
-	 * Добавление в журнал сообщения сгенерированного с целью информирования
+	 * Конструктор класса
 	 *
-	 * @param   string   $message
+	 * @param   string   $name
 	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function info($message)
+	public function __construct($name)
 	{
-		$this->add(self::INFO, $message);
+		$this->name = $name;
+
+		register_shutdown_function(function()
+		{
+			$this->save();
+		});
+	}
+
+	/**
+	 * Получение имени журнала
+	 *
+	 * @access  public
+	 * @return  string
+	 */
+	public function getName()
+	{
+		return $this->name;
+	}
+
+	/**
+	 * Получение файла журнала
+	 *
+	 * @access  public
+	 * @return  string
+	 */
+	public function getFile()
+	{
+		return fenric()->path('log', date('Y'), date('m'), date('d'), $this->getName() . '.log');
+	}
+
+	/**
+	 * Добавление сообщения в журнал
+	 *
+	 * @param   string   $type
+	 * @param   string   $message
+	 * @param   array    $context
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function add($type, $message, array $context = [])
+	{
+		$message = fenric()->interpolate($message, $context);
+
+		$this->messages[] = [$type, $message, microtime(true)];
+	}
+
+	/**
+	 * Добавление в журнал сообщения сгенерированного с целью информирования
+	 *
+	 * @param   string   $message
+	 * @param   array    $context
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function info($message, array $context = [])
+	{
+		$this->add(self::INFO, $message, $context);
 	}
 
 	/**
 	 * Добавление в журнал сообщения сгенерированного при возникновении ошибки высокого уровня
 	 *
 	 * @param   string   $message
+	 * @param   array    $context
 	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function error($message)
+	public function error($message, array $context = [])
 	{
-		$this->add(self::ERROR, $message);
+		$this->add(self::ERROR, $message, $context);
 	}
 
 	/**
 	 * Добавление в журнал сообщения сгенерированного при возникновении ошибки среднего уровня
 	 *
 	 * @param   string   $message
+	 * @param   array    $context
 	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function warning($message)
+	public function warning($message, array $context = [])
 	{
-		$this->add(self::WARNING, $message);
+		$this->add(self::WARNING, $message, $context);
 	}
 
 	/**
 	 * Добавление в журнал сообщения сгенерированного при возникновении ошибки низкого уровня
 	 *
 	 * @param   string   $message
+	 * @param   array    $context
 	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function notice($message)
+	public function notice($message, array $context = [])
 	{
-		$this->add(self::NOTICE, $message);
+		$this->add(self::NOTICE, $message, $context);
 	}
 
 	/**
 	 * Добавление в журнал сообщения сгенерированного в процессе отладки
 	 *
 	 * @param   string   $message
+	 * @param   array    $context
 	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function debug($message)
+	public function debug($message, array $context = [])
 	{
-		$this->add(self::DEBUG, $message);
+		$this->add(self::DEBUG, $message, $context);
 	}
 
 	/**
-	 * Добавление PHP сообщения в журнал
+	 * Добавление в журнал сообщения сгенерированного PHP
 	 *
 	 * @param   int      $type
 	 * @param   string   $message
@@ -159,17 +229,14 @@ class Logger
 	}
 
 	/**
-	 * Добавление сообщения в журнал
-	 *
-	 * @param   string   $level
-	 * @param   string   $message
+	 * Очистка журнала
 	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function add($level, $message)
+	public function clear()
 	{
-		$this->messages[] = [$level, $message, microtime(true)];
+		$this->messages = [];
 	}
 
 	/**
@@ -192,5 +259,34 @@ class Logger
 	public function count()
 	{
 		return count($this->messages);
+	}
+
+	/**
+	 * Сохранение журнала
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function save()
+	{
+		if ($this->count() > 0)
+		{
+			$file = $this->getFile();
+
+			$folder = pathinfo($file, PATHINFO_DIRNAME);
+
+			if (is_dir($folder) or mkdir($folder, 0755, true))
+			{
+				if ($handle = fopen($file, 'a'))
+				{
+					foreach ($this->all() as $row)
+					{
+						fwrite($handle, sprintf('[%s] [%s] %s', date('Y-m-d H:i:s', $row[2]), $row[0], $row[1]) . PHP_EOL);
+					}
+
+					fclose($handle);
+				}
+			}
+		}
 	}
 }

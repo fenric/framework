@@ -2,10 +2,10 @@
 /**
  * It is free open-source software released under the MIT License.
  *
- * @author       Anatoly Nekhay <a.fenric@gmail.com>
- * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
- * @license      https://github.com/fenric/framework/blob/master/LICENSE.md
- * @link         https://github.com/fenric/framework
+ * @author Anatoly Fenric <a.fenric@gmail.com>
+ * @copyright Copyright (c) 2013-2016 by Fenric Laboratory
+ * @license https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link https://github.com/fenric/framework
  */
 
 namespace Fenric;
@@ -17,6 +17,14 @@ class Event
 {
 
 	/**
+	 * Имя события
+	 *
+	 * @var     string
+	 * @access  protected
+	 */
+	protected $name;
+
+	/**
 	 * Подписчики события
 	 *
 	 * @var     array
@@ -25,33 +33,102 @@ class Event
 	protected $subscribers = [];
 
 	/**
-	 * Регистрация подписчика события
+	 * Инкрементальный идентификатор подписчиков события
 	 *
-	 * @param   call     $subscriber
+	 * @var     int
+	 * @access  protected
+	 */
+	protected $increment = 0;
+
+	/**
+	 * Конструктор класса
+	 *
+	 * @param   string   $name
 	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function subscribe(callable $subscriber)
+	public function __construct($name)
 	{
-		$this->subscribers[] = $subscriber;
+		$this->name = $name;
 	}
 
 	/**
-	 * Уведомление подписчиков о наступившем событии
+	 * Получение имени события
 	 *
-	 * @param   array    $params
+	 * @access  public
+	 * @return  string
+	 */
+	public function getName()
+	{
+		return $this->name;
+	}
+
+	/**
+	 * Подписка на событие
+	 *
+	 * @param   callable   $subscriber
+	 * @param   int        $priority
+	 *
+	 * @access  public
+	 * @return  int
+	 */
+	public function subscribe(callable $subscriber, $priority = 0)
+	{
+		$this->subscribers[$this->increment] = [$subscriber, $priority];
+
+		return $this->increment++;
+	}
+
+	/**
+	 * Отписка от события
+	 *
+	 * @param   int   $subscriberId
 	 *
 	 * @access  public
 	 * @return  bool
 	 */
-	public function notifySubscribers(array $params = [])
+	public function unsubscribe($subscriberId)
 	{
-		foreach ($this->subscribers as $subscriber)
+		if (isset($this->subscribers[$subscriberId]))
 		{
-			if (false === call_user_func_array($subscriber, $params))
+			unset($this->subscribers[$subscriberId]);
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Запуск события
+	 *
+	 * @param   array   $params
+	 *
+	 * @access  public
+	 * @return  bool
+	 */
+	public function run(array $params = [])
+	{
+		if (count($this->subscribers) > 0)
+		{
+			usort($this->subscribers, function($a, $b)
 			{
-				return false;
+				if ($a[1] > $b[1]) return 1;
+
+				else if ($a[1] < $b[1]) return -1;
+
+				else return 0;
+			});
+
+			foreach ($this->subscribers as $subscription)
+			{
+				list($subscriber, $priority) = $subscription;
+
+				if (false === call_user_func_array($subscriber, $params))
+				{
+					return false;
+				}
 			}
 		}
 

@@ -2,10 +2,10 @@
 /**
  * It is free open-source software released under the MIT License.
  *
- * @author       Anatoly Nekhay <a.fenric@gmail.com>
- * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
- * @license      https://github.com/fenric/framework/blob/master/LICENSE.md
- * @link         https://github.com/fenric/framework
+ * @author Anatoly Fenric <a.fenric@gmail.com>
+ * @copyright Copyright (c) 2013-2016 by Fenric Laboratory
+ * @license https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link https://github.com/fenric/framework
  */
 
 namespace Fenric;
@@ -43,9 +43,9 @@ abstract class Controller
 	/**
 	 * Конструктор класса
 	 *
-	 * @param   object  $router
-	 * @param   object  $request
-	 * @param   object  $response
+	 * @param   object   $router
+	 * @param   object   $request
+	 * @param   object   $response
 	 *
 	 * @access  public
 	 * @return  void

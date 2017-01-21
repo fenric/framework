@@ -2,14 +2,14 @@
 /**
  * It is free open-source software released under the MIT License.
  *
- * @author       Anatoly Nekhay <a.fenric@gmail.com>
- * @copyright    Copyright (c) 2013-2016 by Fenric Laboratory
- * @license      https://github.com/fenric/framework/blob/master/LICENSE.md
- * @link         https://github.com/fenric/framework
+ * @author Anatoly Fenric <a.fenric@gmail.com>
+ * @copyright Copyright (c) 2013-2016 by Fenric Laboratory
+ * @license https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link https://github.com/fenric/framework
  */
 
 /**
- * Импортирование классов
+ * Import classes
  */
 use Fenric\Collection;
 use Fenric\Event;
@@ -17,10 +17,11 @@ use Fenric\Logger;
 use Fenric\Request;
 use Fenric\Response;
 use Fenric\Router;
+use Fenric\Session;
 use Fenric\View;
 
 /**
- * Основной класс фреймворка
+ * Main class of framework
  */
 final class Fenric
 {
@@ -28,387 +29,63 @@ final class Fenric
 	/**
 	 * Версия фреймворка
 	 */
-	const VERSION = '1.7.1-dev';
+	const VERSION = '1.9.0-dev';
 
 	/**
-	 * Опции фреймворка
+	 * Зарегистрированные пути фреймворка
 	 *
 	 * @var     array
-	 * @access  protected
+	 * @access  private
 	 */
-	protected $options = [];
+	private $paths = [];
 
 	/**
-	 * Службы фреймворка
+	 * Зарегистрированные службы фреймворка
 	 *
 	 * @var     array
-	 * @access  protected
+	 * @access  private
 	 */
-	protected $services = [];
+	private $services = [];
 
 	/**
-	 * Конструктор класса
+	 * Зарегистрированные загрузчики классов фреймворка
 	 *
-	 * @access  public
-	 * @return  void
+	 * @var     array
+	 * @access  private
 	 */
-	public function __construct()
-	{
-		/**
-		 * Окружение фреймворка
-		 *
-		 * @var string
-		 */
-		$this->options['env'] = 'development';
-
-		/**
-		 * Автозагрузка внутренних классов
-		 *
-		 * @var bool
-		 */
-		$this->options['autoload.enabled'] = true;
-
-		/**
-		 * Автозагрузчик внутренних классов
-		 *
-		 * @var callable
-		 */
-		$this->options['autoload.handler'] = null;
-
-		/**
-		 * Правила в порядке приоритетности по которым осуществляется поиск и загрузка внутренних классов
-		 *
-		 * @var array
-		 */
-		$this->options['autoload.rules'] = [':app/classes/:class.php', ':system/classes/:class.php'];
-
-		/**
-		 * Обработка ошибок
-		 *
-		 * @var bool
-		 */
-		$this->options['handling.error.enabled'] = true;
-
-		/**
-		 * Обработчик ошибок
-		 *
-		 * @var callable
-		 */
-		$this->options['handling.error.handler'] = null;
-
-		/**
-		 * Формат журналирования ошибки
-		 *
-		 * @var string
-		 */
-		$this->options['handling.error.log.format'] = '%s in file `%s` on line `%d`.';
-
-		/**
-		 * Обработка неперехваченных исключений
-		 *
-		 * @var bool
-		 */
-		$this->options['handling.uncaught.exception.enabled'] = true;
-
-		/**
-		 * Обработчик неперехваченных исключений
-		 *
-		 * @var callable
-		 */
-		$this->options['handling.uncaught.exception.handler'] = null;
-
-		/**
-		 * Формат журналирования неперехваченного исключения
-		 *
-		 * @var string
-		 */
-		$this->options['handling.uncaught.exception.log.format'] = '%s in file `%s` on line `%d`.';
-
-		/**
-		 * Обработка фатальных ошибок
-		 *
-		 * @var bool
-		 */
-		$this->options['handling.fatal.error.enabled'] = true;
-
-		/**
-		 * Обработчик фатальных ошибок
-		 *
-		 * @var callable
-		 */
-		$this->options['handling.fatal.error.handler'] = null;
-
-		/**
-		 * Режим протоколирования фатальных ошибок
-		 *
-		 * @var int
-		 */
-		$this->options['handling.fatal.error.mode'] = E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_USER_ERROR;
-
-		/**
-		 * Формат журналирования фатальной ошибки
-		 *
-		 * @var string
-		 */
-		$this->options['handling.fatal.error.log.format'] = '%s in file `%s` on line `%d`.';
-
-		/**
-		 * Язык локализации
-		 *
-		 * @var string
-		 */
-		$this->options['locale.language'] = 'en_US';
-
-		/**
-		 * Первоисточник языка локализации
-		 *
-		 * @var string
-		 */
-		$this->options['locale.original'] = 'ru_RU';
-
-		/**
-		 * Путь к родительской директории фреймворка
-		 *
-		 * @var Closure : string
-		 */
-		$this->options['paths']['.'] = function()
-		{
-			return dirname(__DIR__) . DIRECTORY_SEPARATOR;
-		};
-
-		/**
-		 * Путь к директории приложения созданного на базе фреймворка
-		 *
-		 * @var Closure : string
-		 */
-		$this->options['paths']['app'] = function()
-		{
-			return $this->path('.') . 'app' . DIRECTORY_SEPARATOR;
-		};
-
-		/**
-		 * Путь к публичной директории фреймворка
-		 *
-		 * @var Closure : string
-		 */
-		$this->options['paths']['public'] = function()
-		{
-			return $this->path('.') . 'public' . DIRECTORY_SEPARATOR;
-		};
-
-		/**
-		 * Путь к системной директории фреймворка
-		 *
-		 * @var Closure : string
-		 */
-		$this->options['paths']['system'] = function()
-		{
-			return $this->path('.') . 'system' . DIRECTORY_SEPARATOR;
-		};
-
-		/**
-		 * Путь к директории с исполняемыми файлами
-		 *
-		 * @var Closure : string
-		 */
-		$this->options['paths']['bin'] = function()
-		{
-			return $this->path('app') . 'bin' . DIRECTORY_SEPARATOR;
-		};
-
-		/**
-		 * Путь к директории с конфигурационными файлами
-		 *
-		 * @var Closure : string
-		 */
-		$this->options['paths']['configs'] = function()
-		{
-			return $this->path('app') . 'configs' . DIRECTORY_SEPARATOR;
-		};
-
-		/**
-		 * Путь к директории с локализационными файлами
-		 *
-		 * @var Closure : string
-		 */
-		$this->options['paths']['locales'] = function()
-		{
-			return $this->path('app') . 'locales' . DIRECTORY_SEPARATOR;
-		};
-
-		/**
-		 * Путь к директории с представлениями
-		 *
-		 * @var Closure : string
-		 */
-		$this->options['paths']['views'] = function()
-		{
-			return $this->path('app') . 'views' . DIRECTORY_SEPARATOR;
-		};
-	}
+	private $classLoaders = [];
 
 	/**
-	 * Инициализация фреймворка
+	 * Зарегистрированные пользовательские обработчики ошибок
 	 *
-	 * @param   array    $options
-	 *
-	 * @access  public
-	 * @return  void
+	 * @var     array
+	 * @access  private
 	 */
-	public function init(array $options = [])
-	{
-		$this->options = array_replace_recursive($this->options, $options);
+	private $errorHandlers = [];
 
-		/**
-		 * Регистрация загрузчика классов
-		 */
-		if ($this->options['autoload.enabled'])
-		{
-			if (! is_callable($this->options['autoload.handler']))
-			{
-				$this->options['autoload.handler'] = [$this, 'autoload'];
-			}
+	/**
+	 * Зарегистрированные пользовательские обработчики неперехваченных исключений
+	 *
+	 * @var     array
+	 * @access  private
+	 */
+	private $uncaughtExceptionHandlers = [];
 
-			spl_autoload_register($this->options['autoload.handler'], true, true);
-		}
+	/**
+	 * Зарегистрированные пользовательские обработчики фатальных ошибок
+	 *
+	 * @var     array
+	 * @access  private
+	 */
+	private $fatalErrorHandlers = [];
 
-		/**
-		 * Регистрация обработчика ошибок
-		 */
-		if ($this->options['handling.error.enabled'])
-		{
-			if (! is_callable($this->options['handling.error.handler']))
-			{
-				$this->options['handling.error.handler'] = [$this, 'handleError'];
-			}
-
-			set_error_handler($this->options['handling.error.handler']);
-		}
-
-		/**
-		 * Регистрация обработчика неперехваченных исключений
-		 */
-		if ($this->options['handling.uncaught.exception.enabled'])
-		{
-			if (! is_callable($this->options['handling.uncaught.exception.handler']))
-			{
-				$this->options['handling.uncaught.exception.handler'] = [$this, 'handleUncaughtException'];
-			}
-
-			set_exception_handler($this->options['handling.uncaught.exception.handler']);
-		}
-
-		/**
-		 * Регистрация обработчика фатальных ошибок
-		 */
-		if ($this->options['handling.fatal.error.enabled'])
-		{
-			if (! is_callable($this->options['handling.fatal.error.handler']))
-			{
-				$this->options['handling.fatal.error.handler'] = [$this, 'handleFatalError'];
-			}
-
-			register_shutdown_function($this->options['handling.fatal.error.handler']);
-		}
-
-		/**
-		 * Регистрация в контейнере фреймворка службы для работы с событиями
-		 */
-		$this->registerResolvableSharedService('event', function($resolver = 'default')
-		{
-			return new Event();
-		});
-
-		/**
-		 * Регистрация в контейнере фреймворка службы для работы с журналом
-		 */
-		$this->registerResolvableSharedService('logger', function($resolver = 'default')
-		{
-			return new Logger();
-		});
-
-		/**
-		 * Регистрация в контейнере фреймворка службы для работы с конфигурационными файлами
-		 */
-		$this->registerResolvableSharedService('config', function($resolver = 'default')
-		{
-			if (file_exists($this->path('configs', "$resolver.local.php")))
-			{
-				return new Collection(include $this->path('configs', "$resolver.local.php"));
-			}
-			if (file_exists($this->path('configs', "$resolver.php")))
-			{
-				return new Collection(include $this->path('configs', "$resolver.php"));
-			}
-
-			throw new RuntimeException(sprintf('Unable to find config «%s».', $resolver));
-		});
-
-		/**
-		 * Регистрация в контейнере фреймворка службы для работы с локализационными файлами
-		 */
-		$this->registerResolvableSharedService('locale', function($resolver = 'default')
-		{
-			if (file_exists($this->path('locales', $this->options['locale.language'], "$resolver.php")))
-			{
-				return new Collection(include $this->path('locales', $this->options['locale.language'], "$resolver.php"));
-			}
-			if (file_exists($this->path('locales', $this->options['locale.original'], "$resolver.php")))
-			{
-				return new Collection(include $this->path('locales', $this->options['locale.original'], "$resolver.php"));
-			}
-
-			throw new RuntimeException(sprintf('Unable to find locale messages «%s» for language: %s => %s.',
-				$resolver, $this->options['locale.language'], $this->options['locale.original']));
-		});
-
-		/**
-		 * Регистрация в контейнере фреймворка службы для обработки запроса клиента
-		 */
-		$this->registerDisposableSharedService('request', function()
-		{
-			$content = file_get_contents('php://input');
-
-			return new Request($_GET, $_POST, $_FILES, $_COOKIE, $_ENV + $_SERVER, [], $content);
-		});
-
-		/**
-		 * Регистрация в контейнере фреймворка службы для генерации ответа клиенту
-		 */
-		$this->registerDisposableSharedService('response', function()
-		{
-			$headers[] = 'X-Powered-By: Fenric framework';
-
-			return new Response(200, $headers, null);
-		});
-
-		/**
-		 * Регистрация в контейнере фреймворка службы для работы с маршрутизатором
-		 */
-		$this->registerResolvableSharedService('router', function($resolver = 'default')
-		{
-			return new Router();
-		});
-
-		/**
-		 * Регистрация в контейнере фреймворка службы для работы с представлениями
-		 */
-		$this->registerResolvableSharedService('view', function($resolver, array $variables = null)
-		{
-			$variables = (array) $variables;
-
-			if (file_exists($this->path('views', "$resolver.local.phtml")))
-			{
-				return new View($this->path('views', "$resolver.local.phtml"), $variables);
-			}
-			if (file_exists($this->path('views', "$resolver.phtml")))
-			{
-				return new View($this->path('views', "$resolver.phtml"), $variables);
-			}
-
-			throw new RuntimeException(sprintf('Unable to find view «%s».', $resolver));
-		});
-	}
+	/**
+	 * Идентификатор приложения по умолчанию
+	 *
+	 * @var     string
+	 * @access  private
+	 */
+	private $applicationId = 'default';
 
 	/**
 	 * Определение окружения
@@ -421,23 +98,31 @@ final class Fenric
 		switch (func_get_arg(0))
 		{
 			case 'cli' :
-			case 'console' :
 				return strcasecmp(PHP_SAPI, 'cli') === 0;
 				break;
 
 			case 'test' :
-			case 'debug' :
-				return strcasecmp($this->options['env'], 'test') === 0;
+				return strcasecmp(getenv('ENVIRONMENT'), 'test') === 0;
 				break;
 
-			case 'prod' :
 			case 'production' :
-				return strcasecmp($this->options['env'], 'production') === 0;
+				return strcasecmp(getenv('ENVIRONMENT'), 'production') === 0;
 				break;
 
-			case 'dev' :
 			case 'development' :
-				return strcasecmp($this->options['env'], 'development') === 0;
+				return strcasecmp(getenv('ENVIRONMENT'), 'development') === 0;
+				break;
+
+			case 'linux' :
+				return strcasecmp(PHP_OS, 'linux') === 0;
+				break;
+
+			case 'macintosh' :
+				return strcasecmp(PHP_OS, 'darwin') === 0;
+				break;
+
+			case 'windows' :
+				return strncasecmp(PHP_OS, 'win', 3) === 0;
 				break;
 		}
 
@@ -445,10 +130,242 @@ final class Fenric
 	}
 
 	/**
-	 * Определение пути
+	 * Инициализация фреймворка
 	 *
 	 * @access  public
-	 * @return  mixed
+	 * @return  void
+	 */
+	public function init()
+	{
+		$this->setApplicationId(getenv('APP_ID') ?: 'default');
+
+		$this->registerBasePaths();
+
+		$this->registerBaseServices();
+
+		$this->registerBaseClassLoaders();
+	}
+
+	/**
+	 * Расширенная инициализация фреймворка
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function advancedInit()
+	{
+		$this->init();
+
+		$this->autoload();
+
+		$this->handleErrors();
+
+		$this->handleUncaughtExceptions();
+
+		$this->handleFatalErrors();
+
+		$this->loggingErrors();
+
+		$this->loggingUncaughtExceptions();
+
+		$this->loggingFatalErrors();
+	}
+
+	/**
+	 * Регистрация базовых путей фреймворка
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function registerBasePaths()
+	{
+		$this->registerPath('.', function()
+		{
+			return dirname(__DIR__);
+		});
+
+		$this->registerPath('app', function()
+		{
+			return $this->path('.', 'app');
+		});
+
+		$this->registerPath('system', function()
+		{
+			return $this->path('.', 'system');
+		});
+
+		$this->registerPath('public', function()
+		{
+			return $this->path('.', 'public', $this->getApplicationId());
+		});
+
+		$this->registerPath('cache', function()
+		{
+			return $this->path('app', 'cache', $this->getApplicationId());
+		});
+
+		$this->registerPath('configs', function()
+		{
+			return $this->path('app', 'configs', $this->getApplicationId());
+		});
+
+		$this->registerPath('locales', function()
+		{
+			return $this->path('app', 'locales', $this->getApplicationId());
+		});
+
+		$this->registerPath('log', function()
+		{
+			return $this->path('app', 'log', $this->getApplicationId());
+		});
+
+		$this->registerPath('res', function()
+		{
+			return $this->path('app', 'res', $this->getApplicationId());
+		});
+
+		$this->registerPath('views', function()
+		{
+			return $this->path('app', 'views', $this->getApplicationId());
+		});
+	}
+
+	/**
+	 * Регистрация базовых служб фреймворка
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function registerBaseServices()
+	{
+		$this->registerResolvableSharedService('config', function($resolver = 'default')
+		{
+			if (file_exists($this->path('configs', "$resolver.local.php")))
+			{
+				return new Collection(include $this->path('configs', "$resolver.local.php"));
+			}
+
+			if (file_exists($this->path('configs', 'test', "$resolver.php")) && $this->is('test'))
+			{
+				return new Collection(include $this->path('configs', 'test', "$resolver.php"));
+			}
+
+			if (file_exists($this->path('configs', 'development', "$resolver.php")) && $this->is('development'))
+			{
+				return new Collection(include $this->path('configs', 'development', "$resolver.php"));
+			}
+
+			if (file_exists($this->path('configs', 'production', "$resolver.php")) && $this->is('production'))
+			{
+				return new Collection(include $this->path('configs', 'production', "$resolver.php"));
+			}
+
+			if (file_exists($this->path('configs', "$resolver.php")))
+			{
+				return new Collection(include $this->path('configs', "$resolver.php"));
+			}
+
+			throw new RuntimeException(sprintf('Unable to find config «%s».', $resolver));
+		});
+
+		$this->registerResolvableSharedService('locale', function($resolver = 'default')
+		{
+			if (file_exists($this->path('locales', $this->getApplicationLanguage(), "$resolver.php")))
+			{
+				return new Collection(include $this->path('locales', $this->getApplicationLanguage(), "$resolver.php"));
+			}
+
+			if (file_exists($this->path('locales', $this->getApplicationFallbackLanguage(), "$resolver.php")))
+			{
+				return new Collection(include $this->path('locales', $this->getApplicationFallbackLanguage(), "$resolver.php"));
+			}
+
+			throw new RuntimeException(sprintf('Unable to find locale messages «%s» for languages «%s» and «%s».',
+				$resolver, $this->getApplicationLanguage(), $this->getApplicationFallbackLanguage()));
+		});
+
+		$this->registerResolvableSharedService('event', function($resolver = 'default')
+		{
+			return new Event($resolver);
+		});
+
+		$this->registerResolvableSharedService('logger', function($resolver = 'default')
+		{
+			return new Logger($resolver);
+		});
+
+		$this->registerDisposableSharedService('request', function()
+		{
+			return new Request();
+		});
+
+		$this->registerDisposableSharedService('response', function()
+		{
+			return new Response();
+		});
+
+		$this->registerDisposableSharedService('router', function()
+		{
+			return new Router();
+		});
+
+		$this->registerDisposableSharedService('session', function()
+		{
+			return new Session();
+		});
+
+		$this->registerSharedService('view', function($name, array $variables = null)
+		{
+			return new View($name, $variables);
+		});
+	}
+
+	/**
+	 * Регистрация базовых загрузчиков классов фреймворка
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function registerBaseClassLoaders()
+	{
+		$this->registerClassLoader(function($filename)
+		{
+			if (file_exists($this->path('app', 'classes', $this->getApplicationId(), "$filename.php")))
+			{
+				require_once $this->path('app', 'classes', $this->getApplicationId(), "$filename.php");
+
+				return true;
+			}
+		});
+
+		$this->registerClassLoader(function($filename)
+		{
+			if (file_exists($this->path('app', 'classes.share', "$filename.php")))
+			{
+				require_once $this->path('app', 'classes.share', "$filename.php");
+
+				return true;
+			}
+		});
+
+		$this->registerClassLoader(function($filename)
+		{
+			if (file_exists($this->path('system', 'classes', "$filename.php")))
+			{
+				require_once $this->path('system', 'classes', "$filename.php");
+
+				return true;
+			}
+		});
+	}
+
+	/**
+	 * Сборка пути фреймворка
+	 *
+	 * @access  public
+	 * @return  string
+	 *
+	 * @throws  RuntimeException
 	 */
 	public function path()
 	{
@@ -456,109 +373,121 @@ final class Fenric
 
 		$alias = array_shift($parts) ?: '.';
 
-		if (isset($this->options['paths'][$alias]))
+		if (isset($this->paths[$alias]))
 		{
-			$pathname = $this->options['paths'][$alias]();
+			$built = $this->paths[$alias]();
 
-			$pathname .= implode(DIRECTORY_SEPARATOR, $parts);
+			if (count($parts) > 0)
+			{
+				$built .= DIRECTORY_SEPARATOR;
 
-			return $pathname;
+				$built .= implode(DIRECTORY_SEPARATOR, $parts);
+			}
+
+			return $built;
 		}
+
+		throw new RuntimeException(sprintf('Alias path «%s» is not registered.', $alias));
 	}
 
 	/**
-	 * Регистрация службы общего назначения
+	 * Регистрация пути фреймворка
 	 *
-	 * @param   string   $alias
-	 * @param   call     $callable
+	 * @param   string     $alias
+	 * @param   callable   $builder
 	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function registerSharedService($alias, callable $callable)
+	public function registerPath($alias, callable $builder)
 	{
-		$this->services['shared'][$alias]['service'] = $callable;
+		$this->paths[$alias] = function() use($builder)
+		{
+			return call_user_func($builder);
+		};
 	}
 
 	/**
-	 * Регистрация слушателя службы общего назначения
+	 * Регистрация службы фреймворка
 	 *
-	 * @param   string   $alias
-	 * @param   call     $callable
+	 * @param   string     $alias
+	 * @param   callable   $service
 	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function registerListenerOfSharedService($alias, callable $callable)
+	public function registerSharedService($alias, callable $service)
 	{
-		$this->services['shared'][$alias]['listeners'][] = $callable;
+		$this->services['shared'][$alias] = function() use($service)
+		{
+			return call_user_func_array($service, func_get_args());
+		};
 	}
 
 	/**
-	 * Разрегистрация службы общего назначения
+	 * Регистрация одиночной службы фреймворка
+	 *
+	 * @param   string     $alias
+	 * @param   callable   $service
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function registerDisposableSharedService($alias, callable $service)
+	{
+		$this->registerSharedService($alias, function() use($alias, $service)
+		{
+			if (empty($this->services['output.shared.disposable'][$alias]))
+			{
+				$output = call_user_func_array($service, func_get_args());
+
+				$this->services['output.shared.disposable'][$alias] = $output;
+			}
+
+			return $this->services['output.shared.disposable'][$alias];
+		});
+	}
+
+	/**
+	 * Регистрация именованной службы фреймворка
+	 *
+	 * @param   string     $alias
+	 * @param   callable   $service
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function registerResolvableSharedService($alias, callable $service)
+	{
+		$this->registerSharedService($alias, function($resolver = null) use($alias, $service)
+		{
+			if (empty($this->services['output.shared.resolvable'][$alias][$resolver]))
+			{
+				$output = call_user_func_array($service, func_get_args());
+
+				$this->services['output.shared.resolvable'][$alias][$resolver] = $output;
+			}
+
+			return $this->services['output.shared.resolvable'][$alias][$resolver];
+		});
+	}
+
+	/**
+	 * Разрегистрация службы фреймворка
 	 *
 	 * @param   string   $alias
 	 *
 	 * @access  public
-	 * @return  void
+	 * @return  bool
 	 */
 	public function unregisterSharedService($alias)
-	{
-		unset($this->services['shared'][$alias]['service']);
-	}
-
-	/**
-	 * Разрегистрация слушателей службы общего назначения
-	 *
-	 * @param   string   $alias
-	 *
-	 * @access  public
-	 * @return  void
-	 */
-	public function unregisterListenersOfSharedService($alias)
-	{
-		unset($this->services['shared'][$alias]['listeners']);
-	}
-
-	/**
-	 * Является ли служба общего назначения зарегистрированной
-	 *
-	 * @param   string   $alias
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function doesExistsSharedService($alias)
-	{
-		return isset($this->services['shared'][$alias]['service']);
-	}
-
-	/**
-	 * Является ли служба общего назначения прослушиваемой
-	 *
-	 * @param   string   $alias
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function doesListeningSharedService($alias)
-	{
-		return isset($this->services['shared'][$alias]['listeners']);
-	}
-
-	/**
-	 * Полная разрегистрация службы общего назначения
-	 *
-	 * @param   string   $alias
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function forgetSharedService($alias)
 	{
 		if (isset($this->services['shared'][$alias]))
 		{
 			unset($this->services['shared'][$alias]);
+
+			unset($this->services['output.shared.disposable'][$alias]);
+			unset($this->services['output.shared.resolvable'][$alias]);
 
 			return true;
 		}
@@ -567,215 +496,401 @@ final class Fenric
 	}
 
 	/**
-	 * Вызов службы общего назначения
+	 * Проверка существования службы фреймворка
 	 *
 	 * @param   string   $alias
-	 * @param   mixed    $params
-	 *
-	 * @access  public
-	 * @return  mixed
-	 *
-	 * @throws  RuntimeException
-	 */
-	public function callSharedService($alias, $params = null)
-	{
-		$params = (array) $params;
-
-		if (isset($this->services['shared'][$alias]['service']))
-		{
-			if (isset($this->services['shared'][$alias]['listeners']))
-			{
-				foreach ($this->services['shared'][$alias]['listeners'] as $listener)
-				{
-					call_user_func_array($listener, $params);
-				}
-			}
-
-			return call_user_func_array($this->services['shared'][$alias]['service'], $params);
-		}
-
-		throw new RuntimeException(sprintf('Shared service «%s» is not registered.', $alias));
-	}
-
-	/**
-	 * Регистрация одноразовой службы общего назначения которая при запуске запустится только единожды
-	 *
-	 * @param   string   $alias
-	 * @param   call     $callable
-	 *
-	 * @access  public
-	 * @return  void
-	 */
-	public function registerDisposableSharedService($alias, callable $callable)
-	{
-		$this->registerSharedService($alias, function() use($callable)
-		{
-			static $output;
-
-			if (empty($output))
-			{
-				$output = call_user_func_array($callable, func_get_args());
-			}
-
-			return $output;
-		});
-	}
-
-	/**
-	 * Регистрация распознаваемой службы общего назначения которая при запуске запустится только единожды
-	 *
-	 * @param   string   $alias
-	 * @param   call     $callable
-	 *
-	 * @access  public
-	 * @return  void
-	 */
-	public function registerResolvableSharedService($alias, callable $callable)
-	{
-		$this->registerSharedService($alias, function($resolver = null) use($callable)
-		{
-			static $output = [];
-
-			if (empty($output[$resolver]))
-			{
-				$output[$resolver] = call_user_func_array($callable, func_get_args());
-			}
-
-			return $output[$resolver];
-		});
-	}
-
-	/**
-	 * Автозагрузчик классов (PSR-4)
-	 *
-	 * @param   string   $class
 	 *
 	 * @access  public
 	 * @return  bool
 	 */
-	public function autoload($class)
+	public function existsSharedService($alias)
 	{
-		if (strncmp('Fenric\\', $class, 7) === 0)
+		if (isset($this->services['shared'][$alias]))
 		{
-			$logicalPath = strtr(substr($class, 7), '\\', '/');
-
-			foreach ($this->options['autoload.rules'] as $maskedPath)
-			{
-				$search = [':app/', ':system/', ':class', '/'];
-
-				$replace = [$this->path('app'), $this->path('system'), $logicalPath, DIRECTORY_SEPARATOR];
-
-				$suspected = str_replace($search, $replace, $maskedPath);
-
-				if (file_exists($suspected))
-				{
-					require_once $suspected;
-
-					return true;
-				}
-			}
+			return true;
 		}
 
 		return false;
 	}
 
 	/**
-	 * Обработчик ошибок
+	 * Вызов службы фреймворка
 	 *
-	 * @param   int      $type
-	 * @param   string   $message
-	 * @param   string   $file
-	 * @param   int      $line
+	 * @param   string   $alias
+	 * @param   array    $params
 	 *
 	 * @access  public
-	 * @return  void
+	 * @return  mixed
+	 *
+	 * @throws  RuntimeException
 	 */
-	public function handleError($type, $message, $file, $line)
+	public function callSharedService($alias, array $params = [])
 	{
-		if ($type & error_reporting())
+		if (isset($this->services['shared'][$alias]))
 		{
-			$this->callSharedService('logger')
-				->php($type, sprintf($this->options['handling.error.log.format'], $message, $file, $line));
-
-			$this->callSharedService('event', 'fenric.system.error')
-				->notifySubscribers(func_get_args());
+			return call_user_func_array($this->services['shared'][$alias], $params);
 		}
+
+		throw new RuntimeException(sprintf('Shared service «%s» is not registered.', $alias));
 	}
 
 	/**
-	 * Обработчик неперехваченных исключений
+	 * Регистрация загрузчика классов фреймворка
 	 *
-	 * @param   object   $exception
+	 * @param   callable   $classLoader
 	 *
 	 * @access  public
 	 * @return  void
 	 */
-	public function handleUncaughtException($exception)
+	public function registerClassLoader(callable $classLoader)
 	{
-		$this->callSharedService('logger')
-			->error(sprintf($this->options['handling.uncaught.exception.log.format'], $exception->getMessage(), $exception->getFile(), $exception->getLine()));
-
-		$this->callSharedService('event', 'fenric.system.uncaught.exception')
-			->notifySubscribers([$exception]);
-
-		$this->callSharedService('event', 'fenric.system.emergency')
-			->notifySubscribers([$exception->getMessage(), $exception->getFile(), $exception->getLine()]);
-	}
-
-	/**
-	 * Обработчик фатальных ошибок
-	 *
-	 * @access  public
-	 * @return  void
-	 */
-	public function handleFatalError()
-	{
-		if ($error = error_get_last())
+		$this->classLoaders[] = function() use($classLoader)
 		{
-			if ($error['type'] & $this->options['handling.fatal.error.mode'])
+			return call_user_func_array($classLoader, func_get_args());
+		};
+	}
+
+	/**
+	 * Регистрация пользовательского обработчика ошибок
+	 *
+	 * @param   callable   $handler
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function registerErrorHandler(callable $handler)
+	{
+		$this->errorHandlers[] = function() use($handler)
+		{
+			return call_user_func_array($handler, func_get_args());
+		};
+	}
+
+	/**
+	 * Регистрация пользовательского обработчика неперехваченных исключений
+	 *
+	 * @param   callable   $handler
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function registerUncaughtExceptionHandler(callable $handler)
+	{
+		$this->uncaughtExceptionHandlers[] = function() use($handler)
+		{
+			return call_user_func_array($handler, func_get_args());
+		};
+	}
+
+	/**
+	 * Регистрация пользовательского обработчика фатальных ошибок
+	 *
+	 * @param   callable   $handler
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function registerFatalErrorHandler(callable $handler)
+	{
+		$this->fatalErrorHandlers[] = function() use($handler)
+		{
+			return call_user_func_array($handler, func_get_args());
+		};
+	}
+
+	/**
+	 * Автозагрузка классов фреймворка
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function autoload()
+	{
+		spl_autoload_register(function($class)
+		{
+			if (0 === strncmp('Fenric\\', $class, 7))
 			{
-				$this->callSharedService('logger')
-					->php($error['type'], sprintf($this->options['handling.fatal.error.log.format'], $error['message'], $error['file'], $error['line']));
+				$logicalFilename = strtr(substr($class, 7), '\\', '/');
 
-				$this->callSharedService('event', 'fenric.system.fatal.error')
-					->notifySubscribers([$error]);
+				if (count($this->classLoaders) > 0)
+				{
+					foreach ($this->classLoaders as $classLoader)
+					{
+						if (call_user_func($classLoader, $logicalFilename))
+						{
+							return true;
+						}
+					}
+				}
 
-				$this->callSharedService('event', 'fenric.system.emergency')
-					->notifySubscribers([$error['message'], $error['file'], $error['line']]);
+				return false;
 			}
+
+		}, true, true);
+	}
+
+	/**
+	 * Обработка ошибок
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function handleErrors()
+	{
+		set_error_handler(function($type, $message, $file, $line)
+		{
+			if (count($this->errorHandlers) > 0)
+			{
+				foreach ($this->errorHandlers as $handler)
+				{
+					call_user_func($handler, $type, $message, $file, $line);
+				}
+			}
+		});
+	}
+
+	/**
+	 * Обработка неперехваченных исключений
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function handleUncaughtExceptions()
+	{
+		set_exception_handler(function($exception)
+		{
+			if (count($this->uncaughtExceptionHandlers) > 0)
+			{
+				foreach ($this->uncaughtExceptionHandlers as $handler)
+				{
+					call_user_func($handler, $exception, $exception->getMessage(), $exception->getFile(), $exception->getLine());
+				}
+			}
+		});
+	}
+
+	/**
+	 * Обработка фатальных ошибок
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function handleFatalErrors()
+	{
+		register_shutdown_function(function()
+		{
+			if ($error = error_get_last())
+			{
+				if ($error['type'] & E_PARSE | E_ERROR | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR)
+				{
+					if (count($this->fatalErrorHandlers) > 0)
+					{
+						foreach ($this->fatalErrorHandlers as $handler)
+						{
+							call_user_func($handler, $error['type'], $error['message'], $error['file'], $error['line']);
+						}
+					}
+				}
+			}
+		});
+	}
+
+	/**
+	 * Журналирование ошибок
+	 *
+	 * @param   string   $format
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function loggingErrors($format = '%s in file %s on line %d.')
+	{
+		$this->registerErrorHandler(function($type, $message, $file, $line) use($format)
+		{
+			$this->callSharedService('logger', ['errors'])->php($type, sprintf($format, $message, $file, $line));
+		});
+	}
+
+	/**
+	 * Журналирование неперехваченных исключений
+	 *
+	 * @param   string   $format
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function loggingUncaughtExceptions($format = 'Uncaught exception %s: %s in file %s on line %d.')
+	{
+		$this->registerUncaughtExceptionHandler(function($exception, $message, $file, $line) use($format)
+		{
+			$this->callSharedService('logger', ['errors'])->error(sprintf($format, get_class($exception), $message, $file, $line));
+		});
+	}
+
+	/**
+	 * Журналирование фатальных ошибок
+	 *
+	 * @param   string   $format
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function loggingFatalErrors($format = 'Fatal error: %s in file %s on line %d.')
+	{
+		$this->registerFatalErrorHandler(function($type, $message, $file, $line) use($format)
+		{
+			$this->callSharedService('logger', ['errors'])->php($type, sprintf($format, $message, $file, $line));
+		});
+	}
+
+	/**
+	 * Установка идентификатора приложения
+	 *
+	 * @param   string   $applicationId
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function setApplicationId($applicationId)
+	{
+		$this->applicationId = $applicationId;
+	}
+
+	/**
+	 * Получение идентификатора приложения
+	 *
+	 * @access  public
+	 * @return  string
+	 */
+	public function getApplicationId()
+	{
+		return $this->applicationId;
+	}
+
+	/**
+	 * Установка языка приложения
+	 *
+	 * @param   string   $language
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function setApplicationLanguage($language)
+	{
+		$this->callSharedService('config', ['app'])->set('language', $language);
+	}
+
+	/**
+	 * Установка запасного языка приложения
+	 *
+	 * @param   string   $language
+	 *
+	 * @access  public
+	 * @return  void
+	 */
+	public function setApplicationFallbackLanguage($language)
+	{
+		$this->callSharedService('config', ['app'])->set('language.fallback', $language);
+	}
+
+	/**
+	 * Получение языка приложения
+	 *
+	 * @param   string   $default
+	 *
+	 * @access  public
+	 * @return  string
+	 */
+	public function getApplicationLanguage($default = 'ru_RU')
+	{
+		return $this->callSharedService('config', ['app'])->get('language', $default);
+	}
+
+	/**
+	 * Получение запасного языка приложения
+	 *
+	 * @param   string   $default
+	 *
+	 * @access  public
+	 * @return  string
+	 */
+	public function getApplicationFallbackLanguage($default = 'en_US')
+	{
+		return $this->callSharedService('config', ['app'])->get('language.fallback', $default);
+	}
+
+	/**
+	 * Локализация сообщения
+	 *
+	 * @param   string   $section
+	 * @param   string   $message
+	 * @param   array    $context
+	 *
+	 * @access  public
+	 * @return  string
+	 */
+	public function t($section, $message, array $context = [])
+	{
+		if ($this->callSharedService('locale', [$section])->has($message))
+		{
+			$message = $this->callSharedService('locale', [$section])->get($message);
 		}
+
+		return $this->interpolate($message, $context);
+	}
+
+	/**
+	 * Интерполяция сообщения
+	 *
+	 * @param   string   $message
+	 * @param   array    $context
+	 *
+	 * @access  public
+	 * @return  string
+	 */
+	public function interpolate($message, array $context = [])
+	{
+		$substitutable = [];
+
+		foreach ($context as $key => $value)
+		{
+			$substitutable['{' . $key . '}'] = $value;
+		}
+
+		return strtr($message, $substitutable);
 	}
 }
 
 /**
- * Основная функция фреймворка
+ * Main function of framework
  *
- * @param   mixed    $alias
- * @param   mixed    $params
+ * @param   mixed   $alias
+ * @param   mixed   $params
  *
- * @access  public
  * @return  mixed
  */
 function fenric($alias = null, $params = null)
 {
-	static $instance;
+	static $self;
 
-	if (is_null($instance))
+	if (is_null($self))
 	{
-		$instance = new Fenric();
+		$self = new Fenric();
 	}
 
 	if (is_string($alias))
 	{
+		$params = (array) $params;
+
 		if (strpos($alias, '::') !== false)
 		{
 			list($alias, $resolver) = explode('::', $alias, 2);
 
-			return $instance->callSharedService($alias, [$resolver, $params]);
+			return $self->callSharedService($alias, [$resolver, $params]);
 		}
 
-		return $instance->callSharedService($alias, $params);
+		return $self->callSharedService($alias, $params);
 	}
 
-	return $instance;
+	return $self;
 }
