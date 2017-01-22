@@ -14,6 +14,7 @@
 use Fenric\Collection;
 use Fenric\Event;
 use Fenric\Logger;
+use Fenric\Query;
 use Fenric\Request;
 use Fenric\Response;
 use Fenric\Router;
@@ -137,7 +138,9 @@ final class Fenric
 	 */
 	public function init()
 	{
-		$this->setApplicationId(getenv('APP_ID') ?: 'default');
+		$appId = getenv('APP_ID') ?: 'default';
+
+		$this->setApplicationId($appId);
 
 		$this->registerBasePaths();
 
@@ -179,51 +182,81 @@ final class Fenric
 	 */
 	public function registerBasePaths()
 	{
+		/**
+		 * Корневая директория фреймворка
+		 */
 		$this->registerPath('.', function()
 		{
 			return dirname(__DIR__);
 		});
 
+		/**
+		 * Ресурсная директория фреймворка
+		 */
 		$this->registerPath('app', function()
 		{
 			return $this->path('.', 'app');
 		});
 
+		/**
+		 * Системная директория фреймворка
+		 */
 		$this->registerPath('system', function()
 		{
 			return $this->path('.', 'system');
 		});
 
+		/**
+		 * Публичная директория приложения
+		 */
 		$this->registerPath('public', function()
 		{
 			return $this->path('.', 'public', $this->getApplicationId());
 		});
 
+		/**
+		 * Директория с кэшем приложения
+		 */
 		$this->registerPath('cache', function()
 		{
 			return $this->path('app', 'cache', $this->getApplicationId());
 		});
 
+		/**
+		 * Директория с конфигурационными файлами приложения
+		 */
 		$this->registerPath('configs', function()
 		{
 			return $this->path('app', 'configs', $this->getApplicationId());
 		});
 
+		/**
+		 * Директория с локализационными файлами приложения
+		 */
 		$this->registerPath('locales', function()
 		{
 			return $this->path('app', 'locales', $this->getApplicationId());
 		});
 
+		/**
+		 * Директория с журналами приложения
+		 */
 		$this->registerPath('log', function()
 		{
 			return $this->path('app', 'log', $this->getApplicationId());
 		});
 
+		/**
+		 * Директория с ресурсами приложения
+		 */
 		$this->registerPath('res', function()
 		{
 			return $this->path('app', 'res', $this->getApplicationId());
 		});
 
+		/**
+		 * Директория с представлениями приложения
+		 */
 		$this->registerPath('views', function()
 		{
 			return $this->path('app', 'views', $this->getApplicationId());
@@ -238,85 +271,188 @@ final class Fenric
 	 */
 	public function registerBaseServices()
 	{
+		/**
+		 * Регистрация именованной службы фреймворка для чтения конфигурационных файлов приложения
+		 *
+		 * <code>
+		 *     // Короткое обращение к конфигурационному файлу:
+		 *     // ./app/configs/application/app.php
+		 *     fenric('config::app')->get('name');
+		 *
+		 *     // Прозрачное обращение к конфигурационному файлу:
+		 *     // ./app/configs/application/app.php
+		 *     fenric()->callSharedService('config', ['app'])->get('name');
+		 * </code>
+		 *
+		 * @param   string   $resolver
+		 *
+		 * @return  \Fenric\Collection
+		 *
+		 * @throws  \RuntimeException
+		 */
 		$this->registerResolvableSharedService('config', function($resolver = 'default')
 		{
-			if (file_exists($this->path('configs', "$resolver.local.php")))
+			if (file_exists($this->path('configs', "{$resolver}.local.php")))
 			{
-				return new Collection(include $this->path('configs', "$resolver.local.php"));
+				return new Collection(include $this->path('configs', "{$resolver}.local.php"));
 			}
 
-			if (file_exists($this->path('configs', 'test', "$resolver.php")) && $this->is('test'))
+			else if (file_exists($this->path('configs', 'test', "{$resolver}.php")) && $this->is('test'))
 			{
-				return new Collection(include $this->path('configs', 'test', "$resolver.php"));
+				return new Collection(include $this->path('configs', 'test', "{$resolver}.php"));
 			}
 
-			if (file_exists($this->path('configs', 'development', "$resolver.php")) && $this->is('development'))
+			else if (file_exists($this->path('configs', 'production', "{$resolver}.php")) && $this->is('production'))
 			{
-				return new Collection(include $this->path('configs', 'development', "$resolver.php"));
+				return new Collection(include $this->path('configs', 'production', "{$resolver}.php"));
 			}
 
-			if (file_exists($this->path('configs', 'production', "$resolver.php")) && $this->is('production'))
+			else if (file_exists($this->path('configs', 'development', "{$resolver}.php")) && $this->is('development'))
 			{
-				return new Collection(include $this->path('configs', 'production', "$resolver.php"));
+				return new Collection(include $this->path('configs', 'development', "{$resolver}.php"));
 			}
 
-			if (file_exists($this->path('configs', "$resolver.php")))
+			else if (file_exists($this->path('configs', "{$resolver}.php")))
 			{
-				return new Collection(include $this->path('configs', "$resolver.php"));
+				return new Collection(include $this->path('configs', "{$resolver}.php"));
 			}
 
 			throw new RuntimeException(sprintf('Unable to find config «%s».', $resolver));
 		});
 
+		/**
+		 * Регистрация именованной службы фреймворка для чтения локализационных файлов приложения
+		 *
+		 * @param   string   $resolver
+		 *
+		 * @return  \Fenric\Collection
+		 *
+		 * @throws  \RuntimeException
+		 */
 		$this->registerResolvableSharedService('locale', function($resolver = 'default')
 		{
-			if (file_exists($this->path('locales', $this->getApplicationLanguage(), "$resolver.php")))
+			if (file_exists($this->path('locales', $this->getApplicationLanguage(), "{$resolver}.php")))
 			{
-				return new Collection(include $this->path('locales', $this->getApplicationLanguage(), "$resolver.php"));
+				return new Collection(include $this->path('locales', $this->getApplicationLanguage(), "{$resolver}.php"));
 			}
 
-			if (file_exists($this->path('locales', $this->getApplicationFallbackLanguage(), "$resolver.php")))
+			else if (file_exists($this->path('locales', $this->getApplicationFallbackLanguage(), "{$resolver}.php")))
 			{
-				return new Collection(include $this->path('locales', $this->getApplicationFallbackLanguage(), "$resolver.php"));
+				return new Collection(include $this->path('locales', $this->getApplicationFallbackLanguage(), "{$resolver}.php"));
 			}
 
 			throw new RuntimeException(sprintf('Unable to find locale messages «%s» for languages «%s» and «%s».',
 				$resolver, $this->getApplicationLanguage(), $this->getApplicationFallbackLanguage()));
 		});
 
+		/**
+		 * Регистрация именованной службы фреймворка для работы с событиями приложения
+		 *
+		 * @param   string   $resolver
+		 *
+		 * @return  \Fenric\Event
+		 */
 		$this->registerResolvableSharedService('event', function($resolver = 'default')
 		{
 			return new Event($resolver);
 		});
 
+		/**
+		 * Регистрация именованной службы фреймворка для работы с журналами приложения
+		 *
+		 * @param   string   $resolver
+		 *
+		 * @return  \Fenric\Logger
+		 */
 		$this->registerResolvableSharedService('logger', function($resolver = 'default')
 		{
 			return new Logger($resolver);
 		});
 
+		/**
+		 * Регистрация одиночной службы фреймворка для обработки запроса клиента
+		 *
+		 * @return  \Fenric\Request
+		 */
 		$this->registerDisposableSharedService('request', function()
 		{
 			return new Request();
 		});
 
+		/**
+		 * Регистрация одиночной службы фреймворка для генерации ответа клиенту
+		 *
+		 * @return  \Fenric\Response
+		 */
 		$this->registerDisposableSharedService('response', function()
 		{
 			return new Response();
 		});
 
+		/**
+		 * Регистрация одиночной службы фреймворка для маршрутизации приложения
+		 *
+		 * @return  \Fenric\Router
+		 */
 		$this->registerDisposableSharedService('router', function()
 		{
 			return new Router();
 		});
 
+		/**
+		 * Регистрация одиночной службы фреймворка для работы с механизмом сессий
+		 *
+		 * @return  \Fenric\Session
+		 */
 		$this->registerDisposableSharedService('session', function()
 		{
 			return new Session();
 		});
 
+		/**
+		 * Регистрация службы фреймворка для работы с представлениями приложения
+		 *
+		 * @param   string   $name
+		 * @param   array    $variables
+		 *
+		 * @return  \Fenric\View
+		 */
 		$this->registerSharedService('view', function($name, array $variables = null)
 		{
 			return new View($name, $variables);
+		});
+
+		/**
+		 * Регистрация службы фреймворка для работы с конструктором запросов
+		 *
+		 * @param   string   $connection
+		 *
+		 * @return  \Fenric\Query
+		 *
+		 * @throws  \RuntimeException
+		 */
+		$this->registerSharedService('query', function($connection = 'default')
+		{
+			static $connections;
+
+			if (empty($connections[$connection]))
+			{
+				if ($this->callSharedService('config', ['database'])->has($connection))
+				{
+					$options = $this->callSharedService('config', ['database'])->get($connection);
+
+					if (isset($options['dsn'], $options['user'], $options['password']))
+					{
+						$options['parameters'][PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
+
+						$connections[$connection] = new PDO($options['dsn'], $options['user'], $options['password'], $options['parameters']);
+					}
+					else throw new RuntimeException(sprintf('Connection `%s` configured incorrectly.', $connection));
+				}
+				else throw new RuntimeException(sprintf('Connection `%s` is not configured.', $connection));
+			}
+
+			return new Query($connections[$connection]);
 		});
 	}
 
@@ -862,7 +998,7 @@ final class Fenric
 }
 
 /**
- * Main function of framework
+ * Основная функция фреймворка
  *
  * @param   mixed   $alias
  * @param   mixed   $params
@@ -893,4 +1029,31 @@ function fenric($alias = null, $params = null)
 	}
 
 	return $self;
+}
+
+/**
+ * Настройка окружения фреймворка
+ */
+switch (getenv('ENVIRONMENT'))
+{
+	case 'test' :
+		error_reporting(E_ALL);
+		ini_set('display_errors', true);
+		break;
+
+	case 'production' :
+		error_reporting(E_ALL);
+		ini_set('display_errors', false);
+		break;
+
+	case 'development' :
+		error_reporting(E_ALL);
+		ini_set('display_errors', true);
+		break;
+
+	default :
+		error_reporting(E_ALL);
+		ini_set('display_errors', true);
+		putenv('ENVIRONMENT=development');
+		break;
 }
