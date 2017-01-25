@@ -12,6 +12,7 @@
  * Import classes
  */
 use Fenric\Collection;
+use Fenric\Console;
 use Fenric\Event;
 use Fenric\Logger;
 use Fenric\Query;
@@ -30,7 +31,7 @@ final class Fenric
 	/**
 	 * Версия фреймворка
 	 */
-	const VERSION = '1.9.0-dev';
+	const VERSION = '1.9.1-dev';
 
 	/**
 	 * Зарегистрированные пути фреймворка
@@ -412,14 +413,14 @@ final class Fenric
 		/**
 		 * Регистрация службы фреймворка для работы с представлениями приложения
 		 *
-		 * @param   string   $name
+		 * @param   string   $resolver
 		 * @param   array    $variables
 		 *
 		 * @return  \Fenric\View
 		 */
-		$this->registerSharedService('view', function($name, array $variables = null)
+		$this->registerSharedService('view', function($resolver, array $variables = null)
 		{
-			return new View($name, $variables);
+			return new View($resolver, $variables);
 		});
 
 		/**
@@ -453,6 +454,16 @@ final class Fenric
 			}
 
 			return new Query($connections[$connection]);
+		});
+
+		/**
+		 * Регистрация службы фреймворка для работы с консолью
+		 *
+		 * @return  \Fenric\Console
+		 */
+		$this->is('cli') and $this->registerDisposableSharedService('console', function()
+		{
+			return new Console($this->callSharedService('request')->environment->get('argv', []));
 		});
 	}
 
