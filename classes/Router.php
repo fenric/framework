@@ -11,6 +11,11 @@
 namespace Fenric;
 
 /**
+ * Import classes
+ */
+use Closure;
+
+/**
  * Router
  */
 class Router
@@ -27,144 +32,154 @@ class Router
 	/**
 	 * Добавление маршрута соответствующего HTTP методу OPTIONS
 	 *
-	 * @param   string   $location
-	 * @param   string   $controller
+	 * @param   string    $location
+	 * @param   string    $controller
+	 * @param   Closure   $eavesdropper
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function options($location, $controller)
+	public function options($location, $controller, Closure $eavesdropper = null)
 	{
-		return $this->add(['OPTIONS'], $location, $controller);
+		return $this->add(['OPTIONS'], $location, $controller, $eavesdropper);
 	}
 
 	/**
 	 * Добавление маршрута соответствующего HTTP методу HEAD
 	 *
-	 * @param   string   $location
-	 * @param   string   $controller
+	 * @param   string    $location
+	 * @param   string    $controller
+	 * @param   Closure   $eavesdropper
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function head($location, $controller)
+	public function head($location, $controller, Closure $eavesdropper = null)
 	{
-		return $this->add(['HEAD'], $location, $controller);
+		return $this->add(['HEAD'], $location, $controller, $eavesdropper);
 	}
 
 	/**
 	 * Добавление маршрута соответствующего HTTP методу GET
 	 *
-	 * @param   string   $location
-	 * @param   string   $controller
+	 * @param   string    $location
+	 * @param   string    $controller
+	 * @param   Closure   $eavesdropper
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function get($location, $controller)
+	public function get($location, $controller, Closure $eavesdropper = null)
 	{
-		return $this->add(['GET'], $location, $controller);
+		return $this->add(['GET'], $location, $controller, $eavesdropper);
 	}
 
 	/**
 	 * Добавление маршрута соответствующего HTTP методу POST
 	 *
-	 * @param   string   $location
-	 * @param   string   $controller
+	 * @param   string    $location
+	 * @param   string    $controller
+	 * @param   Closure   $eavesdropper
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function post($location, $controller)
+	public function post($location, $controller, Closure $eavesdropper = null)
 	{
-		return $this->add(['POST'], $location, $controller);
+		return $this->add(['POST'], $location, $controller, $eavesdropper);
 	}
 
 	/**
 	 * Добавление маршрута соответствующего HTTP методу PUT
 	 *
-	 * @param   string   $location
-	 * @param   string   $controller
+	 * @param   string    $location
+	 * @param   string    $controller
+	 * @param   Closure   $eavesdropper
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function put($location, $controller)
+	public function put($location, $controller, Closure $eavesdropper = null)
 	{
-		return $this->add(['PUT'], $location, $controller);
+		return $this->add(['PUT'], $location, $controller, $eavesdropper);
 	}
 
 	/**
 	 * Добавление маршрута соответствующего HTTP методу PATCH
 	 *
-	 * @param   string   $location
-	 * @param   string   $controller
+	 * @param   string    $location
+	 * @param   string    $controller
+	 * @param   Closure   $eavesdropper
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function patch($location, $controller)
+	public function patch($location, $controller, Closure $eavesdropper = null)
 	{
-		return $this->add(['PATCH'], $location, $controller);
+		return $this->add(['PATCH'], $location, $controller, $eavesdropper);
 	}
 
 	/**
 	 * Добавление маршрута соответствующего HTTP методу DELETE
 	 *
-	 * @param   string   $location
-	 * @param   string   $controller
+	 * @param   string    $location
+	 * @param   string    $controller
+	 * @param   Closure   $eavesdropper
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function delete($location, $controller)
+	public function delete($location, $controller, Closure $eavesdropper = null)
 	{
-		return $this->add(['DELETE'], $location, $controller);
+		return $this->add(['DELETE'], $location, $controller, $eavesdropper);
 	}
 
 	/**
 	 * Добавление маршрута соответствующего безопасному HTTP методу
 	 *
-	 * @param   string   $location
-	 * @param   string   $controller
+	 * @param   string    $location
+	 * @param   string    $controller
+	 * @param   Closure   $eavesdropper
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function safe($location, $controller)
+	public function safe($location, $controller, Closure $eavesdropper = null)
 	{
-		return $this->add(['GET', 'POST'], $location, $controller);
+		return $this->add(['GET', 'POST'], $location, $controller, $eavesdropper);
 	}
 
 	/**
 	 * Добавление маршрута соответствующего любому HTTP методу
 	 *
-	 * @param   string   $location
-	 * @param   string   $controller
+	 * @param   string    $location
+	 * @param   string    $controller
+	 * @param   Closure   $eavesdropper
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function any($location, $controller)
+	public function any($location, $controller, Closure $eavesdropper = null)
 	{
 		$methods = ['OPTIONS', 'HEAD', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
-		return $this->add($methods, $location, $controller);
+		return $this->add($methods, $location, $controller, $eavesdropper);
 	}
 
 	/**
 	 * Добавление маршрута
 	 *
-	 * @param   array    $methods
-	 * @param   string   $location
-	 * @param   string   $controller
+	 * @param   array     $methods
+	 * @param   string    $location
+	 * @param   string    $controller
+	 * @param   Closure   $eavesdropper
 	 *
 	 * @access  public
 	 * @return  object
 	 */
-	public function add(array $methods, $location, $controller)
+	public function add(array $methods, $location, $controller, Closure $eavesdropper = null)
 	{
-		$this->routes[] = [$methods, $location, $controller];
+		$this->routes[] = [$methods, $location, $controller, $eavesdropper];
 
 		return $this;
 	}
@@ -183,7 +198,7 @@ class Router
 		{
 			foreach ($this->routes as $route)
 			{
-				list($methods, $location, $controller) = $route;
+				list($methods, $location, $controller, $eavesdropper) = $route;
 
 				if (in_array($request->getMethod(), $methods))
 				{
@@ -204,7 +219,7 @@ class Router
 										return strlen($value) > 0;
 									});
 
-									return ['controller' => $controller, 'parameters' => $parameters];
+									return ['controller' => $controller, 'eavesdropper' => $eavesdropper, 'parameters' => $parameters];
 								}
 							}
 						}
@@ -217,13 +232,14 @@ class Router
 	/**
 	 * Запуск маршрутизатора
 	 *
-	 * @param   object   $request
-	 * @param   object   $response
+	 * @param   object    $request
+	 * @param   object    $response
+	 * @param   Closure   $digression
 	 *
 	 * @access  public
 	 * @return  bool
 	 */
-	public function run(Request $request, Response $response)
+	public function run(Request $request, Response $response, Closure $digression = null)
 	{
 		$response->setStatus(404);
 
@@ -243,6 +259,11 @@ class Router
 
 						if ($controller->preInit())
 						{
+							if ($match['eavesdropper'] instanceof Closure)
+							{
+								$match['eavesdropper']($this, $request, $response, $controller);
+							}
+
 							$controller->init();
 							$controller->run();
 							$controller->render();
@@ -253,6 +274,13 @@ class Router
 				}
 			}
 		}
+
+		if ($digression instanceof Closure)
+		{
+			$digression($this, $request, $response);
+		}
+
+		return false;
 	}
 
 	/**
@@ -274,9 +302,7 @@ class Router
 
 		$routePath = addcslashes($routePath, '\.+?[^]${}=!|:-#');
 
-		$routePath = str_replace('*', '.*', $routePath);
-
-		$routePath = str_replace(['(', ')'], ['(?:', ')?'], $routePath);
+		$routePath = str_replace(['(', '*', ')'], ['(?:', '.*', ')?'], $routePath);
 
 		$routePath = preg_replace_callback('/<(\w+)>/', $creatingSubpatternsOfParameters, $routePath);
 
