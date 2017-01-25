@@ -132,4 +132,15 @@ class Session extends Collection
 
 		return false;
 	}
+
+	/**
+	 * Получение идентификатора сессии
+	 *
+	 * @access  public
+	 * @return  mixed
+	 */
+	public function getId()
+	{
+		return session_id() ?: null;
+	}
 }
