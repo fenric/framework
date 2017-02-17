@@ -1,9 +1,9 @@
 <?php
 /**
- * It is free open-source software released under the MIT License.
+ * It's free open-source software released under the MIT License.
  *
  * @author Anatoly Fenric <a.fenric@gmail.com>
- * @copyright Copyright (c) 2013-2016 by Fenric Laboratory
+ * @copyright Copyright (c) 2013-2017 by Fenric Laboratory
  * @license https://github.com/fenric/framework/blob/master/LICENSE.md
  * @link https://github.com/fenric/framework
  */
