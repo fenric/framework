@@ -255,4 +255,15 @@ class Request extends Collection
 	{
 		return strcmp($this->getMethod(), 'DELETE') === 0;
 	}
+
+	/**
+	 * Это AJAX запрос
+	 *
+	 * @access  public
+	 * @return  bool
+	 */
+	public function isAjax()
+	{
+		return strcasecmp($this->environment->get('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest') === 0;
+	}
 }
