@@ -264,6 +264,6 @@ class Request extends Collection
 	 */
 	public function isAjax()
 	{
-		return  strcasecmp($this->environment->get('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest') === 0;
+		return strcasecmp($this->environment->get('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest') === 0;
 	}
 }
