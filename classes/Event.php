@@ -4,8 +4,8 @@
  *
  * @author Anatoly Fenric <a.fenric@gmail.com>
  * @copyright Copyright (c) 2013-2017 by Fenric Laboratory
- * @license https://github.com/fenric/framework/blob/master/LICENSE.md
- * @link https://github.com/fenric/framework
+ * @license https://github.com/fenric/framework.core/blob/master/LICENSE.md
+ * @link https://github.com/fenric/framework.core
  */
 
 namespace Fenric;
