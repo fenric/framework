@@ -18,107 +18,48 @@ class Event
 
 	/**
 	 * Имя события
-	 *
-	 * @var     string
-	 * @access  protected
 	 */
 	protected $name;
 
 	/**
 	 * Подписчики события
-	 *
-	 * @var     array
-	 * @access  protected
 	 */
 	protected $subscribers = [];
 
 	/**
-	 * Инкрементальный идентификатор подписчиков события
-	 *
-	 * @var     int
-	 * @access  protected
-	 */
-	protected $increment = 0;
-
-	/**
 	 * Конструктор класса
-	 *
-	 * @param   string   $name
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	public function __construct($name)
+	public function __construct(string $name)
 	{
 		$this->name = $name;
 	}
 
 	/**
 	 * Получение имени события
-	 *
-	 * @access  public
-	 * @return  string
 	 */
-	public function getName()
+	public function getName() : string
 	{
 		return $this->name;
 	}
 
 	/**
 	 * Подписка на событие
-	 *
-	 * @param   callable   $subscriber
-	 * @param   int        $priority
-	 *
-	 * @access  public
-	 * @return  int
 	 */
-	public function subscribe(callable $subscriber, $priority = 0)
+	public function subscribe(callable $subscriber, int $priority = 0) : void
 	{
-		$this->subscribers[$this->increment] = [$subscriber, $priority];
-
-		return $this->increment++;
-	}
-
-	/**
-	 * Отписка от события
-	 *
-	 * @param   int   $subscriberId
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function unsubscribe($subscriberId)
-	{
-		if (isset($this->subscribers[$subscriberId]))
-		{
-			unset($this->subscribers[$subscriberId]);
-
-			return true;
-		}
-
-		return false;
+		$this->subscribers[] = [$subscriber, $priority];
 	}
 
 	/**
 	 * Запуск события
-	 *
-	 * @param   array   $params
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function run(array $params = [])
+	public function run(array $params = []) : bool
 	{
 		if (count($this->subscribers) > 0)
 		{
 			usort($this->subscribers, function($a, $b)
 			{
-				if ($a[1] > $b[1]) return 1;
-
-				else if ($a[1] < $b[1]) return -1;
-
-				else return 0;
+				return $a[1] <=> $b[1];
 			});
 
 			foreach ($this->subscribers as $subscription)
