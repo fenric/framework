@@ -18,19 +18,11 @@ class Collection
 
 	/**
 	 * Элементы коллекции
-	 *
-	 * @var     array
-	 * @access  protected
 	 */
-	protected $items = [];
+	protected $items;
 
 	/**
 	 * Конструктор класса
-	 *
-	 * @param   array   $items
-	 *
-	 * @access  public
-	 * @return  void
 	 */
 	public function __construct(array $items = [])
 	{
@@ -39,13 +31,8 @@ class Collection
 
 	/**
 	 * Добавление элемента коллекции
-	 *
-	 * @param   mixed   $item
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function add($item)
+	public function add($item) : self
 	{
 		$this->items[] = $item;
 
@@ -54,14 +41,8 @@ class Collection
 
 	/**
 	 * Установка элемента коллекции
-	 *
-	 * @param   mixed   $key
-	 * @param   mixed   $value
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function set($key, $value)
+	public function set($key, $value) : self
 	{
 		$this->items[$key] = $value;
 
@@ -70,12 +51,6 @@ class Collection
 
 	/**
 	 * Получение элемента коллекции
-	 *
-	 * @param   mixed   $key
-	 * @param   mixed   $default
-	 *
-	 * @access  public
-	 * @return  mixed
 	 */
 	public function get($key, $default = null)
 	{
@@ -89,11 +64,6 @@ class Collection
 
 	/**
 	 * Извлечение элемента коллекции
-	 *
-	 * @param   mixed   $key
-	 *
-	 * @access  public
-	 * @return  mixed
 	 */
 	public function remove($key)
 	{
@@ -109,13 +79,8 @@ class Collection
 
 	/**
 	 * Проверка существования элемента коллекции
-	 *
-	 * @param   mixed   $key
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function has($key)
+	public function has($key) : bool
 	{
 		if (array_key_exists($key, $this->items))
 		{
@@ -127,11 +92,8 @@ class Collection
 
 	/**
 	 * Очистка коллекции
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function clear()
+	public function clear() : self
 	{
 		$this->items = [];
 
@@ -140,13 +102,8 @@ class Collection
 
 	/**
 	 * Обновление коллекции
-	 *
-	 * @param   array   $items
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function update(array $items)
+	public function update(array $items) : self
 	{
 		$this->items += $items;
 
@@ -155,22 +112,16 @@ class Collection
 
 	/**
 	 * Получение всех элементов коллекции
-	 *
-	 * @access  public
-	 * @return  array
 	 */
-	public function all()
+	public function all() : array
 	{
 		return $this->items;
 	}
 
 	/**
 	 * Получение количества элементов коллекции
-	 *
-	 * @access  public
-	 * @return  int
 	 */
-	public function count()
+	public function count() : int
 	{
 		return count($this->items);
 	}
