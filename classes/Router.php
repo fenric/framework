@@ -23,143 +23,77 @@ class Router
 
 	/**
 	 * Карта маршрутов
-	 *
-	 * @var     array
-	 * @access  protected
 	 */
 	protected $routes = [];
 
 	/**
 	 * Добавление маршрута соответствующего HTTP методу OPTIONS
-	 *
-	 * @param   string    $location
-	 * @param   string    $controller
-	 * @param   Closure   $eavesdropper
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function options($location, $controller, Closure $eavesdropper = null)
+	public function options(string $location, string $controller, Closure $eavesdropper = null) : self
 	{
 		return $this->add(['OPTIONS'], $location, $controller, $eavesdropper);
 	}
 
 	/**
 	 * Добавление маршрута соответствующего HTTP методу HEAD
-	 *
-	 * @param   string    $location
-	 * @param   string    $controller
-	 * @param   Closure   $eavesdropper
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function head($location, $controller, Closure $eavesdropper = null)
+	public function head(string $location, string $controller, Closure $eavesdropper = null) : self
 	{
 		return $this->add(['HEAD'], $location, $controller, $eavesdropper);
 	}
 
 	/**
 	 * Добавление маршрута соответствующего HTTP методу GET
-	 *
-	 * @param   string    $location
-	 * @param   string    $controller
-	 * @param   Closure   $eavesdropper
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function get($location, $controller, Closure $eavesdropper = null)
+	public function get(string $location, string $controller, Closure $eavesdropper = null) : self
 	{
 		return $this->add(['GET'], $location, $controller, $eavesdropper);
 	}
 
 	/**
 	 * Добавление маршрута соответствующего HTTP методу POST
-	 *
-	 * @param   string    $location
-	 * @param   string    $controller
-	 * @param   Closure   $eavesdropper
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function post($location, $controller, Closure $eavesdropper = null)
+	public function post(string $location, string $controller, Closure $eavesdropper = null) : self
 	{
 		return $this->add(['POST'], $location, $controller, $eavesdropper);
 	}
 
 	/**
-	 * Добавление маршрута соответствующего HTTP методу PUT
-	 *
-	 * @param   string    $location
-	 * @param   string    $controller
-	 * @param   Closure   $eavesdropper
-	 *
-	 * @access  public
-	 * @return  object
-	 */
-	public function put($location, $controller, Closure $eavesdropper = null)
-	{
-		return $this->add(['PUT'], $location, $controller, $eavesdropper);
-	}
-
-	/**
 	 * Добавление маршрута соответствующего HTTP методу PATCH
-	 *
-	 * @param   string    $location
-	 * @param   string    $controller
-	 * @param   Closure   $eavesdropper
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function patch($location, $controller, Closure $eavesdropper = null)
+	public function patch(string $location, string $controller, Closure $eavesdropper = null) : self
 	{
 		return $this->add(['PATCH'], $location, $controller, $eavesdropper);
 	}
 
 	/**
 	 * Добавление маршрута соответствующего HTTP методу DELETE
-	 *
-	 * @param   string    $location
-	 * @param   string    $controller
-	 * @param   Closure   $eavesdropper
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function delete($location, $controller, Closure $eavesdropper = null)
+	public function delete(string $location, string $controller, Closure $eavesdropper = null) : self
 	{
 		return $this->add(['DELETE'], $location, $controller, $eavesdropper);
 	}
 
 	/**
-	 * Добавление маршрута соответствующего безопасному HTTP методу
-	 *
-	 * @param   string    $location
-	 * @param   string    $controller
-	 * @param   Closure   $eavesdropper
-	 *
-	 * @access  public
-	 * @return  object
+	 * Добавление маршрута соответствующего HTTP методу PUT
 	 */
-	public function safe($location, $controller, Closure $eavesdropper = null)
+	public function put(string $location, string $controller, Closure $eavesdropper = null) : self
+	{
+		return $this->add(['PUT'], $location, $controller, $eavesdropper);
+	}
+
+	/**
+	 * Добавление маршрута соответствующего безопасному HTTP методу
+	 */
+	public function safe(string $location, string $controller, Closure $eavesdropper = null) : self
 	{
 		return $this->add(['GET', 'POST'], $location, $controller, $eavesdropper);
 	}
 
 	/**
 	 * Добавление маршрута соответствующего любому HTTP методу
-	 *
-	 * @param   string    $location
-	 * @param   string    $controller
-	 * @param   Closure   $eavesdropper
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function any($location, $controller, Closure $eavesdropper = null)
+	public function any(string $location, string $controller, Closure $eavesdropper = null) : self
 	{
 		$methods = ['OPTIONS', 'HEAD', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
@@ -168,16 +102,8 @@ class Router
 
 	/**
 	 * Добавление маршрута
-	 *
-	 * @param   array     $methods
-	 * @param   string    $location
-	 * @param   string    $controller
-	 * @param   Closure   $eavesdropper
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function add(array $methods, $location, $controller, Closure $eavesdropper = null)
+	public function add(array $methods, string $location, string $controller, Closure $eavesdropper = null) : self
 	{
 		$this->routes[] = [$methods, $location, $controller, $eavesdropper];
 
@@ -186,11 +112,6 @@ class Router
 
 	/**
 	 * Определение маршрута соответствующего текущему HTTP запросу
-	 *
-	 * @param   object   $request
-	 *
-	 * @access  public
-	 * @return  mixed
 	 */
 	public function match(Request $request)
 	{
@@ -214,7 +135,7 @@ class Router
 
 								if (preg_match($expression, $request->getPath(), $parameters))
 								{
-									$parameters = array_filter($parameters, function($value)
+									$parameters = array_filter($parameters, function($value) : bool
 									{
 										return strlen($value) > 0;
 									});
@@ -231,15 +152,8 @@ class Router
 
 	/**
 	 * Запуск маршрутизатора
-	 *
-	 * @param   object    $request
-	 * @param   object    $response
-	 * @param   Closure   $digression
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function run(Request $request, Response $response, Closure $digression = null)
+	public function run(Request $request, Response $response, Closure $digression = null) : bool
 	{
 		$response->setStatus(404);
 
@@ -285,17 +199,12 @@ class Router
 
 	/**
 	 * Преобразование пути маршрута в регулярное выражение
-	 *
-	 * @param   string   $routePath
-	 *
-	 * @access  protected
-	 * @return  string
 	 */
-	protected function convertRoutePathToRegularExpression($routePath)
+	protected function convertRoutePathToRegularExpression(string $routePath) : string
 	{
 		$extractedExpressions = $this->extractRegularExpressionsFromRoutePathParameters($routePath);
 
-		$creatingSubpatternsOfParameters = function($match) use($extractedExpressions)
+		$creatingSubpatternsOfParameters = function($match) use($extractedExpressions) : string
 		{
 			return '(?<' . $match[1] . '>' . $extractedExpressions[$match[1]] . ')';
 		};
@@ -311,13 +220,8 @@ class Router
 
 	/**
 	 * Извлечение регулярных выражений из параметров пути маршрута
-	 *
-	 * @param   string   $routePath
-	 *
-	 * @access  protected
-	 * @return  array
 	 */
-	protected function extractRegularExpressionsFromRoutePathParameters(& $routePath)
+	protected function extractRegularExpressionsFromRoutePathParameters(string & $routePath) : array
 	{
 		$extractedExpressions = [];
 
@@ -329,7 +233,7 @@ class Router
 
 			foreach ($matches as $match)
 			{
-				$extractedExpressions[$match[1]] = isset($match[2]) ? $match[2] : '[^/]+';
+				$extractedExpressions[$match[1]] = $match[2] ?? '[^/]+';
 			}
 		}
 
