@@ -23,13 +23,8 @@ class Session extends Collection
 
 	/**
 	 * Запуск сессии
-	 *
-	 * @param   object   $handler
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function start(SessionHandlerInterface $handler)
+	public function start(SessionHandlerInterface $handler) : bool
 	{
 		if ($this->isReady())
 		{
@@ -49,11 +44,8 @@ class Session extends Collection
 
 	/**
 	 * Перезапуск сессии
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function restart()
+	public function restart() : bool
 	{
 		if ($this->isStarted())
 		{
@@ -68,11 +60,8 @@ class Session extends Collection
 
 	/**
 	 * Разрушение сессии
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function destroy()
+	public function destroy() : bool
 	{
 		if ($this->isStarted())
 		{
@@ -87,11 +76,8 @@ class Session extends Collection
 
 	/**
 	 * Закрытие сессии
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	public function close()
+	public function close() : void
 	{
 		if ($this->isStarted())
 		{
@@ -103,11 +89,8 @@ class Session extends Collection
 
 	/**
 	 * Готов ли механизм сессий к запуску
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function isReady()
+	public function isReady() : bool
 	{
 		if (session_status() === PHP_SESSION_NONE)
 		{
@@ -119,11 +102,8 @@ class Session extends Collection
 
 	/**
 	 * Запущен ли механизм сессий
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function isStarted()
+	public function isStarted() : bool
 	{
 		if (session_status() === PHP_SESSION_ACTIVE)
 		{
@@ -135,9 +115,6 @@ class Session extends Collection
 
 	/**
 	 * Получение идентификатора сессии
-	 *
-	 * @access  public
-	 * @return  mixed
 	 */
 	public function getId()
 	{
