@@ -43,33 +43,22 @@ class Logger
 
 	/**
 	 * Имя журнала
-	 *
-	 * @var     string
-	 * @access  protected
 	 */
 	protected $name;
 
 	/**
 	 * Сообщения журнала
-	 *
-	 * @var     array
-	 * @access  protected
 	 */
 	protected $messages = [];
 
 	/**
 	 * Конструктор класса
-	 *
-	 * @param   string   $name
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	public function __construct($name)
+	public function __construct(string $name)
 	{
 		$this->name = $name;
 
-		register_shutdown_function(function()
+		register_shutdown_function(function() : void
 		{
 			$this->save();
 		});
@@ -77,37 +66,24 @@ class Logger
 
 	/**
 	 * Получение имени журнала
-	 *
-	 * @access  public
-	 * @return  string
 	 */
-	public function getName()
+	public function getName() : string
 	{
 		return $this->name;
 	}
 
 	/**
 	 * Получение файла журнала
-	 *
-	 * @access  public
-	 * @return  string
 	 */
-	public function getFile()
+	public function getFile() : string
 	{
 		return fenric()->path('log', date('Y'), date('m'), date('d'), $this->getName() . '.log');
 	}
 
 	/**
 	 * Добавление сообщения в журнал
-	 *
-	 * @param   string   $type
-	 * @param   string   $message
-	 * @param   array    $context
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	public function add($type, $message, array $context = [])
+	public function add(string $type, string $message, array $context = []) : void
 	{
 		$message = fenric()->interpolate($message, $context);
 
@@ -116,158 +92,72 @@ class Logger
 
 	/**
 	 * Добавление в журнал сообщения сгенерированного с целью информирования
-	 *
-	 * @param   string   $message
-	 * @param   array    $context
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	public function info($message, array $context = [])
+	public function info(string $message, array $context = []) : void
 	{
 		$this->add(self::INFO, $message, $context);
 	}
 
 	/**
 	 * Добавление в журнал сообщения сгенерированного при возникновении ошибки высокого уровня
-	 *
-	 * @param   string   $message
-	 * @param   array    $context
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	public function error($message, array $context = [])
+	public function error(string $message, array $context = []) : void
 	{
 		$this->add(self::ERROR, $message, $context);
 	}
 
 	/**
 	 * Добавление в журнал сообщения сгенерированного при возникновении ошибки среднего уровня
-	 *
-	 * @param   string   $message
-	 * @param   array    $context
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	public function warning($message, array $context = [])
+	public function warning(string $message, array $context = []) : void
 	{
 		$this->add(self::WARNING, $message, $context);
 	}
 
 	/**
 	 * Добавление в журнал сообщения сгенерированного при возникновении ошибки низкого уровня
-	 *
-	 * @param   string   $message
-	 * @param   array    $context
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	public function notice($message, array $context = [])
+	public function notice(string $message, array $context = []) : void
 	{
 		$this->add(self::NOTICE, $message, $context);
 	}
 
 	/**
 	 * Добавление в журнал сообщения сгенерированного в процессе отладки
-	 *
-	 * @param   string   $message
-	 * @param   array    $context
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	public function debug($message, array $context = [])
+	public function debug(string $message, array $context = []) : void
 	{
 		$this->add(self::DEBUG, $message, $context);
 	}
 
 	/**
-	 * Добавление в журнал сообщения сгенерированного PHP
-	 *
-	 * @param   int      $type
-	 * @param   string   $message
-	 *
-	 * @access  public
-	 * @return  void
-	 *
-	 * @see     http://php.net/manual/ru/errorfunc.constants.php
-	 */
-	public function php($type, $message)
-	{
-		switch ($type)
-		{
-			case E_ERROR :
-			case E_PARSE :
-			case E_CORE_ERROR :
-			case E_COMPILE_ERROR :
-			case E_USER_ERROR :
-			case E_RECOVERABLE_ERROR :
-				$this->error($message);
-				break;
-
-			case E_WARNING :
-			case E_CORE_WARNING :
-			case E_COMPILE_WARNING :
-			case E_USER_WARNING :
-				$this->warning($message);
-				break;
-
-			case E_NOTICE :
-			case E_USER_NOTICE :
-				$this->notice($message);
-				break;
-
-			case E_STRICT :
-			case E_DEPRECATED :
-			case E_USER_DEPRECATED :
-				$this->debug($message);
-				break;
-		}
-	}
-
-	/**
 	 * Очистка журнала
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	public function clear()
+	public function clear() : void
 	{
 		$this->messages = [];
 	}
 
 	/**
 	 * Получение всех сообщений журнала
-	 *
-	 * @access  public
-	 * @return  array
 	 */
-	public function all()
+	public function all() : array
 	{
 		return $this->messages;
 	}
 
 	/**
 	 * Получение количества сообщений журнала
-	 *
-	 * @access  public
-	 * @return  int
 	 */
-	public function count()
+	public function count() : int
 	{
 		return count($this->messages);
 	}
 
 	/**
 	 * Сохранение журнала
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	public function save()
+	public function save() : void
 	{
 		if ($this->count() > 0)
 		{
@@ -281,7 +171,9 @@ class Logger
 				{
 					foreach ($this->all() as $row)
 					{
-						fwrite($handle, sprintf('[%s] [%s] %s', date('Y-m-d H:i:s', $row[2]), $row[0], $row[1]) . PHP_EOL);
+						$datetime = date('Y-m-d H:i:s', $row[2]);
+
+						fwrite($handle, sprintf('[%s] [%s] %s', $datetime, $row[0], $row[1]) . PHP_EOL);
 					}
 
 					fclose($handle);
