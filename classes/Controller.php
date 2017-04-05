@@ -18,117 +18,77 @@ abstract class Controller
 
 	/**
 	 * Экземпляр маршрутизатора инициализировавшего контроллер
-	 *
-	 * @var     object
-	 * @access  protected
 	 */
 	protected $router;
 
 	/**
 	 * Экземпляр HTTP объекта для обработки запросов клиента
-	 *
-	 * @var     object
-	 * @access  protected
 	 */
 	protected $request;
 
 	/**
 	 * Экземпляр HTTP объекта для генерации ответа клиенту
-	 *
-	 * @var     object
-	 * @access  protected
 	 */
 	protected $response;
 
 	/**
 	 * Конструктор класса
-	 *
-	 * @param   object   $router
-	 * @param   object   $request
-	 * @param   object   $response
-	 *
-	 * @access  public
-	 * @return  void
 	 */
 	final public function __construct(Router $router, Request $request, Response $response)
 	{
-		// Сохранение экземпляра маршрутизатора инициализировавшего контроллер
 		$this->router = $router;
 
-		// Сохранение экземпляра HTTP объекта для обработки запросов клиента
 		$this->request = $request;
 
-		// Сохранение экземпляра HTTP объекта для генерации ответа клиенту
 		$this->response = $response;
 	}
 
 	/**
 	 * Получение экземпляра маршрутизатора инициализировавшего контроллер
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	final public function getRouter()
+	final public function getRouter() : Router
 	{
 		return $this->router;
 	}
 
 	/**
 	 * Получение экземпляра HTTP объекта для обработки запросов клиента
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	final public function getRequest()
+	final public function getRequest() : Request
 	{
 		return $this->request;
 	}
 
 	/**
 	 * Получение экземпляра HTTP объекта для генерации ответа клиенту
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	final public function getResponse()
+	final public function getResponse() : Response
 	{
 		return $this->response;
 	}
 
 	/**
 	 * Предварительная инициализация контроллера
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function preInit()
+	public function preInit() : bool
 	{
 		return true;
 	}
 
 	/**
 	 * Инициализация контроллера
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	public function init()
+	public function init() : void
 	{}
 
 	/**
 	 * Запуск контроллера
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	public function run()
+	public function run() : void
 	{}
 
 	/**
 	 * Рендеринг контроллера
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	abstract public function render();
+	abstract public function render() : void;
 }
