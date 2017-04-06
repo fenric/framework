@@ -19,27 +19,27 @@ class Logger
 	/**
 	 * Сообщение генерируемое с целью информирования
 	 */
-	const INFO = 'info';
+	public const INFO = 'info';
 
 	/**
 	 * Сообщение генерируемое при возникновении ошибки высокого уровня
 	 */
-	const ERROR = 'error';
+	public const ERROR = 'error';
 
 	/**
 	 * Сообщение генерируемое при возникновении ошибки среднего уровня
 	 */
-	const WARNING = 'warning';
+	public const WARNING = 'warning';
 
 	/**
 	 * Сообщение генерируемое при возникновении ошибки низкого уровня
 	 */
-	const NOTICE = 'notice';
+	public const NOTICE = 'notice';
 
 	/**
 	 * Сообщение генерируемое в процессе отладки
 	 */
-	const DEBUG = 'debug';
+	public const DEBUG = 'debug';
 
 	/**
 	 * Имя журнала
