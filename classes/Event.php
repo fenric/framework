@@ -45,9 +45,9 @@ class Event
 	/**
 	 * Подписка на событие
 	 */
-	public function subscribe(callable $subscriber, int $priority = 0) : void
+	public function subscribe(callable $subscriber) : void
 	{
-		$this->subscribers[] = [$subscriber, $priority];
+		$this->subscribers[] = $subscriber;
 	}
 
 	/**
@@ -57,15 +57,8 @@ class Event
 	{
 		if (count($this->subscribers) > 0)
 		{
-			usort($this->subscribers, function($a, $b)
+			foreach ($this->subscribers as $subscriber)
 			{
-				return $a[1] <=> $b[1];
-			});
-
-			foreach ($this->subscribers as $subscription)
-			{
-				list($subscriber, $priority) = $subscription;
-
 				if (false === call_user_func_array($subscriber, $params))
 				{
 					return false;
