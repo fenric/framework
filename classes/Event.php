@@ -11,6 +11,11 @@
 namespace Fenric;
 
 /**
+ * Import classes
+ */
+use Closure;
+
+/**
  * Event
  */
 class Event
@@ -45,7 +50,7 @@ class Event
 	/**
 	 * Подписка на событие
 	 */
-	public function subscribe(callable $subscriber) : void
+	public function subscribe(Closure $subscriber) : void
 	{
 		$this->subscribers[] = $subscriber;
 	}
@@ -59,7 +64,7 @@ class Event
 		{
 			foreach ($this->subscribers as $subscriber)
 			{
-				if (false === call_user_func_array($subscriber, $params))
+				if ($subscriber(...$params) === false)
 				{
 					return false;
 				}
