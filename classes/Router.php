@@ -179,7 +179,6 @@ class Router
 							}
 
 							$controller->init();
-							$controller->run();
 							$controller->render();
 
 							return true;
