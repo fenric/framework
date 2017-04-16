@@ -17,58 +17,12 @@ class Request extends Collection
 {
 
 	/**
-	 * {description}
-	 *
-	 * @var     object
-	 * @access  public
+	 * Коллекции данных
 	 */
-	public $query;
-
-	/**
-	 * {description}
-	 *
-	 * @var     object
-	 * @access  public
-	 */
-	public $post;
-
-	/**
-	 * {description}
-	 *
-	 * @var     object
-	 * @access  public
-	 */
-	public $files;
-
-	/**
-	 * {description}
-	 *
-	 * @var     object
-	 * @access  public
-	 */
-	public $cookies;
-
-	/**
-	 * {description}
-	 *
-	 * @var     object
-	 * @access  public
-	 */
-	public $environment;
-
-	/**
-	 * {description}
-	 *
-	 * @var     object
-	 * @access  public
-	 */
-	public $parameters;
+	public $query, $post, $files, $cookies, $environment, $parameters;
 
 	/**
 	 * Конструктор класса
-	 *
-	 * @access  public
-	 * @return  void
 	 */
 	public function __construct()
 	{
@@ -82,16 +36,13 @@ class Request extends Collection
 
 		$this->cookies = new Collection($_COOKIE);
 
-		$this->environment = new Collection($_SERVER);
+		$this->environment = new Collection($_SERVER + $_ENV);
 
 		$this->parameters = new Collection();
 	}
 
 	/**
 	 * Получение тела запроса
-	 *
-	 * @access  public
-	 * @return  string
 	 */
 	public function getBody()
 	{
@@ -100,9 +51,6 @@ class Request extends Collection
 
 	/**
 	 * Получение родительской директории
-	 *
-	 * @access  public
-	 * @return  string
 	 */
 	public function getRoot()
 	{
@@ -114,10 +62,15 @@ class Request extends Collection
 	}
 
 	/**
+	 * Получение запрошенного URI
+	 */
+	public function getURI()
+	{
+		return urldecode($this->environment->get('REQUEST_URI'));
+	}
+
+	/**
 	 * Получение запрошенного хоста
-	 *
-	 * @access  public
-	 * @return  string
 	 */
 	public function getHost()
 	{
@@ -126,9 +79,6 @@ class Request extends Collection
 
 	/**
 	 * Получение запрошенного порта
-	 *
-	 * @access  public
-	 * @return  int
 	 */
 	public function getPort()
 	{
@@ -136,21 +86,7 @@ class Request extends Collection
 	}
 
 	/**
-	 * Получение запрошенного URI
-	 *
-	 * @access  public
-	 * @return  string
-	 */
-	public function getURI()
-	{
-		return urldecode($this->environment->get('REQUEST_URI'));
-	}
-
-	/**
 	 * Получение запрошенного пути
-	 *
-	 * @access  public
-	 * @return  string
 	 */
 	public function getPath()
 	{
@@ -159,9 +95,6 @@ class Request extends Collection
 
 	/**
 	 * Получение запрошенных параметров
-	 *
-	 * @access  public
-	 * @return  string
 	 */
 	public function getQuery()
 	{
@@ -170,100 +103,73 @@ class Request extends Collection
 
 	/**
 	 * Получение HTTP метода
-	 *
-	 * @access  public
-	 * @return  string
 	 */
 	public function getMethod()
 	{
-		return strtoupper($this->environment->get('REQUEST_METHOD'));
+		return $this->environment->get('REQUEST_METHOD');
 	}
 
 	/**
 	 * Это OPTIONS запрос
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function isOptions()
+	public function isOptions() : bool
 	{
 		return strcmp($this->getMethod(), 'OPTIONS') === 0;
 	}
 
 	/**
 	 * Это HEAD запрос
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function isHead()
+	public function isHead() : bool
 	{
 		return strcmp($this->getMethod(), 'HEAD') === 0;
 	}
 
 	/**
 	 * Это GET запрос
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function isGet()
+	public function isGet() : bool
 	{
 		return strcmp($this->getMethod(), 'GET') === 0;
 	}
 
 	/**
 	 * Это POST запрос
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function isPost()
+	public function isPost() : bool
 	{
 		return strcmp($this->getMethod(), 'POST') === 0;
 	}
 
 	/**
-	 * Это PUT запрос
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function isPut()
-	{
-		return strcmp($this->getMethod(), 'PUT') === 0;
-	}
-
-	/**
 	 * Это PATCH запрос
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function isPatch()
+	public function isPatch() : bool
 	{
 		return strcmp($this->getMethod(), 'PATCH') === 0;
 	}
 
 	/**
 	 * Это DELETE запрос
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function isDelete()
+	public function isDelete() : bool
 	{
 		return strcmp($this->getMethod(), 'DELETE') === 0;
 	}
 
 	/**
-	 * Это AJAX запрос
-	 *
-	 * @access  public
-	 * @return  bool
+	 * Это PUT запрос
 	 */
-	public function isAjax()
+	public function isPut() : bool
 	{
-		return strcasecmp($this->environment->get('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest') === 0;
+		return strcmp($this->getMethod(), 'PUT') === 0;
+	}
+
+	/**
+	 * Это Ajax запрос
+	 */
+	public function isAjax() : bool
+	{
+		return strcmp($this->environment->get('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest') === 0;
 	}
 }
