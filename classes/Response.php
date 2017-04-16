@@ -18,37 +18,23 @@ class Response
 
 	/**
 	 * Статус ответа
-	 *
-	 * @var	    int
-	 * @access  protected
 	 */
 	protected $status = 200;
 
 	/**
 	 * Заголовки ответа
-	 *
-	 * @var	    array
-	 * @access  protected
 	 */
 	protected $headers = [];
 
 	/**
 	 * Тело ответа
-	 *
-	 * @var	    string
-	 * @access  protected
 	 */
-	protected $content = null;
+	protected $content = '';
 
 	/**
 	 * Установка статуса ответа
-	 *
-	 * @param   int   $status
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function setStatus($status)
+	public function setStatus(int $status) : self
 	{
 		$this->status = $status;
 
@@ -57,24 +43,16 @@ class Response
 
 	/**
 	 * Получение статуса ответа
-	 *
-	 * @access  public
-	 * @return  int
 	 */
-	public function getStatus()
+	public function getStatus() : int
 	{
 		return $this->status;
 	}
 
 	/**
 	 * Установка заголовка ответа
-	 *
-	 * @param   string   $header
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function setHeader($header)
+	public function setHeader(string $header) : self
 	{
 		$this->headers[] = $header;
 
@@ -83,24 +61,16 @@ class Response
 
 	/**
 	 * Получение заголовков ответа
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function getHeaders()
+	public function getHeaders() : array
 	{
 		return $this->headers;
 	}
 
 	/**
 	 * Установка тела ответа
-	 *
-	 * @param   string   $content
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function setContent($content)
+	public function setContent(string $content) : self
 	{
 		$this->content = $content;
 
@@ -109,17 +79,10 @@ class Response
 
 	/**
 	 * Установка тела ответа в виде JSON данных
-	 *
-	 * @param   mixed   $data
-	 * @param   int     $options
-	 * @param   int     $depth
-	 *
-	 * @access  public
-	 * @return  object
 	 */
-	public function setJsonContent($data, $options = 0, $depth = 512)
+	public function setJsonContent($data, int $options = 0, int $depth = 512, string $charset = 'UTF-8') : self
 	{
-		$this->setHeader('Content-Type: application/json; charset=UTF-8');
+		$this->setHeader(sprintf('Content-Type: application/json; charset=%s', $charset));
 
 		$this->setContent(json_encode($data, $options, $depth));
 
@@ -128,30 +91,44 @@ class Response
 
 	/**
 	 * Получение тела ответа
-	 *
-	 * @access  public
-	 * @return  string
 	 */
-	public function getContent()
+	public function getContent() : string
 	{
 		return $this->content;
 	}
 
 	/**
 	 * Отправка ответа
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	public function send()
+	public function send() : void
 	{
-		http_response_code($this->getStatus());
-
-		foreach ($this->getHeaders() as $header)
+		if (fenric('event::http.response.before.send')->run([$this]))
 		{
-			header($header, true);
-		}
+			if (fenric('event::http.response.before.send.status')->run([$this]))
+			{
+				http_response_code($this->getStatus());
+			}
 
-		echo $this->getContent();
+			if (fenric('event::http.response.before.send.headers')->run([$this]))
+			{
+				foreach ($this->getHeaders() as $header)
+				{
+					header($header, true, $this->getStatus());
+				}
+			}
+
+			if (fenric('event::http.response.before.send.content')->run([$this]))
+			{
+				echo $this->getContent();
+			}
+
+			if (fenric('event::http.response.after.send')->run([$this]))
+			{
+				if (function_exists('fastcgi_finish_request'))
+				{
+					fastcgi_finish_request();
+				}
+			}
+		}
 	}
 }
