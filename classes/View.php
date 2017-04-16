@@ -18,46 +18,28 @@ class View
 
 	/**
 	 * Имя представления
-	 *
-	 * @var     string
-	 * @access  protected
 	 */
 	protected $name;
 
 	/**
 	 * Переменные представления
-	 *
-	 * @var     array
-	 * @access  protected
 	 */
 	protected $variables;
 
 	/**
 	 * Участки представления
-	 *
-	 * @var     array
-	 * @access  protected
 	 */
 	protected $sections;
 
 	/**
 	 * Макет представления
-	 *
-	 * @var     object
-	 * @access  protected
 	 */
 	protected $layout;
 
 	/**
 	 * Конструктор класса
-	 *
-	 * @param   string   $name
-	 * @param   array    $variables
-	 *
-	 * @access  public
-	 * @return  void
 	 */
-	public function __construct($name, array $variables = null)
+	public function __construct(string $name, array $variables = [])
 	{
 		$this->name = $name;
 
@@ -66,51 +48,38 @@ class View
 
 	/**
 	 * Получение имени представления
-	 *
-	 * @access  public
-	 * @return  string
 	 */
-	public function getName()
+	public function getName() : string
 	{
 		return $this->name;
 	}
 
 	/**
 	 * Получение файла представления
-	 *
-	 * @access  public
-	 * @return  string
 	 */
-	public function getFile()
+	public function getFile() : string
 	{
 		return fenric()->path('views', $this->getName() . '.phtml');
 	}
 
 	/**
 	 * Проверка существования представления
-	 *
-	 * @access  public
-	 * @return  bool
 	 */
-	public function exists()
+	public function exists() : bool
 	{
 		return file_exists($this->getFile());
 	}
 
 	/**
 	 * Рендеринг представления
-	 *
-	 * @access  public
-	 * @return  mixed
 	 */
-	public function render()
+	public function render() : string
 	{
+		$content = '';
+
 		if ($this->exists())
 		{
-			if (isset($this->variables))
-			{
-				extract($this->variables);
-			}
+			extract($this->variables);
 
 			ob_start();
 
@@ -126,47 +95,23 @@ class View
 
 				$content = $this->layout->render();
 			}
-
-			return $content;
 		}
-	}
 
-	/**
-	 * Отложенный рендеринг представления при преобразования объекта в строку
-	 *
-	 * @access  public
-	 * @return  string
-	 */
-	public function __toString()
-	{
-		return (string) $this->render();
+		return $content;
 	}
 
 	/**
 	 * Получение содержимого участка представления
-	 *
-	 * @param   string   $sectionId
-	 *
-	 * @access  protected
-	 * @return  mixed
 	 */
-	protected function section($sectionId)
+	protected function section(string $sectionId) : ?string
 	{
-		if (isset($this->sections[$sectionId]))
-		{
-			return $this->sections[$sectionId];
-		}
+		return $this->sections[$sectionId] ?? null;
 	}
 
 	/**
-	 * Начало записи содержимого участка представления
-	 *
-	 * @param   string   $sectionId
-	 *
-	 * @access  protected
-	 * @return  void
+	 * Запись содержимого участка представления
 	 */
-	protected function start($sectionId)
+	protected function start(string $sectionId) : void
 	{
 		ob_start();
 
@@ -174,12 +119,9 @@ class View
 	}
 
 	/**
-	 * Остановка записи и сохранение содержимого участка представления
-	 *
-	 * @access  protected
-	 * @return  void
+	 * Сохранение содержимого участка представления
 	 */
-	protected function stop()
+	protected function stop() : void
 	{
 		end($this->sections);
 
@@ -190,69 +132,17 @@ class View
 
 	/**
 	 * Наследование макета представления
-	 *
-	 * @param   string   $name
-	 * @param   array    $variables
-	 *
-	 * @access  protected
-	 * @return  void
 	 */
-	protected function layout($name, array $variables = null)
+	protected function layout(string $name, array $variables = []) : void
 	{
-		$this->layout = $this->make($name, $variables);
+		$this->layout = new self($name, $variables);
 	}
 
 	/**
-	 * Получение отрендеренного представления как фрагмент текущего
-	 *
-	 * @param   string   $name
-	 * @param   array    $variables
-	 *
-	 * @access  protected
-	 * @return  string
+	 * Получение отрендеренного представления
 	 */
-	protected function partial($name, array $variables = null)
+	protected function partial(string $name, array $variables = []) : string
 	{
-		return $this->make($name, $variables)->render();
-	}
-
-	/**
-	 * Создание нового представления
-	 *
-	 * @param   string   $name
-	 * @param   array    $variables
-	 *
-	 * @access  protected
-	 * @return  object
-	 */
-	protected function make($name, array $variables = null)
-	{
-		return new self($name, $variables);
-	}
-
-	/**
-	 * Экранирование строки
-	 *
-	 * @param   string   $escapable
-	 *
-	 * @access  protected
-	 * @return  string
-	 */
-	protected function escape($escapable)
-	{
-		return htmlspecialchars($escapable, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-	}
-
-	/**
-	 * Короткий способ экранирования строки
-	 *
-	 * @param   string   $escapable
-	 *
-	 * @access  protected
-	 * @return  string
-	 */
-	protected function e($escapable)
-	{
-		return $this->escape($escapable);
+		return (new self($name, $variables))->render();
 	}
 }
