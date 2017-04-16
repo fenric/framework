@@ -30,19 +30,9 @@ class Collection
 	}
 
 	/**
-	 * Добавление элемента коллекции
-	 */
-	public function add($item) : self
-	{
-		$this->items[] = $item;
-
-		return $this;
-	}
-
-	/**
 	 * Установка элемента коллекции
 	 */
-	public function set($key, $value) : self
+	public function set(string $key, $value) : self
 	{
 		$this->items[$key] = $value;
 
@@ -52,7 +42,7 @@ class Collection
 	/**
 	 * Получение элемента коллекции
 	 */
-	public function get($key, $default = null)
+	public function get(string $key, $default = null)
 	{
 		if (array_key_exists($key, $this->items))
 		{
@@ -65,7 +55,7 @@ class Collection
 	/**
 	 * Извлечение элемента коллекции
 	 */
-	public function remove($key)
+	public function remove(string $key)
 	{
 		if (array_key_exists($key, $this->items))
 		{
@@ -78,9 +68,9 @@ class Collection
 	}
 
 	/**
-	 * Проверка существования элемента коллекции
+	 * Существование элемента коллекции
 	 */
-	public function has($key) : bool
+	public function exists(string $key) : bool
 	{
 		if (array_key_exists($key, $this->items))
 		{
