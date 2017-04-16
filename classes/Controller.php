@@ -82,12 +82,6 @@ abstract class Controller
 	{}
 
 	/**
-	 * Запуск контроллера
-	 */
-	public function run() : void
-	{}
-
-	/**
 	 * Рендеринг контроллера
 	 */
 	abstract public function render() : void;
