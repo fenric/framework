@@ -60,7 +60,12 @@ class Logger
 
 		register_shutdown_function(function() : void
 		{
-			$this->save();
+			if (fenric('event::logger.before.save')->run([$this]))
+			{
+				$this->save();
+
+				fenric('event::logger.after.save')->run([$this]);
+			}
 		});
 	}
 
@@ -83,59 +88,63 @@ class Logger
 	/**
 	 * Добавление сообщения в журнал
 	 */
-	public function add(string $type, string $message, array $context = []) : void
+	public function add(string $type, string $message, array $context = []) : self
 	{
 		$message = fenric()->interpolate($message, $context);
 
 		$this->messages[] = [$type, $message, microtime(true)];
+
+		return $this;
 	}
 
 	/**
 	 * Добавление в журнал сообщения сгенерированного с целью информирования
 	 */
-	public function info(string $message, array $context = []) : void
+	public function info(string $message, array $context = []) : self
 	{
-		$this->add(self::INFO, $message, $context);
+		return $this->add(self::INFO, $message, $context);
 	}
 
 	/**
 	 * Добавление в журнал сообщения сгенерированного при возникновении ошибки высокого уровня
 	 */
-	public function error(string $message, array $context = []) : void
+	public function error(string $message, array $context = []) : self
 	{
-		$this->add(self::ERROR, $message, $context);
+		return $this->add(self::ERROR, $message, $context);
 	}
 
 	/**
 	 * Добавление в журнал сообщения сгенерированного при возникновении ошибки среднего уровня
 	 */
-	public function warning(string $message, array $context = []) : void
+	public function warning(string $message, array $context = []) : self
 	{
-		$this->add(self::WARNING, $message, $context);
+		return $this->add(self::WARNING, $message, $context);
 	}
 
 	/**
 	 * Добавление в журнал сообщения сгенерированного при возникновении ошибки низкого уровня
 	 */
-	public function notice(string $message, array $context = []) : void
+	public function notice(string $message, array $context = []) : self
 	{
-		$this->add(self::NOTICE, $message, $context);
+		return $this->add(self::NOTICE, $message, $context);
 	}
 
 	/**
 	 * Добавление в журнал сообщения сгенерированного в процессе отладки
 	 */
-	public function debug(string $message, array $context = []) : void
+	public function debug(string $message, array $context = []) : self
 	{
-		$this->add(self::DEBUG, $message, $context);
+		return $this->add(self::DEBUG, $message, $context);
 	}
 
 	/**
 	 * Очистка журнала
 	 */
-	public function clear() : void
+	public function clear() : self
 	{
 		$this->messages = [];
+
+		return $this;
 	}
 
 	/**
