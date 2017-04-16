@@ -26,15 +26,30 @@ class Session extends Collection
 	 */
 	public function start(SessionHandlerInterface $handler) : bool
 	{
-		if ($this->isReady())
+		if (fenric('event::session.before.start')->run([$this, & $handler]))
 		{
-			if (session_set_save_handler($handler, false))
+			if ($this->isReady())
 			{
-				if (session_start())
+				if (session_set_save_handler($handler, false))
 				{
-					$this->update($_SESSION);
+					if (session_start())
+					{
+						$this->update($_SESSION);
 
-					return true;
+						fenric('event::session.after.start')->run([$this]);
+
+						register_shutdown_function(function() : void
+						{
+							if (fenric('event::session.before.close')->run([$this]))
+							{
+								$this->close();
+
+								fenric('event::session.after.close')->run([$this]);
+							}
+						});
+
+						return true;
+					}
 				}
 			}
 		}
@@ -116,7 +131,7 @@ class Session extends Collection
 	/**
 	 * Получение идентификатора сессии
 	 */
-	public function getId()
+	public function getId() : ?string
 	{
 		return session_id() ?: null;
 	}
