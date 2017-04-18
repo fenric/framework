@@ -102,33 +102,18 @@ class Response
 	 */
 	public function send() : void
 	{
-		if (fenric('event::http.response.before.send')->run([$this]))
+		http_response_code($this->getStatus());
+
+		foreach ($this->getHeaders() as $header)
 		{
-			if (fenric('event::http.response.before.send.status')->run([$this]))
-			{
-				http_response_code($this->getStatus());
-			}
+			header($header, true, $this->getStatus());
+		}
 
-			if (fenric('event::http.response.before.send.headers')->run([$this]))
-			{
-				foreach ($this->getHeaders() as $header)
-				{
-					header($header, true, $this->getStatus());
-				}
-			}
+		echo $this->getContent();
 
-			if (fenric('event::http.response.before.send.content')->run([$this]))
-			{
-				echo $this->getContent();
-			}
-
-			if (fenric('event::http.response.after.send')->run([$this]))
-			{
-				if (function_exists('fastcgi_finish_request'))
-				{
-					fastcgi_finish_request();
-				}
-			}
+		if (function_exists('fastcgi_finish_request'))
+		{
+			fastcgi_finish_request();
 		}
 	}
 }

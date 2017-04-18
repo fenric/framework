@@ -57,11 +57,8 @@ final class Fenric
 		$appId = getenv('APP_ID') ?: $this->applicationId;
 
 		$this->setApplicationId($appId);
-
 		$this->registerBasePaths();
-
 		$this->registerBaseServices();
-
 		$this->registerBaseClassLoaders();
 	}
 
@@ -71,11 +68,8 @@ final class Fenric
 	public function advancedInit() : void
 	{
 		$this->init();
-
 		$this->autoload();
-
 		$this->handleErrors();
-
 		$this->handleUncaughtExceptions();
 	}
 
@@ -405,7 +399,7 @@ final class Fenric
 	{
 		if (isset($this->services['shared'][$alias]))
 		{
-			return call_user_func_array($this->services['shared'][$alias], $params);
+			return $this->services['shared'][$alias](...$params);
 		}
 
 		throw new RuntimeException(sprintf('Shared service [%s] is not registered.', $alias));
@@ -448,7 +442,7 @@ final class Fenric
 				{
 					foreach ($this->classLoaders as $classLoader)
 					{
-						if (call_user_func($classLoader, $logicalFilename))
+						if ($classLoader($logicalFilename))
 						{
 							return true;
 						}
@@ -479,16 +473,17 @@ final class Fenric
 	{
 		set_exception_handler(function($exception)
 		{
+			$format = 'Uncaught exception %s: %s in file %s on line %d.';
+
 			$this->callSharedService('logger', ['errors'])->error(
-				sprintf('Uncaught exception %s: %s in file %s on line %d.',
-					get_class($exception), $exception->getMessage(), $exception->getFile(), $exception->getLine())
+				sprintf($format, get_class($exception), $exception->getMessage(), $exception->getFile(), $exception->getLine())
 			);
 
 			if (count($this->uncaughtExceptionHandlers) > 0)
 			{
 				foreach ($this->uncaughtExceptionHandlers as $handler)
 				{
-					call_user_func($handler, $exception);
+					$handler($exception);
 				}
 			}
 		});

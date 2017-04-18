@@ -60,12 +60,7 @@ class Logger
 
 		register_shutdown_function(function() : void
 		{
-			if (fenric('event::logger.before.save')->run([$this]))
-			{
-				$this->save();
-
-				fenric('event::logger.after.save')->run([$this]);
-			}
+			$this->save();
 		});
 	}
 
