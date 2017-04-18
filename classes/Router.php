@@ -95,7 +95,7 @@ class Router
 	 */
 	public function any(string $location, string $controller, Closure $eavesdropper = null) : self
 	{
-		$methods = ['OPTIONS', 'HEAD', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+		$methods = ['OPTIONS', 'HEAD', 'GET', 'POST', 'PATCH', 'DELETE', 'PUT'];
 
 		return $this->add($methods, $location, $controller, $eavesdropper);
 	}

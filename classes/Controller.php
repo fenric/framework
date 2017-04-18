@@ -37,9 +37,7 @@ abstract class Controller
 	final public function __construct(Router $router, Request $request, Response $response)
 	{
 		$this->router = $router;
-
 		$this->request = $request;
-
 		$this->response = $response;
 	}
 
