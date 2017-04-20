@@ -44,7 +44,7 @@ class Request extends Collection
 	/**
 	 * Получение тела запроса
 	 */
-	public function getBody()
+	public function getBody() : string
 	{
 		return file_get_contents('php://input');
 	}
@@ -52,7 +52,7 @@ class Request extends Collection
 	/**
 	 * Получение родительской директории
 	 */
-	public function getRoot()
+	public function getRoot() : string
 	{
 		$script = $this->environment->get('SCRIPT_NAME');
 
@@ -67,6 +67,14 @@ class Request extends Collection
 	public function getURI()
 	{
 		return urldecode($this->environment->get('REQUEST_URI'));
+	}
+
+	/**
+	 * Получение запрошенной схемы
+	 */
+	public function getScheme() : string
+	{
+		return $this->isSecure() ? 'https' : 'http';
 	}
 
 	/**
@@ -163,6 +171,14 @@ class Request extends Collection
 	public function isPut() : bool
 	{
 		return strcmp($this->getMethod(), 'PUT') === 0;
+	}
+
+	/**
+	 * Это безопасный запрос
+	 */
+	public function isSecure() : bool
+	{
+		return strcmp($this->environment->get('HTTPS'), 'on') === 0;
 	}
 
 	/**
