@@ -64,7 +64,7 @@ class Request extends Collection
 	/**
 	 * Получение запрошенного URI
 	 */
-	public function getURI()
+	public function getURI() : string
 	{
 		return urldecode($this->environment->get('REQUEST_URI'));
 	}
@@ -80,7 +80,7 @@ class Request extends Collection
 	/**
 	 * Получение запрошенного хоста
 	 */
-	public function getHost()
+	public function getHost() : ?string
 	{
 		return parse_url('scheme://' . $this->environment->get('HTTP_HOST'), PHP_URL_HOST);
 	}
@@ -88,7 +88,7 @@ class Request extends Collection
 	/**
 	 * Получение запрошенного порта
 	 */
-	public function getPort()
+	public function getPort() : ?int
 	{
 		return parse_url('scheme://' . $this->environment->get('HTTP_HOST'), PHP_URL_PORT);
 	}
@@ -96,7 +96,7 @@ class Request extends Collection
 	/**
 	 * Получение запрошенного пути
 	 */
-	public function getPath()
+	public function getPath() : ?string
 	{
 		return parse_url($this->getURI(), PHP_URL_PATH);
 	}
@@ -104,7 +104,7 @@ class Request extends Collection
 	/**
 	 * Получение запрошенных параметров
 	 */
-	public function getQuery()
+	public function getQuery() : ?string
 	{
 		return parse_url($this->getURI(), PHP_URL_QUERY);
 	}
@@ -112,7 +112,7 @@ class Request extends Collection
 	/**
 	 * Получение HTTP метода
 	 */
-	public function getMethod()
+	public function getMethod() : string
 	{
 		return $this->environment->get('REQUEST_METHOD');
 	}
@@ -182,7 +182,7 @@ class Request extends Collection
 	}
 
 	/**
-	 * Это Ajax запрос
+	 * Это асинхронный запрос
 	 */
 	public function isAjax() : bool
 	{
