@@ -79,9 +79,9 @@ class View
 
 		if ($this->exists())
 		{
-			extract($this->variables);
-
 			ob_start();
+
+			extract($this->variables);
 
 			include $this->getFile();
 
@@ -103,19 +103,19 @@ class View
 	/**
 	 * Получение содержимого участка представления
 	 */
-	protected function section(string $sectionId) : ?string
+	protected function section(string $id) : ?string
 	{
-		return $this->sections[$sectionId] ?? null;
+		return $this->sections[$id] ?? null;
 	}
 
 	/**
 	 * Запись содержимого участка представления
 	 */
-	protected function start(string $sectionId) : void
+	protected function start(string $id) : void
 	{
 		ob_start();
 
-		$this->sections[$sectionId] = null;
+		$this->sections[$id] = null;
 	}
 
 	/**
@@ -125,9 +125,17 @@ class View
 	{
 		end($this->sections);
 
-		$sectionId = key($this->sections);
+		$id = key($this->sections);
 
-		$this->sections[$sectionId] = ob_get_clean();
+		$this->sections[$id] = ob_get_clean();
+	}
+
+	/**
+	 * Получение экземпляра нового представления
+	 */
+	protected function make(string $name, array $variables = []) : self
+	{
+		return new self($name, $variables);
 	}
 
 	/**
@@ -135,7 +143,7 @@ class View
 	 */
 	protected function layout(string $name, array $variables = []) : void
 	{
-		$this->layout = new self($name, $variables);
+		$this->layout = $this->make($name, $variables);
 	}
 
 	/**
@@ -143,6 +151,6 @@ class View
 	 */
 	protected function partial(string $name, array $variables = []) : string
 	{
-		return (new self($name, $variables))->render();
+		return $this->make($name, $variables)->render();
 	}
 }
