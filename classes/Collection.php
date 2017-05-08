@@ -109,6 +109,22 @@ class Collection
 	}
 
 	/**
+	 * Получение ключей элементов коллекции
+	 */
+	public function keys() : array
+	{
+		return array_keys($this->items);
+	}
+
+	/**
+	 * Получение значений элементов коллекции
+	 */
+	public function values() : array
+	{
+		return array_values($this->items);
+	}
+
+	/**
 	 * Получение количества элементов коллекции
 	 */
 	public function count() : int
