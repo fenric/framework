@@ -2,7 +2,7 @@
 	"name": "fenric/framework",
 	"description": "PHP MVC framework",
 	"keywords": [
-		"fenric", "php", "framework", "mvc"
+		"fenric", "php", "mvc", "framework"
 	],
 	"homepage": "https://github.com/fenric/framework",
 	"license": "MIT",
@@ -12,10 +12,5 @@
 	}],
 	"require": {
 		"php": ">=7.1.0"
-	},
-	"autoload": {
-		"psr-4": {
-			"Fenric\\": "classes/"
-		}
 	}
 }
