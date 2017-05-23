@@ -80,17 +80,12 @@ final class Fenric
 	{
 		$this->registerPath('.', function() : string
 		{
-			return dirname(__DIR__);
+			return realpath(__DIR__ . '/..');
 		});
 
 		$this->registerPath('app', function() : string
 		{
 			return $this->path('.', 'app');
-		});
-
-		$this->registerPath('system', function() : string
-		{
-			return $this->path('.', 'system');
 		});
 
 		$this->registerPath('public', function() : string
@@ -136,6 +131,11 @@ final class Fenric
 		$this->registerPath('upload', function() : string
 		{
 			return $this->path('public', 'upload');
+		});
+
+		$this->registerPath('core', function() : string
+		{
+			return __DIR__;
 		});
 	}
 
@@ -270,9 +270,9 @@ final class Fenric
 				return true;
 			}
 
-			if (file_exists($this->path('system', 'classes', "{$filename}.php")))
+			if (file_exists($this->path('core', 'classes', "{$filename}.php")))
 			{
-				require_once $this->path('system', 'classes', "{$filename}.php");
+				require_once $this->path('core', 'classes', "{$filename}.php");
 
 				return true;
 			}
