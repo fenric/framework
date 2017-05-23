@@ -110,6 +110,19 @@ class Request extends Collection
 	}
 
 	/**
+	 * Получение запрошенного URL
+	 */
+	public function getURL() : string
+	{
+		return sprintf('%s://%s%s?%s',
+			$this->getScheme(),
+			$this->environment->get('HTTP_HOST'),
+			$this->getPath(),
+			$this->getQuery()
+		);
+	}
+
+	/**
 	 * Получение HTTP метода
 	 */
 	public function getMethod() : string
