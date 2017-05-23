@@ -2,10 +2,7 @@
 	"name": "fenric/framework",
 	"description": "PHP MVC framework",
 	"keywords": [
-		"fenric",
-		"php",
-		"framework",
-		"mvc",
+		"fenric", "php", "framework", "mvc"
 	],
 	"homepage": "https://github.com/fenric/framework",
 	"license": "MIT",
