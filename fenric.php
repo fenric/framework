@@ -146,23 +146,28 @@ final class Fenric
 	{
 		$this->registerResolvableSharedService('config', function(string $resolver = 'default')
 		{
-			if (file_exists($this->path('configs', "{$resolver}.local.php"))) {
+			if (file_exists($this->path('configs', "{$resolver}.local.php")))
+			{
 				return new Collection(include $this->path('configs', "{$resolver}.local.php"));
 			}
 
-			if (file_exists($this->path('configs', 'test', "{$resolver}.php")) && $this->is('test')) {
+			if (file_exists($this->path('configs', 'test', "{$resolver}.php")) && $this->is('test'))
+			{
 				return new Collection(include $this->path('configs', 'test', "{$resolver}.php"));
 			}
 
-			if (file_exists($this->path('configs', 'production', "{$resolver}.php")) && $this->is('production')) {
+			if (file_exists($this->path('configs', 'production', "{$resolver}.php")) && $this->is('production'))
+			{
 				return new Collection(include $this->path('configs', 'production', "{$resolver}.php"));
 			}
 
-			if (file_exists($this->path('configs', 'development', "{$resolver}.php")) && $this->is('development')) {
+			if (file_exists($this->path('configs', 'development', "{$resolver}.php")) && $this->is('development'))
+			{
 				return new Collection(include $this->path('configs', 'development', "{$resolver}.php"));
 			}
 
-			if (file_exists($this->path('configs', "{$resolver}.php"))) {
+			if (file_exists($this->path('configs', "{$resolver}.php")))
+			{
 				return new Collection(include $this->path('configs', "{$resolver}.php"));
 			}
 
@@ -171,11 +176,13 @@ final class Fenric
 
 		$this->registerResolvableSharedService('locale', function(string $resolver = 'default')
 		{
-			if (file_exists($this->path('locales', $this->getApplicationLanguage(), "{$resolver}.php"))) {
+			if (file_exists($this->path('locales', $this->getApplicationLanguage(), "{$resolver}.php")))
+			{
 				return new Collection(include $this->path('locales', $this->getApplicationLanguage(), "{$resolver}.php"));
 			}
 
-			if (file_exists($this->path('locales', $this->getApplicationFallbackLanguage(), "{$resolver}.php"))) {
+			if (file_exists($this->path('locales', $this->getApplicationFallbackLanguage(), "{$resolver}.php")))
+			{
 				return new Collection(include $this->path('locales', $this->getApplicationFallbackLanguage(), "{$resolver}.php"));
 			}
 
@@ -249,18 +256,24 @@ final class Fenric
 	{
 		$this->registerClassLoader(function($filename) : bool
 		{
-			if (file_exists($this->path('app', 'classes', $this->getApplicationId(), "{$filename}.php"))) {
+			if (file_exists($this->path('app', 'classes', $this->getApplicationId(), "{$filename}.php")))
+			{
 				require_once $this->path('app', 'classes', $this->getApplicationId(), "{$filename}.php");
+
 				return true;
 			}
 
-			if (file_exists($this->path('app', 'classes.share', "{$filename}.php"))) {
+			if (file_exists($this->path('app', 'classes.share', "{$filename}.php")))
+			{
 				require_once $this->path('app', 'classes.share', "{$filename}.php");
+
 				return true;
 			}
 
-			if (file_exists($this->path('system', 'classes', "{$filename}.php"))) {
+			if (file_exists($this->path('system', 'classes', "{$filename}.php")))
+			{
 				require_once $this->path('system', 'classes', "{$filename}.php");
+
 				return true;
 			}
 
