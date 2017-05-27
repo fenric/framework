@@ -599,6 +599,10 @@ final class Fenric
 			case 'windows' :
 				return 0 === strncasecmp(PHP_OS, 'win', 3);
 				break;
+
+			case $this->getApplicationId() :
+				return true;
+				break;
 		}
 
 		return false;
