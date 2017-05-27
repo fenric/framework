@@ -93,6 +93,11 @@ final class Fenric
 			return $this->path('.', 'public', $this->getApplicationId());
 		});
 
+		$this->registerPath('bin', function() : string
+		{
+			return $this->path('app', 'bin', $this->getApplicationId());
+		});
+
 		$this->registerPath('cache', function() : string
 		{
 			return $this->path('app', 'cache', $this->getApplicationId());
@@ -254,7 +259,7 @@ final class Fenric
 	 */
 	public function registerBaseClassLoaders() : void
 	{
-		$this->registerClassLoader(function($filename) : bool
+		$this->registerClassLoader(function(string $filename) : bool
 		{
 			if (file_exists($this->path('app', 'classes', $this->getApplicationId(), "{$filename}.php")))
 			{
@@ -263,6 +268,11 @@ final class Fenric
 				return true;
 			}
 
+			return false;
+		});
+
+		$this->registerClassLoader(function(string $filename) : bool
+		{
 			if (file_exists($this->path('app', 'classes.share', "{$filename}.php")))
 			{
 				require_once $this->path('app', 'classes.share', "{$filename}.php");
@@ -270,6 +280,11 @@ final class Fenric
 				return true;
 			}
 
+			return false;
+		});
+
+		$this->registerClassLoader(function(string $filename) : bool
+		{
 			if (file_exists($this->path('core', 'classes', "{$filename}.php")))
 			{
 				require_once $this->path('core', 'classes', "{$filename}.php");
