@@ -660,22 +660,22 @@ switch (getenv('ENVIRONMENT'))
 {
 	case 'test' :
 		error_reporting(E_ALL);
-		ini_set('display_errors', '1');
+		ini_set('display_errors', 'On');
 		break;
 
 	case 'production' :
 		error_reporting(E_ALL);
-		ini_set('display_errors', '0');
+		ini_set('display_errors', 'Off');
 		break;
 
 	case 'development' :
 		error_reporting(E_ALL);
-		ini_set('display_errors', '1');
+		ini_set('display_errors', 'On');
 		break;
 
 	default :
 		error_reporting(E_ALL);
-		ini_set('display_errors', '1');
+		ini_set('display_errors', 'On');
 		putenv('ENVIRONMENT=development');
 		break;
 }
