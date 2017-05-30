@@ -158,7 +158,7 @@ class Console extends Collection
 	 */
 	public function write(string $string, string $end = PHP_EOL) : void
 	{
-		fwrite(STDOUT, "\033[0m" . $string . $end);
+		fwrite(STDOUT, $string . "\033[0m" . $end);
 	}
 
 	/**
