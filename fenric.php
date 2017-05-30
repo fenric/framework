@@ -11,7 +11,7 @@
 /**
  * Import classes
  */
-use Fenric\{Collection, Event, Logger, Query, Request, Response, Router, Session, View};
+use Fenric\{Collection, Console, Event, Logger, Query, Request, Response, Router, Session, View};
 
 /**
  * Main class of framework
@@ -251,6 +251,15 @@ final class Fenric
 			}
 
 			return new Query($connections[$connection]);
+		});
+
+		$this->is('cli') and $this->registerDisposableSharedService('console', function()
+		{
+			$request = $this->callSharedService('request');
+
+			$arguments = $request->environment->get('argv', []);
+
+			return new Console($arguments);
 		});
 	}
 
