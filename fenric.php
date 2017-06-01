@@ -149,7 +149,10 @@ final class Fenric
 	 */
 	public function registerBaseServices() : void
 	{
-		$this->registerResolvableSharedService('config', function(string $resolver = 'default')
+		/**
+		 * Регистрация в контейнере фреймворка именованной службы для работы с конфигурационными файлами
+		 */
+		$this->registerResolvableSharedService('config', function(string $resolver = 'default') : Collection
 		{
 			if (file_exists($this->path('configs', "{$resolver}.local.php")))
 			{
@@ -179,8 +182,21 @@ final class Fenric
 			throw new RuntimeException(sprintf('Unable to find config [%s].', $resolver));
 		});
 
-		$this->registerResolvableSharedService('locale', function(string $resolver = 'default')
+		/**
+		 * Регистрация в контейнере фреймворка именованной службы для работы с локализационными файлами
+		 */
+		$this->registerResolvableSharedService('locale', function(string $resolver = 'default') : Collection
 		{
+			if (file_exists($this->path('locales', $this->getApplicationLanguage(), "{$resolver}.local.php")))
+			{
+				return new Collection(include $this->path('locales', $this->getApplicationLanguage(), "{$resolver}.local.php"));
+			}
+
+			if (file_exists($this->path('locales', $this->getApplicationFallbackLanguage(), "{$resolver}.local.php")))
+			{
+				return new Collection(include $this->path('locales', $this->getApplicationFallbackLanguage(), "{$resolver}.local.php"));
+			}
+
 			if (file_exists($this->path('locales', $this->getApplicationLanguage(), "{$resolver}.php")))
 			{
 				return new Collection(include $this->path('locales', $this->getApplicationLanguage(), "{$resolver}.php"));
@@ -194,42 +210,66 @@ final class Fenric
 			throw new RuntimeException(sprintf('Unable to find locale [%s].', $resolver));
 		});
 
-		$this->registerResolvableSharedService('event', function(string $resolver = 'default')
+		/**
+		 * Регистрация в контейнере фреймворка именованной службы для работы с событиями
+		 */
+		$this->registerResolvableSharedService('event', function(string $resolver = 'default') : Event
 		{
 			return new Event($resolver);
 		});
 
-		$this->registerResolvableSharedService('logger', function(string $resolver = 'default')
+		/**
+		 * Регистрация в контейнере фреймворка именованной службы для работы с журналами
+		 */
+		$this->registerResolvableSharedService('logger', function(string $resolver = 'default') : Logger
 		{
 			return new Logger($resolver);
 		});
 
-		$this->registerDisposableSharedService('request', function()
+		/**
+		 * Регистрация в контейнере фреймворка одиночной службы для обработки HTTP запроса
+		 */
+		$this->registerDisposableSharedService('request', function() : Request
 		{
 			return new Request();
 		});
 
-		$this->registerDisposableSharedService('response', function()
+		/**
+		 * Регистрация в контейнере фреймворка одиночной службы для генерации HTTP ответа
+		 */
+		$this->registerDisposableSharedService('response', function() : Response
 		{
 			return new Response();
 		});
 
-		$this->registerDisposableSharedService('router', function()
+		/**
+		 * Регистрация в контейнере фреймворка одиночной службы для работы с маршрутизатором
+		 */
+		$this->registerDisposableSharedService('router', function() : Router
 		{
 			return new Router();
 		});
 
-		$this->registerDisposableSharedService('session', function()
+		/**
+		 * Регистрация в контейнере фреймворка одиночной службы для работы с сессией
+		 */
+		$this->registerDisposableSharedService('session', function() : Session
 		{
 			return new Session();
 		});
 
-		$this->registerSharedService('view', function(string $resolver, array $variables = null)
+		/**
+		 * Регистрация в контейнере фреймворка простой службы для работы с представлениями
+		 */
+		$this->registerSharedService('view', function(string $resolver, array $variables = null) : View
 		{
 			return new View($resolver, $variables ?: []);
 		});
 
-		$this->registerSharedService('query', function(string $connection = 'default')
+		/**
+		 * Регистрация в контейнере фреймворка простой службы для работы с конструктором SQL запросов
+		 */
+		$this->registerSharedService('query', function(string $connection = 'default') : Query
 		{
 			static $connections;
 
@@ -245,15 +285,18 @@ final class Fenric
 
 						$connections[$connection] = new PDO($options['dsn'], $options['user'], $options['password'], $options['parameters']);
 					}
-					else throw new RuntimeException(sprintf('Connection `%s` configured incorrectly.', $connection));
+					else throw new RuntimeException(sprintf('Connection [%s] configured incorrectly.', $connection));
 				}
-				else throw new RuntimeException(sprintf('Connection `%s` is not configured.', $connection));
+				else throw new RuntimeException(sprintf('Connection [%s] is not configured.', $connection));
 			}
 
 			return new Query($connections[$connection]);
 		});
 
-		$this->is('cli') and $this->registerDisposableSharedService('console', function()
+		/**
+		 * Регистрация в контейнере фреймворка одиночной службы для работы с консолью
+		 */
+		$this->is('cli') and $this->registerDisposableSharedService('console', function() : Console
 		{
 			$request = $this->callSharedService('request');
 
@@ -358,9 +401,7 @@ final class Fenric
 		{
 			if (empty($this->services['output.shared.disposable'][$alias]))
 			{
-				$output = call_user_func_array($service, func_get_args());
-
-				return $this->services['output.shared.disposable'][$alias] = $output;
+				$this->services['output.shared.disposable'][$alias] = call_user_func_array($service, func_get_args());
 			}
 
 			return $this->services['output.shared.disposable'][$alias];
@@ -376,9 +417,7 @@ final class Fenric
 		{
 			if (empty($this->services['output.shared.resolvable'][$alias][$resolver]))
 			{
-				$output = call_user_func_array($service, func_get_args());
-
-				return $this->services['output.shared.resolvable'][$alias][$resolver] = $output;
+				$this->services['output.shared.resolvable'][$alias][$resolver] = call_user_func_array($service, func_get_args());
 			}
 
 			return $this->services['output.shared.resolvable'][$alias][$resolver];
@@ -495,19 +534,19 @@ final class Fenric
 	 */
 	public function handleUncaughtExceptions() : void
 	{
-		set_exception_handler(function($exception)
+		set_exception_handler(function($e)
 		{
 			$format = 'Uncaught exception %s: %s in file %s on line %d.';
 
 			$this->callSharedService('logger', ['errors'])->error(
-				sprintf($format, get_class($exception), $exception->getMessage(), $exception->getFile(), $exception->getLine())
+				sprintf($format, get_class($e), $e->getMessage(), $e->getFile(), $e->getLine()) . PHP_EOL . $e->getTraceAsString()
 			);
 
 			if (count($this->uncaughtExceptionHandlers) > 0)
 			{
 				foreach ($this->uncaughtExceptionHandlers as $handler)
 				{
-					$handler($exception);
+					$handler($e);
 				}
 			}
 		});
