@@ -40,7 +40,7 @@ final class Fenric
 	private $classLoaders = [];
 
 	/**
-	 * Зарегистрированные пользовательские обработчики неперехваченных исключений
+	 * Зарегистрированные обработчики неперехваченных исключений
 	 */
 	private $uncaughtExceptionHandlers = [];
 
@@ -353,6 +353,8 @@ final class Fenric
 	 */
 	public function path(string ...$parts) : string
 	{
+		$ds = DIRECTORY_SEPARATOR;
+
 		$alias = array_shift($parts) ?: '.';
 
 		if (isset($this->paths[$alias]))
@@ -361,7 +363,7 @@ final class Fenric
 
 			if (count($parts) > 0)
 			{
-				$built .= DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $parts);
+				$built .= $ds . implode($ds, $parts);
 			}
 
 			return $built;
@@ -471,16 +473,16 @@ final class Fenric
 	/**
 	 * Регистрация загрузчика классов фреймворка
 	 */
-	public function registerClassLoader(callable $classLoader) : void
+	public function registerClassLoader(callable $loader) : void
 	{
-		$this->classLoaders[] = function() use($classLoader) : bool
+		$this->classLoaders[] = function() use($loader) : bool
 		{
-			return call_user_func_array($classLoader, func_get_args());
+			return call_user_func_array($loader, func_get_args());
 		};
 	}
 
 	/**
-	 * Регистрация пользовательского обработчика неперехваченных исключений
+	 * Регистрация обработчика неперехваченных исключений
 	 */
 	public function registerUncaughtExceptionHandler(callable $handler) : void
 	{
@@ -499,13 +501,13 @@ final class Fenric
 		{
 			if (0 === strncmp('Fenric\\', $class, 7))
 			{
-				$logicalFilename = strtr(substr($class, 7), '\\', '/');
+				$filename = strtr(substr($class, 7), '\\', '/');
 
 				if (count($this->classLoaders) > 0)
 				{
-					foreach ($this->classLoaders as $classLoader)
+					foreach ($this->classLoaders as $loader)
 					{
-						if ($classLoader($logicalFilename))
+						if ($loader($filename))
 						{
 							return true;
 						}
