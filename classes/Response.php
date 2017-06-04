@@ -27,7 +27,7 @@ class Response
 	protected $headers = [];
 
 	/**
-	 * Тело ответа
+	 * Содержимое ответа
 	 */
 	protected $content = '';
 
@@ -68,7 +68,7 @@ class Response
 	}
 
 	/**
-	 * Установка тела ответа
+	 * Установка содержимого ответа
 	 */
 	public function setContent(string $content) : self
 	{
@@ -78,7 +78,7 @@ class Response
 	}
 
 	/**
-	 * Установка тела ответа в виде JSON данных
+	 * Установка содержимого ответа в виде JSON данных
 	 */
 	public function setJsonContent($data, int $options = 0, int $depth = 512, string $charset = 'UTF-8') : self
 	{
@@ -90,7 +90,7 @@ class Response
 	}
 
 	/**
-	 * Получение тела ответа
+	 * Получение содержимого ответа
 	 */
 	public function getContent() : string
 	{
