@@ -30,6 +30,16 @@ class Collection
 	}
 
 	/**
+	 * Добавление элемента коллекции
+	 */
+	public function add($value) : self
+	{
+		$this->items[] = $value;
+
+		return $this;
+	}
+
+	/**
 	 * Установка элемента коллекции
 	 */
 	public function set($key, $value) : self
