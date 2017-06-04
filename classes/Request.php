@@ -26,8 +26,6 @@ class Request extends Collection
 	 */
 	public function __construct()
 	{
-		parent::__construct($_REQUEST);
-
 		$this->query = new Collection($_GET);
 
 		$this->post = new Collection($_POST);
@@ -39,6 +37,8 @@ class Request extends Collection
 		$this->environment = new Collection($_SERVER + $_ENV);
 
 		$this->parameters = new Collection();
+
+		parent::__construct($_REQUEST);
 	}
 
 	/**
@@ -110,19 +110,6 @@ class Request extends Collection
 	}
 
 	/**
-	 * Получение запрошенного URL
-	 */
-	public function getURL() : string
-	{
-		return sprintf('%s://%s%s?%s',
-			$this->getScheme(),
-			$this->environment->get('HTTP_HOST'),
-			$this->getPath(),
-			$this->getQuery()
-		);
-	}
-
-	/**
 	 * Получение HTTP метода
 	 */
 	public function getMethod() : string
@@ -135,7 +122,7 @@ class Request extends Collection
 	 */
 	public function isOptions() : bool
 	{
-		return strcmp($this->getMethod(), 'OPTIONS') === 0;
+		return 0 === strcmp($this->getMethod(), 'OPTIONS');
 	}
 
 	/**
@@ -143,7 +130,7 @@ class Request extends Collection
 	 */
 	public function isHead() : bool
 	{
-		return strcmp($this->getMethod(), 'HEAD') === 0;
+		return 0 === strcmp($this->getMethod(), 'HEAD');
 	}
 
 	/**
@@ -151,7 +138,7 @@ class Request extends Collection
 	 */
 	public function isGet() : bool
 	{
-		return strcmp($this->getMethod(), 'GET') === 0;
+		return 0 === strcmp($this->getMethod(), 'GET');
 	}
 
 	/**
@@ -159,7 +146,7 @@ class Request extends Collection
 	 */
 	public function isPost() : bool
 	{
-		return strcmp($this->getMethod(), 'POST') === 0;
+		return 0 === strcmp($this->getMethod(), 'POST');
 	}
 
 	/**
@@ -167,7 +154,7 @@ class Request extends Collection
 	 */
 	public function isPatch() : bool
 	{
-		return strcmp($this->getMethod(), 'PATCH') === 0;
+		return 0 === strcmp($this->getMethod(), 'PATCH');
 	}
 
 	/**
@@ -175,7 +162,7 @@ class Request extends Collection
 	 */
 	public function isDelete() : bool
 	{
-		return strcmp($this->getMethod(), 'DELETE') === 0;
+		return 0 === strcmp($this->getMethod(), 'DELETE');
 	}
 
 	/**
@@ -183,7 +170,7 @@ class Request extends Collection
 	 */
 	public function isPut() : bool
 	{
-		return strcmp($this->getMethod(), 'PUT') === 0;
+		return 0 === strcmp($this->getMethod(), 'PUT');
 	}
 
 	/**
@@ -191,7 +178,7 @@ class Request extends Collection
 	 */
 	public function isSecure() : bool
 	{
-		return strcmp($this->environment->get('HTTPS'), 'on') === 0;
+		return 0 === strcmp($this->environment->get('HTTPS'), 'on');
 	}
 
 	/**
@@ -199,6 +186,6 @@ class Request extends Collection
 	 */
 	public function isAjax() : bool
 	{
-		return strcmp($this->environment->get('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest') === 0;
+		return 0 === strcmp($this->environment->get('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest');
 	}
 }
