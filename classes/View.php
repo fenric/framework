@@ -141,7 +141,7 @@ class View
 	 */
 	protected function section(string $id) : ?string
 	{
-		return $this->sections[$id]['content'] ?? null;
+		return $this->sections[$id] ?? null;
 	}
 
 	/**
@@ -151,8 +151,7 @@ class View
 	{
 		ob_start();
 
-		$this->sections[$id]['status'] = 'started';
-		$this->sections[$id]['content'] = null;
+		$this->sections[$id] = null;
 	}
 
 	/**
@@ -162,8 +161,9 @@ class View
 	{
 		end($this->sections);
 
-		$this->sections[key($this->sections)]['status'] = 'stopped';
-		$this->sections[key($this->sections)]['content'] = ob_get_clean();
+		$id = key($this->sections);
+
+		$this->sections[$id] = ob_get_clean();
 	}
 
 	/**
