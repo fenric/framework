@@ -62,14 +62,6 @@ class Request extends Collection
 	}
 
 	/**
-	 * Получение запрошенного URI
-	 */
-	public function getURI() : string
-	{
-		return urldecode($this->environment->get('REQUEST_URI'));
-	}
-
-	/**
 	 * Получение запрошенной схемы
 	 */
 	public function getScheme() : string
@@ -98,7 +90,7 @@ class Request extends Collection
 	 */
 	public function getPath() : ?string
 	{
-		return parse_url($this->getURI(), PHP_URL_PATH);
+		return parse_url(urldecode($this->environment->get('REQUEST_URI')), PHP_URL_PATH);
 	}
 
 	/**
@@ -106,7 +98,7 @@ class Request extends Collection
 	 */
 	public function getQuery() : ?string
 	{
-		return parse_url($this->getURI(), PHP_URL_QUERY);
+		return parse_url(urldecode($this->environment->get('REQUEST_URI')), PHP_URL_QUERY);
 	}
 
 	/**
