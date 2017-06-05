@@ -57,9 +57,43 @@ class View
 	/**
 	 * Получение файла представления
 	 */
-	public function getFile() : string
+	public function getFile() : ?string
 	{
-		return fenric()->path('views', $this->getName() . '.phtml');
+		if (file_exists(fenric()->path('views', $this->getName() . '.local.phtml')))
+		{
+			return fenric()->path('views', $this->getName() . '.local.phtml');
+		}
+
+		if (fenric()->is('test'))
+		{
+			if (file_exists(fenric()->path('views', $this->getName() . '.test.phtml')))
+			{
+				return fenric()->path('views', $this->getName() . '.test.phtml');
+			}
+		}
+
+		if (fenric()->is('production'))
+		{
+			if (file_exists(fenric()->path('views', $this->getName() . '.production.phtml')))
+			{
+				return fenric()->path('views', $this->getName() . '.production.phtml');
+			}
+		}
+
+		if (fenric()->is('development'))
+		{
+			if (file_exists(fenric()->path('views', $this->getName() . '.development.phtml')))
+			{
+				return fenric()->path('views', $this->getName() . '.development.phtml');
+			}
+		}
+
+		if (file_exists(fenric()->path('views', $this->getName() . '.phtml')))
+		{
+			return fenric()->path('views', $this->getName() . '.phtml');
+		}
+
+		return null;
 	}
 
 	/**
@@ -67,23 +101,25 @@ class View
 	 */
 	public function exists() : bool
 	{
-		return file_exists($this->getFile());
+		return !! $this->getFile();
 	}
 
 	/**
 	 * Рендеринг представления
 	 */
-	public function render() : string
+	public function render(array $variables = []) : string
 	{
 		$content = '';
 
-		if ($this->exists())
+		if ($file = $this->getFile())
 		{
+			$variables += $this->variables;
+
 			ob_start();
 
-			extract($this->variables);
+			extract($variables, EXTR_SKIP | EXTR_REFS);
 
-			include $this->getFile();
+			include $file;
 
 			$content = ob_get_clean();
 
@@ -105,7 +141,7 @@ class View
 	 */
 	protected function section(string $id) : ?string
 	{
-		return $this->sections[$id] ?? null;
+		return $this->sections[$id]['content'] ?? null;
 	}
 
 	/**
@@ -115,7 +151,8 @@ class View
 	{
 		ob_start();
 
-		$this->sections[$id] = null;
+		$this->sections[$id]['status'] = 'started';
+		$this->sections[$id]['content'] = null;
 	}
 
 	/**
@@ -125,9 +162,8 @@ class View
 	{
 		end($this->sections);
 
-		$id = key($this->sections);
-
-		$this->sections[$id] = ob_get_clean();
+		$this->sections[key($this->sections)]['status'] = 'stopped';
+		$this->sections[key($this->sections)]['content'] = ob_get_clean();
 	}
 
 	/**
@@ -139,18 +175,18 @@ class View
 	}
 
 	/**
-	 * Наследование макета представления
-	 */
-	protected function layout(string $name, array $variables = []) : void
-	{
-		$this->layout = $this->make($name, $variables);
-	}
-
-	/**
-	 * Получение отрендеренного представления
+	 * Получение нового отрендеренного представления
 	 */
 	protected function partial(string $name, array $variables = []) : string
 	{
 		return $this->make($name, $variables)->render();
+	}
+
+	/**
+	 * Установка макета представления
+	 */
+	protected function layout(string $name, array $variables = []) : void
+	{
+		$this->layout = $this->make($name, $variables);
 	}
 }
