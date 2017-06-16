@@ -1,9 +1,7 @@
 {
 	"name": "fenric/framework",
 	"description": "PHP MVC framework",
-	"keywords": [
-		"fenric", "php", "mvc", "framework"
-	],
+	"keywords": ["fenric", "php", "mvc", "framework"],
 	"homepage": "https://github.com/fenric/framework",
 	"license": "MIT",
 	"authors": [{
@@ -12,5 +10,8 @@
 	}],
 	"require": {
 		"php": ">=7.1.0"
+	},
+	"autoload": {
+		"files": ["fenric.php"]
 	}
 }
