@@ -4,8 +4,8 @@
  *
  * @author Anatoly Fenric <a.fenric@gmail.com>
  * @copyright Copyright (c) 2013-2017 by Fenric Laboratory
- * @license https://github.com/fenric/framework.core/blob/master/LICENSE.md
- * @link https://github.com/fenric/framework.core
+ * @license https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link https://github.com/fenric/framework
  */
 
 namespace Fenric;
@@ -25,6 +25,11 @@ class Router
 	 * Карта маршрутов
 	 */
 	protected $routes = [];
+
+	/**
+	 * Изоляционные пространства маршрутов
+	 */
+	protected $scopes = [];
 
 	/**
 	 * Добавление маршрута соответствующего HTTP методу OPTIONS
@@ -105,9 +110,21 @@ class Router
 	 */
 	public function add(array $methods, string $location, string $controller, Closure $eavesdropper = null) : self
 	{
-		$this->routes[] = [$methods, $location, $controller, $eavesdropper];
+		$this->routes[] = [$methods, implode($this->scopes) . $location, $controller, $eavesdropper];
 
 		return $this;
+	}
+
+	/**
+	 * Установка изоляционного пространства для маршрутов
+	 */
+	public function scope($scope, Closure $callback) : void
+	{
+		$this->scopes[] = $scope;
+
+		$callback($this);
+
+		array_pop($this->scopes);
 	}
 
 	/**
