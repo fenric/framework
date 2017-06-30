@@ -4,8 +4,8 @@
  *
  * @author Anatoly Fenric <a.fenric@gmail.com>
  * @copyright Copyright (c) 2013-2017 by Fenric Laboratory
- * @license https://github.com/fenric/framework.core/blob/master/LICENSE.md
- * @link https://github.com/fenric/framework.core
+ * @license https://github.com/fenric/framework/blob/master/LICENSE.md
+ * @link https://github.com/fenric/framework
  */
 
 /**
@@ -490,6 +490,28 @@ final class Fenric
 		{
 			call_user_func_array($handler, func_get_args());
 		};
+	}
+
+	/**
+	 * Регистрация приоритетного загрузчика классов фреймворка
+	 */
+	public function registerPrimaryClassLoader(callable $loader) : void
+	{
+		array_unshift($this->classLoaders, function() use($loader) : bool
+		{
+			return call_user_func_array($loader, func_get_args());
+		});
+	}
+
+	/**
+	 * Регистрация приоритетного обработчика неперехваченных исключений
+	 */
+	public function registerPrimaryUncaughtExceptionHandler(callable $handler) : void
+	{
+		array_unshift($this->uncaughtExceptionHandlers, function() use($handler) : void
+		{
+			call_user_func_array($handler, func_get_args());
+		});
 	}
 
 	/**
