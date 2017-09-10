@@ -710,8 +710,6 @@ function fenric($alias = null, $params = null)
 
 	if (is_string($alias))
 	{
-		$params = (array) $params;
-
 		if (strpos($alias, '::') !== false)
 		{
 			list($alias, $resolver) = explode('::', $alias, 2);
@@ -719,7 +717,7 @@ function fenric($alias = null, $params = null)
 			return $self->callSharedService($alias, [$resolver, $params]);
 		}
 
-		return $self->callSharedService($alias, $params);
+		return $self->callSharedService($alias, (array) $params);
 	}
 
 	return $self;
