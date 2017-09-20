@@ -188,13 +188,13 @@ class Router
 
 						$controller = new $match['controller']($this, $request, $response);
 
+						if ($match['eavesdropper'] instanceof Closure)
+						{
+							$match['eavesdropper']($this, $request, $response, $controller);
+						}
+
 						if ($controller->preInit())
 						{
-							if ($match['eavesdropper'] instanceof Closure)
-							{
-								$match['eavesdropper']($this, $request, $response, $controller);
-							}
-
 							$controller->init();
 							$controller->render();
 
