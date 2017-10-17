@@ -320,6 +320,13 @@ final class Fenric
 				return true;
 			}
 
+			if (file_exists($this->path('app', 'classes', $this->getApplicationId(), "{$filename}.example.php")))
+			{
+				require_once $this->path('app', 'classes', $this->getApplicationId(), "{$filename}.example.php");
+
+				return true;
+			}
+
 			return false;
 		});
 
@@ -328,6 +335,13 @@ final class Fenric
 			if (file_exists($this->path('app', 'classes.share', "{$filename}.php")))
 			{
 				require_once $this->path('app', 'classes.share', "{$filename}.php");
+
+				return true;
+			}
+
+			if (file_exists($this->path('app', 'classes.share', "{$filename}.example.php")))
+			{
+				require_once $this->path('app', 'classes.share', "{$filename}.example.php");
 
 				return true;
 			}
