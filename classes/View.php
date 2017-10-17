@@ -64,33 +64,14 @@ class View
 			return fenric()->path('views', $this->getName() . '.local.phtml');
 		}
 
-		if (fenric()->is('test'))
-		{
-			if (file_exists(fenric()->path('views', $this->getName() . '.test.phtml')))
-			{
-				return fenric()->path('views', $this->getName() . '.test.phtml');
-			}
-		}
-
-		if (fenric()->is('production'))
-		{
-			if (file_exists(fenric()->path('views', $this->getName() . '.production.phtml')))
-			{
-				return fenric()->path('views', $this->getName() . '.production.phtml');
-			}
-		}
-
-		if (fenric()->is('development'))
-		{
-			if (file_exists(fenric()->path('views', $this->getName() . '.development.phtml')))
-			{
-				return fenric()->path('views', $this->getName() . '.development.phtml');
-			}
-		}
-
 		if (file_exists(fenric()->path('views', $this->getName() . '.phtml')))
 		{
 			return fenric()->path('views', $this->getName() . '.phtml');
+		}
+
+		if (file_exists(fenric()->path('views', $this->getName() . '.example.phtml')))
+		{
+			return fenric()->path('views', $this->getName() . '.example.phtml');
 		}
 
 		return null;
