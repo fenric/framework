@@ -1683,7 +1683,7 @@ class Query
 
 		else if ($value instanceof Closure)
 		{
-			return $value();
+			return $value($this);
 		}
 
 		else if (is_array($value))
@@ -1721,7 +1721,7 @@ class Query
 
 		else if ($value instanceof Closure)
 		{
-			return $value();
+			return $value($this);
 		}
 
 		else if (is_array($value))
@@ -1788,7 +1788,7 @@ class Query
 
 		else if ($value instanceof Closure)
 		{
-			return $value();
+			return $value($this);
 		}
 
 		else if ($value instanceof DateTime)
