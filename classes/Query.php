@@ -54,6 +54,13 @@ class Query
 	protected $storage =
 	[
 		/**
+		 * Данные оператора `DISTINCT`
+		 *
+		 * @param bool
+		 */
+		'distinct' => false,
+
+		/**
 		 * Данные оператора `SELECT`
 		 *
 		 * @param array
@@ -446,6 +453,21 @@ class Query
 	public function isDelete()
 	{
 		return strcmp($this->mode, 'delete') === 0;
+	}
+
+	/**
+	 * Оператор `DISTINCT`
+	 *
+	 * @param   bool   $state
+	 *
+	 * @access  public
+	 * @return  object
+	 */
+	public function distinct($state = true)
+	{
+		$this->storage['distinct'] = !! $state;
+
+		return $this;
 	}
 
 	/**
@@ -1095,7 +1117,7 @@ class Query
 	{
 		if (! empty($this->storage['select']))
 		{
-			return sprintf('SELECT %s', implode(', ', $this->storage['select']));
+			return sprintf('SELECT' . ($this->storage['distinct'] ? ' DISTINCT' : '') . ' %s', implode(', ', $this->storage['select']));
 		}
 	}
 
