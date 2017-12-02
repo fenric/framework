@@ -160,7 +160,7 @@ class View
 	 */
 	protected function partial(string $name, array $variables = []) : string
 	{
-		return $this->make($name, $variables)->render();
+		return $this->make($name)->render($variables);
 	}
 
 	/**
