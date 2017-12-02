@@ -22,7 +22,7 @@ final class Fenric
 	/**
 	 * Версия фреймворка
 	 */
-	const VERSION = '2.0.0-dev';
+	const VERSION = '2.1.0-dev';
 
 	/**
 	 * Зарегистрированные пути фреймворка
@@ -45,18 +45,10 @@ final class Fenric
 	private $uncaughtExceptionHandlers = [];
 
 	/**
-	 * Идентификатор приложения по умолчанию
-	 */
-	private $applicationId = 'default';
-
-	/**
 	 * Инициализация фреймворка
 	 */
 	public function init() : void
 	{
-		$appId = getenv('APP_ID') ?: $this->applicationId;
-
-		$this->setApplicationId($appId);
 		$this->registerBasePaths();
 		$this->registerBaseServices();
 		$this->registerBaseClassLoaders();
@@ -90,42 +82,47 @@ final class Fenric
 
 		$this->registerPath('public', function() : string
 		{
-			return $this->path('.', 'public', $this->getApplicationId());
+			return $this->path('.', 'public');
+		});
+
+		$this->registerPath('vendor', function() : string
+		{
+			return $this->path('.', 'vendor');
 		});
 
 		$this->registerPath('bin', function() : string
 		{
-			return $this->path('app', 'bin', $this->getApplicationId());
+			return $this->path('app', 'bin');
 		});
 
 		$this->registerPath('cache', function() : string
 		{
-			return $this->path('app', 'cache', $this->getApplicationId());
+			return $this->path('app', 'cache');
 		});
 
 		$this->registerPath('configs', function() : string
 		{
-			return $this->path('app', 'configs', $this->getApplicationId());
+			return $this->path('app', 'configs');
 		});
 
 		$this->registerPath('locales', function() : string
 		{
-			return $this->path('app', 'locales', $this->getApplicationId());
+			return $this->path('app', 'locales');
 		});
 
 		$this->registerPath('log', function() : string
 		{
-			return $this->path('app', 'log', $this->getApplicationId());
+			return $this->path('app', 'log');
 		});
 
 		$this->registerPath('res', function() : string
 		{
-			return $this->path('app', 'res', $this->getApplicationId());
+			return $this->path('app', 'res');
 		});
 
 		$this->registerPath('views', function() : string
 		{
-			return $this->path('app', 'views', $this->getApplicationId());
+			return $this->path('app', 'views');
 		});
 
 		$this->registerPath('assets', function() : string
@@ -174,6 +171,11 @@ final class Fenric
 				return new Collection(include $this->path('configs', 'development', "{$resolver}.php"));
 			}
 
+			if (file_exists($this->path('configs', "{$resolver}.example.php")))
+			{
+				return new Collection(include $this->path('configs', "{$resolver}.example.php"));
+			}
+
 			if (file_exists($this->path('configs', "{$resolver}.php")))
 			{
 				return new Collection(include $this->path('configs', "{$resolver}.php"));
@@ -192,9 +194,9 @@ final class Fenric
 				return new Collection(include $this->path('locales', $this->getApplicationLanguage(), "{$resolver}.local.php"));
 			}
 
-			if (file_exists($this->path('locales', $this->getApplicationFallbackLanguage(), "{$resolver}.local.php")))
+			if (file_exists($this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.local.php")))
 			{
-				return new Collection(include $this->path('locales', $this->getApplicationFallbackLanguage(), "{$resolver}.local.php"));
+				return new Collection(include $this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.local.php"));
 			}
 
 			if (file_exists($this->path('locales', $this->getApplicationLanguage(), "{$resolver}.php")))
@@ -202,9 +204,9 @@ final class Fenric
 				return new Collection(include $this->path('locales', $this->getApplicationLanguage(), "{$resolver}.php"));
 			}
 
-			if (file_exists($this->path('locales', $this->getApplicationFallbackLanguage(), "{$resolver}.php")))
+			if (file_exists($this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.php")))
 			{
-				return new Collection(include $this->path('locales', $this->getApplicationFallbackLanguage(), "{$resolver}.php"));
+				return new Collection(include $this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.php"));
 			}
 
 			throw new RuntimeException(sprintf('Unable to find locale [%s].', $resolver));
@@ -313,44 +315,27 @@ final class Fenric
 	{
 		$this->registerClassLoader(function(string $filename) : bool
 		{
-			if (file_exists($this->path('app', 'classes', $this->getApplicationId(), "{$filename}.php")))
+			if (file_exists($this->path('app', 'classes', "{$filename}.local.php")))
 			{
-				require_once $this->path('app', 'classes', $this->getApplicationId(), "{$filename}.php");
+				require_once $this->path('app', 'classes', "{$filename}.local.php");
 
 				return true;
 			}
 
-			if (file_exists($this->path('app', 'classes', $this->getApplicationId(), "{$filename}.example.php")))
+			if (file_exists($this->path('app', 'classes', "{$filename}.php")))
 			{
-				require_once $this->path('app', 'classes', $this->getApplicationId(), "{$filename}.example.php");
+				require_once $this->path('app', 'classes', "{$filename}.php");
 
 				return true;
 			}
 
-			return false;
-		});
-
-		$this->registerClassLoader(function(string $filename) : bool
-		{
-			if (file_exists($this->path('app', 'classes.share', "{$filename}.php")))
+			if (file_exists($this->path('app', 'classes', "{$filename}.example.php")))
 			{
-				require_once $this->path('app', 'classes.share', "{$filename}.php");
+				require_once $this->path('app', 'classes', "{$filename}.example.php");
 
 				return true;
 			}
 
-			if (file_exists($this->path('app', 'classes.share', "{$filename}.example.php")))
-			{
-				require_once $this->path('app', 'classes.share', "{$filename}.example.php");
-
-				return true;
-			}
-
-			return false;
-		});
-
-		$this->registerClassLoader(function(string $filename) : bool
-		{
 			if (file_exists($this->path('core', 'classes', "{$filename}.php")))
 			{
 				require_once $this->path('core', 'classes', "{$filename}.php");
@@ -496,17 +481,6 @@ final class Fenric
 	}
 
 	/**
-	 * Регистрация обработчика неперехваченных исключений
-	 */
-	public function registerUncaughtExceptionHandler(callable $handler) : void
-	{
-		$this->uncaughtExceptionHandlers[] = function() use($handler) : void
-		{
-			call_user_func_array($handler, func_get_args());
-		};
-	}
-
-	/**
 	 * Регистрация приоритетного загрузчика классов фреймворка
 	 */
 	public function registerPrimaryClassLoader(callable $loader) : void
@@ -515,6 +489,17 @@ final class Fenric
 		{
 			return call_user_func_array($loader, func_get_args());
 		});
+	}
+
+	/**
+	 * Регистрация обработчика неперехваченных исключений
+	 */
+	public function registerUncaughtExceptionHandler(callable $handler) : void
+	{
+		$this->uncaughtExceptionHandlers[] = function() use($handler) : void
+		{
+			call_user_func_array($handler, func_get_args());
+		};
 	}
 
 	/**
@@ -591,22 +576,6 @@ final class Fenric
 	}
 
 	/**
-	 * Установка идентификатора приложения
-	 */
-	public function setApplicationId(string $applicationId) : void
-	{
-		$this->applicationId = $applicationId;
-	}
-
-	/**
-	 * Получение идентификатора приложения
-	 */
-	public function getApplicationId() : string
-	{
-		return $this->applicationId;
-	}
-
-	/**
 	 * Установка языка приложения
 	 */
 	public function setApplicationLanguage(string $language) : void
@@ -617,7 +586,7 @@ final class Fenric
 	/**
 	 * Получение языка приложения
 	 */
-	public function getApplicationLanguage(string $default = 'ru_RU') : string
+	public function getApplicationLanguage(string $default = 'ru') : string
 	{
 		return $this->callSharedService('config', ['app'])->get('language', $default);
 	}
@@ -625,17 +594,17 @@ final class Fenric
 	/**
 	 * Установка запасного языка приложения
 	 */
-	public function setApplicationFallbackLanguage(string $language) : void
+	public function setApplicationDefaultLanguage(string $language) : void
 	{
-		$this->callSharedService('config', ['app'])->set('language.fallback', $language);
+		$this->callSharedService('config', ['app'])->set('language.default', $language);
 	}
 
 	/**
 	 * Получение запасного языка приложения
 	 */
-	public function getApplicationFallbackLanguage(string $default = 'en_US') : string
+	public function getApplicationDefaultLanguage(string $default = 'en') : string
 	{
-		return $this->callSharedService('config', ['app'])->get('language.fallback', $default);
+		return $this->callSharedService('config', ['app'])->get('language.default', $default);
 	}
 
 	/**
@@ -699,10 +668,6 @@ final class Fenric
 
 			case 'windows' :
 				return 0 === strncasecmp(PHP_OS, 'win', 3);
-				break;
-
-			case $this->getApplicationId() :
-				return true;
 				break;
 		}
 
