@@ -148,16 +148,21 @@ class Router
 						{
 							if (empty($location['port']) || strcmp($request->getPort(), $location['port']) === 0)
 							{
-								$expression = $this->convertRoutePathToRegularExpression($request->getRoot() . $location['path']);
+								$route['expression'] = $this->convertRoutePathToRegularExpression($request->getRoot() . $location['path']);
 
-								if (preg_match($expression, $request->getPath(), $parameters))
+								if (preg_match($route['expression'], $request->getPath(), $parameters))
 								{
 									$parameters = array_filter($parameters, function($value) : bool
 									{
 										return strlen($value) > 0;
 									});
 
-									return ['controller' => $controller, 'eavesdropper' => $eavesdropper, 'parameters' => $parameters];
+									return [
+										'route' => $route,
+										'controller' => $controller,
+										'eavesdropper' => $eavesdropper,
+										'parameters' => $parameters,
+									];
 								}
 							}
 						}
@@ -174,8 +179,16 @@ class Router
 	{
 		$response->setStatus(404);
 
+		fenric('event::router.running')->run([
+			$this, $request, $response
+		]);
+
 		if ($match = $this->match($request))
 		{
+			fenric('event::router.matching')->run([
+				$this, $request, $response, & $match
+			]);
+
 			if (is_string($match['controller']))
 			{
 				if (class_exists($match['controller']))
@@ -188,9 +201,13 @@ class Router
 
 						$controller = new $match['controller']($this, $request, $response);
 
+						fenric('event::router.eavesdropping')->run([
+							$this, $request, $response, $controller, $match
+						]);
+
 						if ($match['eavesdropper'] instanceof Closure)
 						{
-							$match['eavesdropper']($this, $request, $response, $controller);
+							$match['eavesdropper']($this, $request, $response, $controller, $match);
 						}
 
 						if ($controller->preInit())
