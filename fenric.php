@@ -11,7 +11,18 @@
 /**
  * Import classes
  */
-use Fenric\{Collection, Console, Event, Logger, Query, Request, Response, Router, Session, View};
+use Fenric\{
+	Collection,
+	Console,
+	Event,
+	Logger,
+	Query,
+	Request,
+	Response,
+	Router,
+	Session,
+	View
+};
 
 /**
  * Main class of framework
@@ -22,7 +33,7 @@ final class Fenric
 	/**
 	 * Версия фреймворка
 	 */
-	const VERSION = '2.0.0';
+	public const VERSION = '2.0.1';
 
 	/**
 	 * Зарегистрированные пути фреймворка
@@ -520,11 +531,11 @@ final class Fenric
 	{
 		spl_autoload_register(function($class)
 		{
-			if (0 === strncmp('Fenric\\', $class, 7))
+			if (strncmp('Fenric\\', $class, 7) === 0)
 			{
 				$filename = strtr(substr($class, 7), '\\', '/');
 
-				if (count($this->classLoaders) > 0)
+				if (count($this->classLoaders))
 				{
 					foreach ($this->classLoaders as $loader)
 					{
@@ -592,7 +603,7 @@ final class Fenric
 	}
 
 	/**
-	 * Установка запасного языка приложения
+	 * Установка языка приложения по умолчанию
 	 */
 	public function setApplicationDefaultLanguage(string $language) : void
 	{
@@ -600,9 +611,9 @@ final class Fenric
 	}
 
 	/**
-	 * Получение запасного языка приложения
+	 * Получение языка приложения по умолчанию
 	 */
-	public function getApplicationDefaultLanguage(string $default = 'en') : string
+	public function getApplicationDefaultLanguage(string $default = 'en-us') : string
 	{
 		return $this->callSharedService('config', ['app'])->get('language.default', $default);
 	}
@@ -646,23 +657,27 @@ final class Fenric
 				return 0 === strcasecmp(PHP_SAPI, 'cli');
 				break;
 
-			case 'test' :
-				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'test');
-				break;
-
-			case 'production' :
-				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'production');
+			case 'local' :
+				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'local');
 				break;
 
 			case 'development' :
 				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'development');
 				break;
 
+			case 'production' :
+				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'production');
+				break;
+
+			case 'test' :
+				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'test');
+				break;
+
 			case 'linux' :
 				return 0 === strcasecmp(PHP_OS, 'linux');
 				break;
 
-			case 'macintosh' :
+			case 'darwin' :
 				return 0 === strcasecmp(PHP_OS, 'darwin');
 				break;
 
@@ -678,16 +693,16 @@ final class Fenric
 /**
  * Основная функция фреймворка
  */
-function fenric($alias = null, $params = null)
+function fenric(string $alias = null, $params = null)
 {
 	static $self;
 
-	if (is_null($self))
+	if (empty($self))
 	{
 		$self = new Fenric();
 	}
 
-	if (is_string($alias))
+	if (isset($alias))
 	{
 		if (strpos($alias, '::') !== false)
 		{
@@ -707,7 +722,12 @@ function fenric($alias = null, $params = null)
  */
 switch (getenv('ENVIRONMENT'))
 {
-	case 'test' :
+	case 'local' :
+		error_reporting(E_ALL);
+		ini_set('display_errors', 'On');
+		break;
+
+	case 'development' :
 		error_reporting(E_ALL);
 		ini_set('display_errors', 'On');
 		break;
@@ -717,7 +737,7 @@ switch (getenv('ENVIRONMENT'))
 		ini_set('display_errors', 'Off');
 		break;
 
-	case 'development' :
+	case 'test' :
 		error_reporting(E_ALL);
 		ini_set('display_errors', 'On');
 		break;
