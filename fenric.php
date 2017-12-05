@@ -33,7 +33,7 @@ final class Fenric
 	/**
 	 * Версия фреймворка
 	 */
-	public const VERSION = '2.0.1';
+	public const VERSION = '2.0.2';
 
 	/**
 	 * Зарегистрированные пути фреймворка
