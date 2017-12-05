@@ -179,13 +179,13 @@ class Router
 	{
 		$response->setStatus(404);
 
-		fenric('event::router.running')->run([
+		fenric('event::router.runned')->run([
 			$this, $request, $response
 		]);
 
 		if ($match = $this->match($request))
 		{
-			fenric('event::router.matching')->run([
+			fenric('event::router.matched')->run([
 				$this, $request, $response, & $match
 			]);
 
