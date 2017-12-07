@@ -33,7 +33,7 @@ final class Fenric
 	/**
 	 * Версия фреймворка
 	 */
-	public const VERSION = '2.0.2';
+	public const VERSION = '2.0.3';
 
 	/**
 	 * Зарегистрированные пути фреймворка
@@ -167,19 +167,9 @@ final class Fenric
 				return new Collection(include $this->path('configs', "{$resolver}.local.php"));
 			}
 
-			if (file_exists($this->path('configs', 'test', "{$resolver}.php")) && $this->is('test'))
+			if (file_exists($this->path('configs', getenv('ENVIRONMENT'), "{$resolver}.php")))
 			{
-				return new Collection(include $this->path('configs', 'test', "{$resolver}.php"));
-			}
-
-			if (file_exists($this->path('configs', 'production', "{$resolver}.php")) && $this->is('production'))
-			{
-				return new Collection(include $this->path('configs', 'production', "{$resolver}.php"));
-			}
-
-			if (file_exists($this->path('configs', 'development', "{$resolver}.php")) && $this->is('development'))
-			{
-				return new Collection(include $this->path('configs', 'development', "{$resolver}.php"));
+				return new Collection(include $this->path('configs', getenv('ENVIRONMENT'), "{$resolver}.php"));
 			}
 
 			if (file_exists($this->path('configs', "{$resolver}.example.php")))
@@ -739,7 +729,7 @@ switch (getenv('ENVIRONMENT'))
 
 	case 'test' :
 		error_reporting(E_ALL);
-		ini_set('display_errors', 'On');
+		ini_set('display_errors', 'Off');
 		break;
 
 	default :
