@@ -142,26 +142,19 @@ class Router
 				{
 					if ($location = parse_url($location))
 					{
-						$location += ['path' => $request->getPath()];
-
 						if (empty($location['host']) || strcmp($request->getHost(), $location['host']) === 0)
 						{
 							if (empty($location['port']) || strcmp($request->getPort(), $location['port']) === 0)
 							{
-								$route['expression'] = $this->convertRoutePathToRegularExpression($request->getRoot() . $location['path']);
+								$route['expression'] = $this->convertRoutePathToRegularExpression($request->getRoot() . $location['path'] ?? '/');
 
 								if (preg_match($route['expression'], $request->getPath(), $parameters))
 								{
-									$parameters = array_filter($parameters, function($value) : bool
-									{
-										return strlen($value) > 0;
-									});
-
 									return [
 										'route' => $route,
 										'controller' => $controller,
 										'eavesdropper' => $eavesdropper,
-										'parameters' => $parameters,
+										'parameters' => array_filter($parameters),
 									];
 								}
 							}
@@ -179,15 +172,15 @@ class Router
 	{
 		$response->setStatus(404);
 
-		fenric('event::router.runned')->run([
-			$this, $request, $response
-		]);
+		fenric('event::router.runned')->run(
+			[$this, $request, $response]
+		);
 
 		if ($match = $this->match($request))
 		{
-			fenric('event::router.matched')->run([
-				$this, $request, $response, & $match
-			]);
+			fenric('event::router.matched')->run(
+				[$this, $request, $response, & $match]
+			);
 
 			if (is_string($match['controller']))
 			{
@@ -201,9 +194,9 @@ class Router
 
 						$controller = new $match['controller']($this, $request, $response);
 
-						fenric('event::router.eavesdropping')->run([
-							$this, $request, $response, $controller, $match
-						]);
+						fenric('event::router.eavesdropping')->run(
+							[$this, $request, $response, $controller, $match]
+						);
 
 						if ($match['eavesdropper'] instanceof Closure)
 						{
@@ -221,6 +214,10 @@ class Router
 				}
 			}
 		}
+
+		fenric('event::router.digression')->run(
+			[$this, $request, $response]
+		);
 
 		if ($digression instanceof Closure)
 		{
