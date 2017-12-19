@@ -640,12 +640,12 @@ final class Fenric
 				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'local');
 				break;
 
-			case 'testing' :
-				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'testing');
-				break;
-
 			case 'development' :
 				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'development');
+				break;
+
+			case 'testing' :
+				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'testing');
 				break;
 
 			case 'staging' :
