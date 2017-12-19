@@ -16,7 +16,6 @@ use Fenric\{
 	Console,
 	Event,
 	Logger,
-	Query,
 	Request,
 	Response,
 	Router,
@@ -25,7 +24,7 @@ use Fenric\{
 };
 
 /**
- * Main class of framework
+ * Main class of the framework
  */
 final class Fenric
 {
@@ -33,20 +32,20 @@ final class Fenric
 	/**
 	 * Версия фреймворка
 	 */
-	public const VERSION = '2.0.3';
+	public const VERSION = '2.0.4';
 
 	/**
-	 * Зарегистрированные пути фреймворка
+	 * Зарегистрированные пути
 	 */
 	private $paths = [];
 
 	/**
-	 * Зарегистрированные службы фреймворка
+	 * Зарегистрированные службы
 	 */
 	private $services = [];
 
 	/**
-	 * Зарегистрированные загрузчики классов фреймворка
+	 * Зарегистрированные загрузчики классов
 	 */
 	private $classLoaders = [];
 
@@ -77,7 +76,7 @@ final class Fenric
 	}
 
 	/**
-	 * Регистрация базовых путей фреймворка
+	 * Регистрация базовых путей
 	 */
 	public function registerBasePaths() : void
 	{
@@ -153,12 +152,12 @@ final class Fenric
 	}
 
 	/**
-	 * Регистрация базовых служб фреймворка
+	 * Регистрация базовых служб
 	 */
 	public function registerBaseServices() : void
 	{
 		/**
-		 * Регистрация в контейнере фреймворка именованной службы для работы с конфигурационными файлами
+		 * Регистрация именованной службы для работы с конфигурационными файлами
 		 */
 		$this->registerResolvableSharedService('config', function(string $resolver = 'default') : Collection
 		{
@@ -172,21 +171,21 @@ final class Fenric
 				return new Collection(include $this->path('configs', getenv('ENVIRONMENT'), "{$resolver}.php"));
 			}
 
-			if (file_exists($this->path('configs', "{$resolver}.example.php")))
-			{
-				return new Collection(include $this->path('configs', "{$resolver}.example.php"));
-			}
-
 			if (file_exists($this->path('configs', "{$resolver}.php")))
 			{
 				return new Collection(include $this->path('configs', "{$resolver}.php"));
+			}
+
+			if (file_exists($this->path('configs', "{$resolver}.example.php")))
+			{
+				return new Collection(include $this->path('configs', "{$resolver}.example.php"));
 			}
 
 			throw new RuntimeException(sprintf('Unable to find config [%s].', $resolver));
 		});
 
 		/**
-		 * Регистрация в контейнере фреймворка именованной службы для работы с локализационными файлами
+		 * Регистрация именованной службы для работы с локализационными файлами
 		 */
 		$this->registerResolvableSharedService('locale', function(string $resolver = 'default') : Collection
 		{
@@ -214,7 +213,7 @@ final class Fenric
 		});
 
 		/**
-		 * Регистрация в контейнере фреймворка именованной службы для работы с событиями
+		 * Регистрация именованной службы для работы с событиями
 		 */
 		$this->registerResolvableSharedService('event', function(string $resolver = 'default') : Event
 		{
@@ -222,7 +221,7 @@ final class Fenric
 		});
 
 		/**
-		 * Регистрация в контейнере фреймворка именованной службы для работы с журналами
+		 * Регистрация именованной службы для работы с журналами
 		 */
 		$this->registerResolvableSharedService('logger', function(string $resolver = 'default') : Logger
 		{
@@ -230,7 +229,7 @@ final class Fenric
 		});
 
 		/**
-		 * Регистрация в контейнере фреймворка одиночной службы для обработки HTTP запроса
+		 * Регистрация одиночной службы для обработки HTTP запроса
 		 */
 		$this->registerDisposableSharedService('request', function() : Request
 		{
@@ -238,7 +237,7 @@ final class Fenric
 		});
 
 		/**
-		 * Регистрация в контейнере фреймворка одиночной службы для генерации HTTP ответа
+		 * Регистрация одиночной службы для генерации HTTP ответа
 		 */
 		$this->registerDisposableSharedService('response', function() : Response
 		{
@@ -246,7 +245,7 @@ final class Fenric
 		});
 
 		/**
-		 * Регистрация в контейнере фреймворка одиночной службы для работы с маршрутизатором
+		 * Регистрация одиночной службы для работы с маршрутизатором
 		 */
 		$this->registerDisposableSharedService('router', function() : Router
 		{
@@ -254,7 +253,7 @@ final class Fenric
 		});
 
 		/**
-		 * Регистрация в контейнере фреймворка одиночной службы для работы с сессией
+		 * Регистрация одиночной службы для работы с сессией
 		 */
 		$this->registerDisposableSharedService('session', function() : Session
 		{
@@ -262,7 +261,7 @@ final class Fenric
 		});
 
 		/**
-		 * Регистрация в контейнере фреймворка простой службы для работы с представлениями
+		 * Регистрация простой службы для работы с представлениями
 		 */
 		$this->registerSharedService('view', function(string $resolver, array $variables = null) : View
 		{
@@ -270,34 +269,7 @@ final class Fenric
 		});
 
 		/**
-		 * Регистрация в контейнере фреймворка простой службы для работы с конструктором SQL запросов
-		 */
-		$this->registerSharedService('query', function(string $connection = 'default') : Query
-		{
-			static $connections;
-
-			if (empty($connections[$connection]))
-			{
-				if ($this->callSharedService('config', ['database'])->exists($connection))
-				{
-					$options = $this->callSharedService('config', ['database'])->get($connection);
-
-					if (isset($options['dsn'], $options['user'], $options['password']))
-					{
-						$options['parameters'][PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
-
-						$connections[$connection] = new PDO($options['dsn'], $options['user'], $options['password'], $options['parameters']);
-					}
-					else throw new RuntimeException(sprintf('Connection [%s] configured incorrectly.', $connection));
-				}
-				else throw new RuntimeException(sprintf('Connection [%s] is not configured.', $connection));
-			}
-
-			return new Query($connections[$connection]);
-		});
-
-		/**
-		 * Регистрация в контейнере фреймворка одиночной службы для работы с консолью
+		 * Регистрация одиночной службы для работы с консолью
 		 */
 		$this->is('cli') and $this->registerDisposableSharedService('console', function() : Console
 		{
@@ -310,11 +282,11 @@ final class Fenric
 	}
 
 	/**
-	 * Регистрация базовых загрузчиков классов фреймворка
+	 * Регистрация базовых загрузчиков классов
 	 */
 	public function registerBaseClassLoaders() : void
 	{
-		$this->registerClassLoader(function(string $filename) : bool
+		$this->registerClassLoader(function(string $filename, string $classname) : bool
 		{
 			if (file_exists($this->path('app', 'classes', "{$filename}.local.php")))
 			{
@@ -323,6 +295,11 @@ final class Fenric
 				return true;
 			}
 
+			return false;
+		});
+
+		$this->registerClassLoader(function(string $filename, string $classname) : bool
+		{
 			if (file_exists($this->path('app', 'classes', "{$filename}.php")))
 			{
 				require_once $this->path('app', 'classes', "{$filename}.php");
@@ -330,6 +307,11 @@ final class Fenric
 				return true;
 			}
 
+			return false;
+		});
+
+		$this->registerClassLoader(function(string $filename, string $classname) : bool
+		{
 			if (file_exists($this->path('app', 'classes', "{$filename}.example.php")))
 			{
 				require_once $this->path('app', 'classes', "{$filename}.example.php");
@@ -337,6 +319,11 @@ final class Fenric
 				return true;
 			}
 
+			return false;
+		});
+
+		$this->registerClassLoader(function(string $filename, string $classname) : bool
+		{
 			if (file_exists($this->path('core', 'classes', "{$filename}.php")))
 			{
 				require_once $this->path('core', 'classes', "{$filename}.php");
@@ -349,7 +336,7 @@ final class Fenric
 	}
 
 	/**
-	 * Сборка пути фреймворка
+	 * Сборка пути
 	 */
 	public function path(string ...$parts) : string
 	{
@@ -363,7 +350,7 @@ final class Fenric
 
 			if (count($parts) > 0)
 			{
-				$built .= $ds . implode($ds, $parts);
+				$built .= $ds . join($ds, $parts);
 			}
 
 			return $built;
@@ -373,7 +360,7 @@ final class Fenric
 	}
 
 	/**
-	 * Регистрация пути фреймворка
+	 * Регистрация пути
 	 */
 	public function registerPath(string $alias, callable $builder) : void
 	{
@@ -384,7 +371,7 @@ final class Fenric
 	}
 
 	/**
-	 * Регистрация службы фреймворка
+	 * Регистрация службы
 	 */
 	public function registerSharedService(string $alias, callable $service) : void
 	{
@@ -395,7 +382,7 @@ final class Fenric
 	}
 
 	/**
-	 * Регистрация одиночной службы фреймворка
+	 * Регистрация одиночной службы
 	 */
 	public function registerDisposableSharedService(string $alias, callable $service) : void
 	{
@@ -411,7 +398,7 @@ final class Fenric
 	}
 
 	/**
-	 * Регистрация именованной службы фреймворка
+	 * Регистрация именованной службы
 	 */
 	public function registerResolvableSharedService(string $alias, callable $service) : void
 	{
@@ -427,7 +414,7 @@ final class Fenric
 	}
 
 	/**
-	 * Разрегистрация службы фреймворка
+	 * Разрегистрация службы
 	 */
 	public function unregisterSharedService(string $alias) : bool
 	{
@@ -445,7 +432,7 @@ final class Fenric
 	}
 
 	/**
-	 * Проверка существования службы фреймворка
+	 * Проверка существования службы
 	 */
 	public function existsSharedService(string $alias) : bool
 	{
@@ -458,7 +445,7 @@ final class Fenric
 	}
 
 	/**
-	 * Вызов службы фреймворка
+	 * Вызов службы
 	 */
 	public function callSharedService(string $alias, array $params = [])
 	{
@@ -471,7 +458,7 @@ final class Fenric
 	}
 
 	/**
-	 * Регистрация загрузчика классов фреймворка
+	 * Регистрация загрузчика классов
 	 */
 	public function registerClassLoader(callable $loader) : void
 	{
@@ -482,7 +469,7 @@ final class Fenric
 	}
 
 	/**
-	 * Регистрация приоритетного загрузчика классов фреймворка
+	 * Регистрация приоритетного загрузчика классов
 	 */
 	public function registerPrimaryClassLoader(callable $loader) : void
 	{
@@ -515,21 +502,23 @@ final class Fenric
 	}
 
 	/**
-	 * Автозагрузка классов фреймворка
+	 * Автозагрузка классов
 	 */
 	public function autoload() : void
 	{
 		spl_autoload_register(function($class)
 		{
+			$ds = DIRECTORY_SEPARATOR;
+
 			if (strncmp('Fenric\\', $class, 7) === 0)
 			{
-				$filename = strtr(substr($class, 7), '\\', '/');
+				$filename = strtr(substr($class, 7), '\\', $ds);
 
 				if (count($this->classLoaders))
 				{
 					foreach ($this->classLoaders as $loader)
 					{
-						if ($loader($filename))
+						if ($loader($filename, $class))
 						{
 							return true;
 						}
@@ -547,7 +536,7 @@ final class Fenric
 	 */
 	public function handleErrors() : void
 	{
-		set_error_handler(function($severity, $message, $file, $line)
+		set_error_handler(function($severity, $message, $file, $line) : void
 		{
 			throw new ErrorException($message, 0, $severity, $file, $line);
 		});
@@ -558,9 +547,9 @@ final class Fenric
 	 */
 	public function handleUncaughtExceptions() : void
 	{
-		set_exception_handler(function($e)
+		set_exception_handler(function(Throwable $e) : void
 		{
-			$format = 'Uncaught exception %s: %s in file %s on line %d.';
+			$format = '%s: %s in file %s on line %d.';
 
 			$this->callSharedService('logger', ['errors'])->error(
 				sprintf($format, get_class($e), $e->getMessage(), $e->getFile(), $e->getLine()) . PHP_EOL . $e->getTraceAsString()
@@ -611,7 +600,7 @@ final class Fenric
 	/**
 	 * Локализация сообщения
 	 */
-	public function t(string $section, string $message, array $context = []) : string
+	public function translate(string $section, string $message, array $context = []) : string
 	{
 		if ($this->callSharedService('locale', [$section])->exists($message))
 		{
@@ -651,16 +640,20 @@ final class Fenric
 				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'local');
 				break;
 
+			case 'testing' :
+				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'testing');
+				break;
+
 			case 'development' :
 				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'development');
 				break;
 
-			case 'production' :
-				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'production');
+			case 'staging' :
+				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'staging');
 				break;
 
-			case 'test' :
-				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'test');
+			case 'production' :
+				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'production');
 				break;
 
 			case 'linux' :
@@ -681,7 +674,7 @@ final class Fenric
 }
 
 /**
- * Основная функция фреймворка
+ * Main function of the framework
  */
 function fenric(string $alias = null, $params = null)
 {
@@ -705,36 +698,4 @@ function fenric(string $alias = null, $params = null)
 	}
 
 	return $self;
-}
-
-/**
- * Настройка окружения фреймворка
- */
-switch (getenv('ENVIRONMENT'))
-{
-	case 'local' :
-		error_reporting(E_ALL);
-		ini_set('display_errors', 'On');
-		break;
-
-	case 'development' :
-		error_reporting(E_ALL);
-		ini_set('display_errors', 'On');
-		break;
-
-	case 'production' :
-		error_reporting(E_ALL);
-		ini_set('display_errors', 'Off');
-		break;
-
-	case 'test' :
-		error_reporting(E_ALL);
-		ini_set('display_errors', 'Off');
-		break;
-
-	default :
-		error_reporting(E_ALL);
-		ini_set('display_errors', 'On');
-		putenv('ENVIRONMENT=development');
-		break;
 }
