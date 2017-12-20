@@ -19,7 +19,6 @@ use Fenric\{
 	Request,
 	Response,
 	Router,
-	Session,
 	View
 };
 
@@ -125,9 +124,9 @@ final class Fenric
 			return $this->path('app', 'log');
 		});
 
-		$this->registerPath('res', function() : string
+		$this->registerPath('resource', function() : string
 		{
-			return $this->path('app', 'res');
+			return $this->path('app', 'resource');
 		});
 
 		$this->registerPath('views', function() : string
@@ -250,14 +249,6 @@ final class Fenric
 		$this->registerDisposableSharedService('router', function() : Router
 		{
 			return new Router();
-		});
-
-		/**
-		 * Регистрация одиночной службы для работы с сессией
-		 */
-		$this->registerDisposableSharedService('session', function() : Session
-		{
-			return new Session();
 		});
 
 		/**
@@ -432,7 +423,7 @@ final class Fenric
 	}
 
 	/**
-	 * Проверка существования службы
+	 * Существование службы
 	 */
 	public function existsSharedService(string $alias) : bool
 	{
