@@ -17,15 +17,47 @@ class Request extends Collection
 {
 
 	/**
-	 * Коллекции данных
+	 * Collection with parameters of the request uri
 	 */
-	public $query, $post, $files, $cookies, $environment, $parameters;
+	public $query;
 
 	/**
-	 * Конструктор класса
+	 * Collection with parameters of the request body
+	 */
+	public $post;
+
+	/**
+	 * Collection with files of the request
+	 */
+	public $files;
+
+	/**
+	 * Collection with cookies of the request
+	 */
+	public $cookies;
+
+	/**
+	 * Collection with environment of the request
+	 */
+	public $environment;
+
+	/**
+	 * Collection with parameters of the request route
+	 */
+	public $parameters;
+
+	/**
+	 * Session of the request route
+	 */
+	public $session;
+
+	/**
+	 * Constructor of the class
 	 */
 	public function __construct()
 	{
+		parent::__construct($_REQUEST);
+
 		$this->query = new Collection($_GET);
 
 		$this->post = new Collection($_POST);
@@ -38,11 +70,11 @@ class Request extends Collection
 
 		$this->parameters = new Collection();
 
-		parent::__construct($_REQUEST);
+		$this->session = new Session();
 	}
 
 	/**
-	 * Получение тела запроса
+	 * Gets the request body
 	 */
 	public function getBody() : string
 	{
@@ -50,7 +82,7 @@ class Request extends Collection
 	}
 
 	/**
-	 * Получение родительской директории
+	 * Gets the request root folder
 	 */
 	public function getRoot() : string
 	{
@@ -62,7 +94,7 @@ class Request extends Collection
 	}
 
 	/**
-	 * Получение запрошенной схемы
+	 * Gets the request scheme
 	 */
 	public function getScheme() : string
 	{
@@ -70,47 +102,47 @@ class Request extends Collection
 	}
 
 	/**
-	 * Получение запрошенного хоста
+	 * Gets the request host
 	 */
-	public function getHost() : ?string
+	public function getHost() :? string
 	{
 		return parse_url('scheme://' . $this->environment->get('HTTP_HOST'), PHP_URL_HOST);
 	}
 
 	/**
-	 * Получение запрошенного порта
+	 * Gets the request port
 	 */
-	public function getPort() : ?int
+	public function getPort() :? int
 	{
 		return parse_url('scheme://' . $this->environment->get('HTTP_HOST'), PHP_URL_PORT);
 	}
 
 	/**
-	 * Получение запрошенного пути
+	 * Gets the request path
 	 */
-	public function getPath() : ?string
+	public function getPath() :? string
 	{
 		return parse_url(urldecode($this->environment->get('REQUEST_URI')), PHP_URL_PATH);
 	}
 
 	/**
-	 * Получение запрошенных параметров
+	 * Gets the request query
 	 */
-	public function getQuery() : ?string
+	public function getQuery() :? string
 	{
 		return parse_url(urldecode($this->environment->get('REQUEST_URI')), PHP_URL_QUERY);
 	}
 
 	/**
-	 * Получение HTTP метода
+	 * Gets the request method
 	 */
 	public function getMethod() : string
 	{
-		return $this->environment->get('REQUEST_METHOD');
+		return strtoupper($this->environment->get('REQUEST_METHOD'));
 	}
 
 	/**
-	 * Это OPTIONS запрос
+	 * Checks whether the request method is OPTIONS
 	 */
 	public function isOptions() : bool
 	{
@@ -118,7 +150,7 @@ class Request extends Collection
 	}
 
 	/**
-	 * Это HEAD запрос
+	 * Checks whether the request method is HEAD
 	 */
 	public function isHead() : bool
 	{
@@ -126,7 +158,7 @@ class Request extends Collection
 	}
 
 	/**
-	 * Это GET запрос
+	 * Checks whether the request method is GET
 	 */
 	public function isGet() : bool
 	{
@@ -134,7 +166,7 @@ class Request extends Collection
 	}
 
 	/**
-	 * Это POST запрос
+	 * Checks whether the request method is POST
 	 */
 	public function isPost() : bool
 	{
@@ -142,7 +174,7 @@ class Request extends Collection
 	}
 
 	/**
-	 * Это PATCH запрос
+	 * Checks whether the request method is PATCH
 	 */
 	public function isPatch() : bool
 	{
@@ -150,7 +182,7 @@ class Request extends Collection
 	}
 
 	/**
-	 * Это DELETE запрос
+	 * Checks whether the request method is DELETE
 	 */
 	public function isDelete() : bool
 	{
@@ -158,7 +190,7 @@ class Request extends Collection
 	}
 
 	/**
-	 * Это PUT запрос
+	 * Checks whether the request method is PUT
 	 */
 	public function isPut() : bool
 	{
@@ -166,18 +198,18 @@ class Request extends Collection
 	}
 
 	/**
-	 * Это безопасный запрос
+	 * Checks whether the request is sent via HTTPS
 	 */
 	public function isSecure() : bool
 	{
-		return 0 === strcmp($this->environment->get('HTTPS'), 'on');
+		return 0 === strcasecmp($this->environment->get('HTTPS'), 'on');
 	}
 
 	/**
-	 * Это асинхронный запрос
+	 * Checks whether the request is sent via AJAX
 	 */
 	public function isAjax() : bool
 	{
-		return 0 === strcmp($this->environment->get('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest');
+		return 0 === strcasecmp($this->environment->get('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest');
 	}
 }
