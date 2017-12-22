@@ -74,66 +74,6 @@ class Request extends Collection
 	}
 
 	/**
-	 * Gets the request body
-	 */
-	public function getBody() : string
-	{
-		return file_get_contents('php://input');
-	}
-
-	/**
-	 * Gets the request root folder
-	 */
-	public function getRoot() : string
-	{
-		$script = $this->environment->get('SCRIPT_NAME');
-
-		$dirname = pathinfo($script, PATHINFO_DIRNAME);
-
-		return rtrim($dirname, DIRECTORY_SEPARATOR);
-	}
-
-	/**
-	 * Gets the request scheme
-	 */
-	public function getScheme() : string
-	{
-		return $this->isSecure() ? 'https' : 'http';
-	}
-
-	/**
-	 * Gets the request host
-	 */
-	public function getHost() :? string
-	{
-		return parse_url('scheme://' . $this->environment->get('HTTP_HOST'), PHP_URL_HOST);
-	}
-
-	/**
-	 * Gets the request port
-	 */
-	public function getPort() :? int
-	{
-		return parse_url('scheme://' . $this->environment->get('HTTP_HOST'), PHP_URL_PORT);
-	}
-
-	/**
-	 * Gets the request path
-	 */
-	public function getPath() :? string
-	{
-		return parse_url(urldecode($this->environment->get('REQUEST_URI')), PHP_URL_PATH);
-	}
-
-	/**
-	 * Gets the request query
-	 */
-	public function getQuery() :? string
-	{
-		return parse_url(urldecode($this->environment->get('REQUEST_URI')), PHP_URL_QUERY);
-	}
-
-	/**
 	 * Gets the request method
 	 */
 	public function getMethod() : string
@@ -211,5 +151,211 @@ class Request extends Collection
 	public function isAjax() : bool
 	{
 		return 0 === strcasecmp($this->environment->get('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest');
+	}
+
+	/**
+	 * Gets the request folder
+	 */
+	public function getRoot() : string
+	{
+		$script = $this->environment->get('SCRIPT_NAME');
+
+		$dirname = pathinfo($script, PATHINFO_DIRNAME);
+
+		return rtrim($dirname, DIRECTORY_SEPARATOR);
+	}
+
+	/**
+	 * Gets the request scheme
+	 */
+	public function getScheme() : string
+	{
+		return $this->isSecure() ? 'https' : 'http';
+	}
+
+	/**
+	 * Gets the request username
+	 */
+	public function getUsername() :? string
+	{
+		return $this->environment->get('PHP_AUTH_USER');
+	}
+
+	/**
+	 * Gets the request password
+	 */
+	public function getPassword() :? string
+	{
+		return $this->environment->get('PHP_AUTH_PW');
+	}
+
+	/**
+	 * Gets the request host
+	 */
+	public function getHost() :? string
+	{
+		if (! ($host = $this->environment->get('HTTP_HOST')))
+		{
+			if (! ($host = $this->environment->get('SERVER_NAME')))
+			{
+				if (! ($host = $this->environment->get('SERVER_ADDR')))
+				{
+					return null;
+				}
+			}
+		}
+
+		return $host;
+	}
+
+	/**
+	 * Gets the request URI
+	 */
+	public function getURI() :? string
+	{
+		if (! ($uri = $this->environment->get('REQUEST_URI')))
+		{
+			if (! ($uri = $this->environment->get('SCRIPT_NAME')))
+			{
+				return null;
+			}
+		}
+
+		return $uri;
+	}
+
+	/**
+	 * Gets the request domain
+	 */
+	public function getDomain() :? string
+	{
+		$host = '//' . $this->getHost();
+
+		return parse_url($host, PHP_URL_HOST);
+	}
+
+	/**
+	 * Gets the request port
+	 */
+	public function getPort() :? int
+	{
+		$host = '//' . $this->getHost();
+
+		return parse_url($host, PHP_URL_PORT);
+	}
+
+	/**
+	 * Gets the request path
+	 */
+	public function getPath() :? string
+	{
+		$uri = urldecode($this->getURI());
+
+		return parse_url($uri, PHP_URL_PATH);
+	}
+
+	/**
+	 * Gets the request query
+	 */
+	public function getQuery() :? string
+	{
+		$uri = urldecode($this->getURI());
+
+		return parse_url($uri, PHP_URL_QUERY);
+	}
+
+	/**
+	 * Gets the request URL
+	 */
+	public function getURL(array $params = null) : string
+	{
+		$url = '';
+
+		if ($this->getDomain())
+		{
+			if ($this->getScheme())
+			{
+				$url .= $this->getScheme() . '://';
+			}
+
+			if ($this->getUsername())
+			{
+				$url .= $this->getUsername();
+
+				if ($this->getPassword())
+				{
+					$url .= ':' . $this->getPassword();
+				}
+
+				$url .= '@';
+			}
+
+			$url .= $this->getDomain();
+
+			if ($this->getPort())
+			{
+				$url .= ':' . $this->getPort();
+			}
+		}
+
+		if ($this->getPath())
+		{
+			$url .= $this->getPath();
+		}
+
+		if ($params !== null)
+		{
+			$queries = $this->query->all();
+
+			if (count($params) > 0)
+			{
+				foreach ($params as $key => $value)
+				{
+					if (! ($value === null))
+					{
+						$queries[$key] = $value;
+
+						continue;
+					}
+
+					unset($queries[$key]);
+				}
+			}
+
+			if (count($queries) > 0)
+			{
+				$url .= '?' . http_build_query($queries);
+			}
+		}
+
+		return $url;
+	}
+
+	/**
+	 * Confirms the request path by pattern
+	 */
+	public function confirmPath(string $pattern) : bool
+	{
+		$sanitized = addcslashes($pattern, '\.+?[^]${}=!|:-#');
+
+		$expression = str_replace(['(', '*', '%', ')'], ['(?:', '[^/]*', '.*', ')?'], $sanitized);
+
+		return !! preg_match("#^{$expression}$#u", $this->getPath());
+	}
+
+	/**
+	 * Gets the request body
+	 */
+	public function getBody() : string
+	{
+		return file_get_contents('php://input');
+	}
+
+	/**
+	 * Gets the request body as JSON
+	 */
+	public function getJSON(...$options)
+	{
+		return json_decode($this->getBody(), ...$options);
 	}
 }
