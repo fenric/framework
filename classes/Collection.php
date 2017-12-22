@@ -101,11 +101,21 @@ class Collection
 	}
 
 	/**
-	 * Обновление коллекции
+	 * Дополнение коллекции
 	 */
 	public function update(array $items) : self
 	{
-		$this->items += $items;
+		$this->items = array_merge($items, $this->items);
+
+		return $this;
+	}
+
+	/**
+	 * Обновление коллекции
+	 */
+	public function upgrade(array $items) : self
+	{
+		$this->items = array_merge($this->items, $items);
 
 		return $this;
 	}
@@ -140,5 +150,21 @@ class Collection
 	public function count() : int
 	{
 		return count($this->items);
+	}
+
+	/**
+	 * Получение коллекции в виде JSON данных
+	 */
+	public function toJSON(...$options)
+	{
+		return json_encode($this->items, ...$options);
+	}
+
+	/**
+	 * Получение коллекции в виде QueryString данных
+	 */
+	public function toQueryString(...$options)
+	{
+		return http_build_query($this->items, ...$options);
 	}
 }
