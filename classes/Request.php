@@ -267,7 +267,7 @@ class Request extends Collection
 	/**
 	 * Gets the request URL
 	 */
-	public function getURL(array $params = null) : string
+	public function getURL(array $params = []) : string
 	{
 		$url = '';
 
@@ -301,30 +301,14 @@ class Request extends Collection
 		if ($this->getPath())
 		{
 			$url .= $this->getPath();
-		}
 
-		if ($params !== null)
-		{
-			$queries = $this->query->all();
+			$query = clone $this->query;
 
-			if (count($params) > 0)
+			$query->upgrade($params);
+
+			if ($query->count() > 0)
 			{
-				foreach ($params as $key => $value)
-				{
-					if (! ($value === null))
-					{
-						$queries[$key] = $value;
-
-						continue;
-					}
-
-					unset($queries[$key]);
-				}
-			}
-
-			if (count($queries) > 0)
-			{
-				$url .= '?' . http_build_query($queries);
+				$url .= '?' . $query->toQueryString();
 			}
 		}
 
