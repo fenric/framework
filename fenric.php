@@ -54,6 +54,15 @@ final class Fenric
 	private $uncaughtExceptionHandlers = [];
 
 	/**
+	 * Конструктор класса
+	 */
+	public function __construct()
+	{
+		getenv('ENVIRONMENT') or
+		putenv('ENVIRONMENT=development');
+	}
+
+	/**
 	 * Инициализация фреймворка
 	 */
 	public function init() : void
