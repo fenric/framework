@@ -133,9 +133,9 @@ final class Fenric
 			return $this->path('app', 'log');
 		});
 
-		$this->registerPath('resource', function() : string
+		$this->registerPath('resources', function() : string
 		{
-			return $this->path('app', 'resource');
+			return $this->path('app', 'resources');
 		});
 
 		$this->registerPath('views', function() : string
