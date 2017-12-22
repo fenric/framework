@@ -28,9 +28,11 @@ class Session extends Collection
 	{
 		if ($this->isReady())
 		{
+			$options = fenric('config::session')->all();
+
 			if (session_set_save_handler($handler, false))
 			{
-				if (session_start())
+				if (session_start($options))
 				{
 					$this->update($_SESSION);
 
