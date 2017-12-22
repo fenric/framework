@@ -17,22 +17,27 @@ class Response
 {
 
 	/**
-	 * Статус ответа
+	 * Status of the response
 	 */
 	protected $status = 200;
 
 	/**
-	 * Заголовки ответа
+	 * Headers of the response
 	 */
 	protected $headers = [];
 
 	/**
-	 * Содержимое ответа
+	 * Cookies of the response
+	 */
+	protected $cookies = [];
+
+	/**
+	 * Content of the response
 	 */
 	protected $content = '';
 
 	/**
-	 * Установка статуса ответа
+	 * Sets the response status
 	 */
 	public function setStatus(int $status) : self
 	{
@@ -42,7 +47,7 @@ class Response
 	}
 
 	/**
-	 * Получение статуса ответа
+	 * Gets the response status
 	 */
 	public function getStatus() : int
 	{
@@ -50,7 +55,7 @@ class Response
 	}
 
 	/**
-	 * Установка заголовка ответа
+	 * Sets the response header
 	 */
 	public function setHeader(string $header) : self
 	{
@@ -60,7 +65,7 @@ class Response
 	}
 
 	/**
-	 * Получение заголовков ответа
+	 * Gets the response headers
 	 */
 	public function getHeaders() : array
 	{
@@ -68,7 +73,29 @@ class Response
 	}
 
 	/**
-	 * Установка содержимого ответа
+	 * Sets the response cookie
+	 */
+	public function setCookie(string $name, string $value, int $lifetime = 0, array $options = []) : self
+	{
+		if ($lifetime <> 0) {
+			$lifetime += time();
+		}
+
+		$this->cookies[] = [$name, $value, $lifetime, $options];
+
+		return $this;
+	}
+
+	/**
+	 * Gets the response cookies
+	 */
+	public function getCookies() : array
+	{
+		return $this->cookies;
+	}
+
+	/**
+	 * Sets the response content
 	 */
 	public function setContent(string $content) : self
 	{
@@ -78,19 +105,31 @@ class Response
 	}
 
 	/**
-	 * Установка содержимого ответа в виде JSON данных
+	 * Sets the response content as JSON
 	 */
-	public function setJsonContent($data, int $options = 0, int $depth = 512, string $charset = 'UTF-8') : self
+	public function setJSON($data, int $options = 0, string $charset = 'UTF-8') : self
 	{
 		$this->setHeader(sprintf('Content-Type: application/json; charset=%s', $charset));
 
-		$this->setContent(json_encode($data, $options, $depth));
+		$this->setContent(json_encode($data, $options));
 
 		return $this;
 	}
 
 	/**
-	 * Получение содержимого ответа
+	 * Sets the response content as view
+	 */
+	public function setView(string $name, array $variables = [], string $charset = 'UTF-8') : self
+	{
+		$this->setHeader(sprintf('Content-Type: text/html; charset=%s', $charset));
+
+		$this->setContent(fenric()->callSharedService('view', [$name])->render($variables));
+
+		return $this;
+	}
+
+	/**
+	 * Gets the response content
 	 */
 	public function getContent() : string
 	{
@@ -98,22 +137,121 @@ class Response
 	}
 
 	/**
-	 * Отправка ответа
+	 * Sends the response to the client
 	 */
 	public function send() : void
 	{
-		http_response_code($this->getStatus());
-
-		foreach ($this->getHeaders() as $header)
+		if (fenric('event::http.response.before.send')->run([$this]))
 		{
-			header($header, true, $this->getStatus());
+			if (fenric('event::http.response.before.send.status')->run([$this, & $this->status]))
+			{
+				http_response_code($this->getStatus());
+
+				fenric('event::http.response.after.send.status')->run([$this, $this->status]);
+			}
+
+			if (count($this->getHeaders()) > 0)
+			{
+				if (fenric('event::http.response.before.send.headers')->run([$this, & $this->headers]))
+				{
+					foreach ($this->getHeaders() as $header)
+					{
+						if (fenric('event::http.response.before.send.header')->run([$this, & $header]))
+						{
+							header($header, true, $this->getStatus());
+
+							fenric('event::http.response.after.send.header')->run([$this, $header]);
+						}
+					}
+
+					fenric('event::http.response.after.send.headers')->run([$this, $this->headers]);
+				}
+			}
+
+			if (count($this->getCookies()) > 0)
+			{
+				if (fenric('event::http.response.before.send.cookies')->run([$this, & $this->cookies]))
+				{
+					foreach ($this->getCookies() as $cookie)
+					{
+						if (fenric('event::http.response.before.send.cookie')->run([$this, & $cookie]))
+						{
+							list($name, $value, $lifetime, $options) = $cookie;
+
+							extract($options + fenric('config::cookies')->all(), EXTR_OVERWRITE);
+
+							setcookie($name, $value, $lifetime, $path, $domain, $httpsOnly, $httpOnly);
+
+							fenric('event::http.response.after.send.cookie')->run([$this, $cookie]);
+						}
+					}
+
+					fenric('event::http.response.after.send.cookies')->run([$this, $this->cookies]);
+				}
+			}
+
+			if (fenric('event::http.response.before.send.content')->run([$this, & $this->content]))
+			{
+				file_put_contents('php://output', $this->getContent());
+
+				fenric('event::http.response.after.send.content')->run([$this, $this->content]);
+			}
+
+			fenric('event::http.response.after.send')->run([$this]);
 		}
 
-		echo $this->getContent();
-
+		/**
+		 * @link http://php.net/fastcgi_finish_request
+		 */
 		if (function_exists('fastcgi_finish_request'))
 		{
 			fastcgi_finish_request();
+		}
+	}
+
+	/**
+	 * Removes sent header
+	 */
+	public function removeSentHeader(string $name) : void
+	{
+		foreach (headers_list() as $header)
+		{
+			$parts = explode(':', $header, 2);
+
+			list($key, $value) = $parts;
+
+			if (strcasecmp($key, $name) === 0)
+			{
+				header_remove($key);
+
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Removes sent headers
+	 */
+	public function removeSentHeaders() : void
+	{
+		foreach (headers_list() as $header)
+		{
+			$parts = explode(':', $header, 2);
+
+			list($key, $value) = $parts;
+
+			header_remove($key);
+		}
+	}
+
+	/**
+	 * Removes sent output
+	 */
+	public function removeSentOutput() : void
+	{
+		while (ob_get_level() > 0)
+		{
+			ob_end_clean();
 		}
 	}
 }
