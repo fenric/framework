@@ -295,11 +295,6 @@ final class Fenric
 				return true;
 			}
 
-			return false;
-		});
-
-		$this->registerClassLoader(function(string $filename, string $classname) : bool
-		{
 			if (file_exists($this->path('app', 'classes', "{$filename}.php")))
 			{
 				require_once $this->path('app', 'classes', "{$filename}.php");
@@ -307,11 +302,6 @@ final class Fenric
 				return true;
 			}
 
-			return false;
-		});
-
-		$this->registerClassLoader(function(string $filename, string $classname) : bool
-		{
 			if (file_exists($this->path('app', 'classes', "{$filename}.example.php")))
 			{
 				require_once $this->path('app', 'classes', "{$filename}.example.php");
@@ -319,11 +309,6 @@ final class Fenric
 				return true;
 			}
 
-			return false;
-		});
-
-		$this->registerClassLoader(function(string $filename, string $classname) : bool
-		{
 			if (file_exists($this->path('core', 'classes', "{$filename}.php")))
 			{
 				require_once $this->path('core', 'classes', "{$filename}.php");
@@ -388,12 +373,14 @@ final class Fenric
 	{
 		$this->registerSharedService($alias, function() use($alias, $service)
 		{
-			if (empty($this->services['output.shared.disposable'][$alias]))
+			static $storage = [];
+
+			if (empty($storage[$alias]))
 			{
-				$this->services['output.shared.disposable'][$alias] = call_user_func_array($service, func_get_args());
+				$storage[$alias] = call_user_func_array($service, func_get_args());
 			}
 
-			return $this->services['output.shared.disposable'][$alias];
+			return $storage[$alias];
 		});
 	}
 
@@ -404,12 +391,14 @@ final class Fenric
 	{
 		$this->registerSharedService($alias, function(string $resolver = null) use($alias, $service)
 		{
-			if (empty($this->services['output.shared.resolvable'][$alias][$resolver]))
+			static $storage = [];
+
+			if (empty($storage[$alias][$resolver]))
 			{
-				$this->services['output.shared.resolvable'][$alias][$resolver] = call_user_func_array($service, func_get_args());
+				$storage[$alias][$resolver] = call_user_func_array($service, func_get_args());
 			}
 
-			return $this->services['output.shared.resolvable'][$alias][$resolver];
+			return $storage[$alias][$resolver];
 		});
 	}
 
@@ -421,9 +410,6 @@ final class Fenric
 		if (isset($this->services['shared'][$alias]))
 		{
 			unset($this->services['shared'][$alias]);
-
-			unset($this->services['output.shared.disposable'][$alias]);
-			unset($this->services['output.shared.resolvable'][$alias]);
 
 			return true;
 		}
