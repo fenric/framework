@@ -316,6 +316,18 @@ class Request extends Collection
 	}
 
 	/**
+	 * Confirms the request domain by pattern
+	 */
+	public function confirmDomain(string $pattern) : bool
+	{
+		$sanitized = addcslashes($pattern, '\.+?[^]${}=!|:-#');
+
+		$expression = str_replace(['(', '*', '%', ')'], ['(?:', '[^.]*', '.*', ')?'], $sanitized);
+
+		return !! preg_match("#^{$expression}$#u", $this->getDomain());
+	}
+
+	/**
 	 * Confirms the request path by pattern
 	 */
 	public function confirmPath(string $pattern) : bool
