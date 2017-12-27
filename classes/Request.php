@@ -340,6 +340,30 @@ class Request extends Collection
 	}
 
 	/**
+	 * Gets accept languages of the client
+	 */
+	public function getClientAcceptLanguages() : array
+	{
+		$languages = [];
+
+		if ($this->environment->exists('HTTP_ACCEPT_LANGUAGE'))
+		{
+			if (preg_match_all('/,?([^;]*);q=([^,]*)/', $this->environment->get('HTTP_ACCEPT_LANGUAGE'), $matches, PREG_SET_ORDER))
+			{
+				foreach ($matches as $match)
+				{
+					foreach (explode(',', $match[1]) as $value)
+					{
+						$languages[$value] = $match[2];
+					}
+				}
+			}
+		}
+
+		return $languages;
+	}
+
+	/**
 	 * Gets the request body
 	 */
 	public function getBody() : string
