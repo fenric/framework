@@ -47,7 +47,7 @@ class Request extends Collection
 	public $parameters;
 
 	/**
-	 * Session of the request route
+	 * Session of the request
 	 */
 	public $session;
 
