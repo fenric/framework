@@ -271,30 +271,30 @@ class Request extends Collection
 	{
 		$url = '';
 
-		if ($this->getDomain())
+		if ($this->getScheme())
 		{
-			if ($this->getScheme())
+			if ($this->getDomain())
 			{
 				$url .= $this->getScheme() . '://';
-			}
 
-			if ($this->getUsername())
-			{
-				$url .= $this->getUsername();
-
-				if ($this->getPassword())
+				if ($this->getUsername())
 				{
-					$url .= ':' . $this->getPassword();
+					$url .= $this->getUsername();
+
+					if ($this->getPassword())
+					{
+						$url .= ':' . $this->getPassword();
+					}
+
+					$url .= '@';
 				}
 
-				$url .= '@';
-			}
+				$url .= $this->getDomain();
 
-			$url .= $this->getDomain();
-
-			if ($this->getPort())
-			{
-				$url .= ':' . $this->getPort();
+				if ($this->getPort())
+				{
+					$url .= ':' . $this->getPort();
+				}
 			}
 		}
 
