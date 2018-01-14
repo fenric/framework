@@ -16,6 +16,7 @@ use Fenric\{
 	Console,
 	Event,
 	Logger,
+	Query,
 	Request,
 	Response,
 	Router,
@@ -271,6 +272,33 @@ final class Fenric
 		$this->registerSharedService('view', function(string $resolver, array $variables = null) : View
 		{
 			return new View($resolver, $variables ?: []);
+		});
+
+		/**
+		 * Регистрация простой службы для работы с конструктором SQL запросов
+		 */
+		$this->registerSharedService('query', function(string $connection = 'default') : Query
+		{
+			static $connections;
+
+			if (empty($connections[$connection]))
+			{
+				if ($this->callSharedService('config', ['database'])->exists($connection))
+				{
+					$options = $this->callSharedService('config', ['database'])->get($connection);
+
+					if (isset($options['dsn'], $options['user'], $options['password']))
+					{
+						$options['parameters'][PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
+
+						$connections[$connection] = new PDO($options['dsn'], $options['user'], $options['password'], $options['parameters']);
+					}
+					else throw new RuntimeException(sprintf('Connection [%s] configured incorrectly.', $connection));
+				}
+				else throw new RuntimeException(sprintf('Connection [%s] is not configured.', $connection));
+			}
+
+			return new Query($connections[$connection]);
 		});
 
 		/**
