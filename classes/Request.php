@@ -2,13 +2,18 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <a.fenric@gmail.com>
- * @copyright Copyright (c) 2013-2017 by Fenric Laboratory
+ * @author Anatoly Fenric <anatoly.fenric@gmail.com>
+ * @copyright Copyright (c) 2013-2018 by Fenric Laboratory
  * @license https://github.com/fenric/framework/blob/master/LICENSE.md
  * @link https://github.com/fenric/framework
  */
 
 namespace Fenric;
+
+/**
+ * Import classes
+ */
+use RuntimeException;
 
 /**
  * Request
@@ -74,89 +79,9 @@ class Request extends Collection
 	}
 
 	/**
-	 * Gets the request method
-	 */
-	public function getMethod() : string
-	{
-		return strtoupper($this->environment->get('REQUEST_METHOD'));
-	}
-
-	/**
-	 * Checks whether the request method is OPTIONS
-	 */
-	public function isOptions() : bool
-	{
-		return 0 === strcmp($this->getMethod(), 'OPTIONS');
-	}
-
-	/**
-	 * Checks whether the request method is HEAD
-	 */
-	public function isHead() : bool
-	{
-		return 0 === strcmp($this->getMethod(), 'HEAD');
-	}
-
-	/**
-	 * Checks whether the request method is GET
-	 */
-	public function isGet() : bool
-	{
-		return 0 === strcmp($this->getMethod(), 'GET');
-	}
-
-	/**
-	 * Checks whether the request method is POST
-	 */
-	public function isPost() : bool
-	{
-		return 0 === strcmp($this->getMethod(), 'POST');
-	}
-
-	/**
-	 * Checks whether the request method is PATCH
-	 */
-	public function isPatch() : bool
-	{
-		return 0 === strcmp($this->getMethod(), 'PATCH');
-	}
-
-	/**
-	 * Checks whether the request method is DELETE
-	 */
-	public function isDelete() : bool
-	{
-		return 0 === strcmp($this->getMethod(), 'DELETE');
-	}
-
-	/**
-	 * Checks whether the request method is PUT
-	 */
-	public function isPut() : bool
-	{
-		return 0 === strcmp($this->getMethod(), 'PUT');
-	}
-
-	/**
-	 * Checks whether the request is sent via HTTPS
-	 */
-	public function isSecure() : bool
-	{
-		return 0 === strcasecmp($this->environment->get('HTTPS'), 'on');
-	}
-
-	/**
-	 * Checks whether the request is sent via AJAX
-	 */
-	public function isAjax() : bool
-	{
-		return 0 === strcasecmp($this->environment->get('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest');
-	}
-
-	/**
 	 * Gets the request folder
 	 */
-	public function getRoot() : string
+	public function root() : string
 	{
 		$script = $this->environment->get('SCRIPT_NAME');
 
@@ -166,43 +91,30 @@ class Request extends Collection
 	}
 
 	/**
-	 * Gets the request scheme
+	 * Gets the request method
+	 *
+	 * @throws  RuntimeException
 	 */
-	public function getScheme() : string
+	public function method() : string
 	{
-		return $this->isSecure() ? 'https' : 'http';
-	}
+		if (! ($method = $this->environment->get('REQUEST_METHOD')))
+		{
+			throw new RuntimeException('Unable to determine the request method.');
+		}
 
-	/**
-	 * Gets the request username
-	 */
-	public function getUsername() :? string
-	{
-		return $this->environment->get('PHP_AUTH_USER');
-	}
-
-	/**
-	 * Gets the request password
-	 */
-	public function getPassword() :? string
-	{
-		return $this->environment->get('PHP_AUTH_PW');
+		return strtoupper($method);
 	}
 
 	/**
 	 * Gets the request host
+	 *
+	 * @throws  RuntimeException
 	 */
-	public function getHost() :? string
+	public function host() : string
 	{
 		if (! ($host = $this->environment->get('HTTP_HOST')))
 		{
-			if (! ($host = $this->environment->get('SERVER_NAME')))
-			{
-				if (! ($host = $this->environment->get('SERVER_ADDR')))
-				{
-					return null;
-				}
-			}
+			throw new RuntimeException('Unable to determine the request host.');
 		}
 
 		return $host;
@@ -210,26 +122,35 @@ class Request extends Collection
 
 	/**
 	 * Gets the request URI
+	 *
+	 * @throws  RuntimeException
 	 */
-	public function getURI() :? string
+	public function uri() : string
 	{
 		if (! ($uri = $this->environment->get('REQUEST_URI')))
 		{
-			if (! ($uri = $this->environment->get('SCRIPT_NAME')))
-			{
-				return null;
-			}
+			throw new RuntimeException('Unable to determine the request URI.');
 		}
 
 		return $uri;
 	}
 
 	/**
+	 * Gets the request scheme
+	 */
+	public function scheme(bool $separable = false) : string
+	{
+		$scheme = $this->isSecure() ? 'https' : 'http';
+
+		return $scheme . ($separable ? '://' : '');
+	}
+
+	/**
 	 * Gets the request domain
 	 */
-	public function getDomain() :? string
+	public function domain() :? string
 	{
-		$host = '//' . $this->getHost();
+		$host = '//' . $this->host();
 
 		return parse_url($host, PHP_URL_HOST);
 	}
@@ -237,9 +158,9 @@ class Request extends Collection
 	/**
 	 * Gets the request port
 	 */
-	public function getPort() :? int
+	public function port() :? int
 	{
-		$host = '//' . $this->getHost();
+		$host = '//' . $this->host();
 
 		return parse_url($host, PHP_URL_PORT);
 	}
@@ -247,9 +168,9 @@ class Request extends Collection
 	/**
 	 * Gets the request path
 	 */
-	public function getPath() :? string
+	public function path() :? string
 	{
-		$uri = urldecode($this->getURI());
+		$uri = urldecode($this->uri());
 
 		return parse_url($uri, PHP_URL_PATH);
 	}
@@ -257,9 +178,9 @@ class Request extends Collection
 	/**
 	 * Gets the request query
 	 */
-	public function getQuery() :? string
+	public function query() :? string
 	{
-		$uri = urldecode($this->getURI());
+		$uri = urldecode($this->uri());
 
 		return parse_url($uri, PHP_URL_QUERY);
 	}
@@ -267,106 +188,24 @@ class Request extends Collection
 	/**
 	 * Gets the request URL
 	 */
-	public function getURL(array $params = []) : string
+	public function url(array $params = []) : string
 	{
-		$url = '';
+		$url = $this->scheme(true) . $this->host() . $this->path();
 
-		if ($this->getScheme())
+		$query = $this->query->clone()->upgrade($params);
+
+		if ($query->count() > 0)
 		{
-			if ($this->getDomain())
-			{
-				$url .= $this->getScheme() . '://';
-
-				if ($this->getUsername())
-				{
-					$url .= $this->getUsername();
-
-					if ($this->getPassword())
-					{
-						$url .= ':' . $this->getPassword();
-					}
-
-					$url .= '@';
-				}
-
-				$url .= $this->getDomain();
-
-				if ($this->getPort())
-				{
-					$url .= ':' . $this->getPort();
-				}
-			}
-		}
-
-		if ($this->getPath())
-		{
-			$url .= $this->getPath();
-
-			$query = clone $this->query;
-
-			$query->upgrade($params);
-
-			if ($query->count() > 0)
-			{
-				$url .= '?' . $query->toQueryString();
-			}
+			$url .= '?' . $query->toQueryString();
 		}
 
 		return $url;
 	}
 
 	/**
-	 * Confirms the request domain by pattern
-	 */
-	public function confirmDomain(string $pattern) : bool
-	{
-		$sanitized = addcslashes($pattern, '\.+?[^]${}=!|:-#');
-
-		$expression = str_replace(['(', '*', '%', ')'], ['(?:', '[^.]*', '.*', ')?'], $sanitized);
-
-		return !! preg_match("#^{$expression}$#u", $this->getDomain());
-	}
-
-	/**
-	 * Confirms the request path by pattern
-	 */
-	public function confirmPath(string $pattern) : bool
-	{
-		$sanitized = addcslashes($pattern, '\.+?[^]${}=!|:-#');
-
-		$expression = str_replace(['(', '*', '%', ')'], ['(?:', '[^/]*', '.*', ')?'], $sanitized);
-
-		return !! preg_match("#^{$expression}$#u", $this->getPath());
-	}
-
-	/**
-	 * Gets accept languages of the client
-	 */
-	public function getClientAcceptLanguages() : array
-	{
-		$languages = [];
-
-		if ($this->environment->exists('HTTP_ACCEPT_LANGUAGE'))
-		{
-			if (preg_match_all('/,?([^;]*);q=([^,]*)/', $this->environment->get('HTTP_ACCEPT_LANGUAGE'), $matches, PREG_SET_ORDER))
-			{
-				foreach ($matches as $match)
-				{
-					foreach (explode(',', $match[1]) as $value)
-					{
-						$languages[$value] = $match[2];
-					}
-				}
-			}
-		}
-
-		return $languages;
-	}
-
-	/**
 	 * Gets the request body
 	 */
-	public function getBody() : string
+	public function body() : string
 	{
 		return file_get_contents('php://input');
 	}
@@ -374,8 +213,116 @@ class Request extends Collection
 	/**
 	 * Gets the request body as JSON
 	 */
-	public function getJSON(...$options)
+	public function json(...$options)
 	{
-		return json_decode($this->getBody(), ...$options);
+		return json_decode($this->body(), ...$options);
+	}
+
+	/**
+	 * Checks whether the request from root
+	 */
+	public function isRoot() : bool
+	{
+		return 0 === strlen($this->root());
+	}
+
+	/**
+	 * Checks whether the request method is OPTIONS
+	 */
+	public function isOptions() : bool
+	{
+		return 0 === strcmp($this->method(), 'OPTIONS');
+	}
+
+	/**
+	 * Checks whether the request method is HEAD
+	 */
+	public function isHead() : bool
+	{
+		return 0 === strcmp($this->method(), 'HEAD');
+	}
+
+	/**
+	 * Checks whether the request method is GET
+	 */
+	public function isGet() : bool
+	{
+		return 0 === strcmp($this->method(), 'GET');
+	}
+
+	/**
+	 * Checks whether the request method is POST
+	 */
+	public function isPost() : bool
+	{
+		return 0 === strcmp($this->method(), 'POST');
+	}
+
+	/**
+	 * Checks whether the request method is PATCH
+	 */
+	public function isPatch() : bool
+	{
+		return 0 === strcmp($this->method(), 'PATCH');
+	}
+
+	/**
+	 * Checks whether the request method is DELETE
+	 */
+	public function isDelete() : bool
+	{
+		return 0 === strcmp($this->method(), 'DELETE');
+	}
+
+	/**
+	 * Checks whether the request method is PUT
+	 */
+	public function isPut() : bool
+	{
+		return 0 === strcmp($this->method(), 'PUT');
+	}
+
+	/**
+	 * Checks whether the request via HTTPS
+	 */
+	public function isSecure() : bool
+	{
+		return 0 === strcasecmp($this->environment->get('HTTPS'), 'on');
+	}
+
+	/**
+	 * Checks whether the request via AJAX
+	 */
+	public function isAjax() : bool
+	{
+		return 0 === strcasecmp($this->environment->get('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest');
+	}
+
+	/**
+	 * Confirms the request host by pattern
+	 */
+	public function isHost(string $pattern, & $matched = []) : bool
+	{
+		$sanitized = addcslashes($pattern, '\.+?[^]${}=!|:-#');
+
+		$expression = str_replace(['(', ')'], ['(?:', ')?'], $sanitized);
+
+		$expression = str_replace(['*', '%'], ['([^.]*)', '(.*)'], $expression);
+
+		return !! preg_match("#^{$expression}$#u", $this->host(), $matched);
+	}
+
+	/**
+	 * Confirms the request path by pattern
+	 */
+	public function isPath(string $pattern, & $matched = []) : bool
+	{
+		$sanitized = addcslashes($pattern, '\.+?[^]${}=!|:-#');
+
+		$expression = str_replace(['(', ')'], ['(?:', ')?'], $sanitized);
+
+		$expression = str_replace(['*', '%'], ['([^/]*)', '(.*)'], $expression);
+
+		return !! preg_match("#^{$expression}$#u", $this->path(), $matched);
 	}
 }
