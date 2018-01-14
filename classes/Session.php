@@ -2,8 +2,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <a.fenric@gmail.com>
- * @copyright Copyright (c) 2013-2017 by Fenric Laboratory
+ * @author Anatoly Fenric <anatoly.fenric@gmail.com>
+ * @copyright Copyright (c) 2013-2018 by Fenric Laboratory
  * @license https://github.com/fenric/framework/blob/master/LICENSE.md
  * @link https://github.com/fenric/framework
  */
@@ -28,11 +28,9 @@ class Session extends Collection
 	{
 		if ($this->isReady())
 		{
-			$options = fenric('config::session')->all();
-
 			if (session_set_save_handler($handler, false))
 			{
-				if (session_start($options))
+				if (session_start(fenric('config::session')->all()))
 				{
 					$this->update($_SESSION);
 
@@ -99,12 +97,7 @@ class Session extends Collection
 	 */
 	public function isReady() : bool
 	{
-		if (session_status() === PHP_SESSION_NONE)
-		{
-			return true;
-		}
-
-		return false;
+		return (session_status() === PHP_SESSION_NONE);
 	}
 
 	/**
@@ -112,19 +105,14 @@ class Session extends Collection
 	 */
 	public function isStarted() : bool
 	{
-		if (session_status() === PHP_SESSION_ACTIVE)
-		{
-			return true;
-		}
-
-		return false;
+		return (session_status() === PHP_SESSION_ACTIVE);
 	}
 
 	/**
 	 * Получение идентификатора сессии
 	 */
-	public function getId() : string
+	public function getId() :? string
 	{
-		return session_id();
+		return session_id() ?: null;
 	}
 }
