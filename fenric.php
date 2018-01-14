@@ -2,8 +2,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <a.fenric@gmail.com>
- * @copyright Copyright (c) 2013-2017 by Fenric Laboratory
+ * @author Anatoly Fenric <anatoly.fenric@gmail.com>
+ * @copyright Copyright (c) 2013-2018 by Fenric Laboratory
  * @license https://github.com/fenric/framework/blob/master/LICENSE.md
  * @link https://github.com/fenric/framework
  */
@@ -95,62 +95,67 @@ final class Fenric
 
 		$this->registerPath('app', function() : string
 		{
-			return $this->path('.', 'app');
+			return $this->path('.', 'app')->getRealPath();
 		});
 
 		$this->registerPath('public', function() : string
 		{
-			return $this->path('.', 'public');
+			return $this->path('.', 'public')->getRealPath();
 		});
 
 		$this->registerPath('vendor', function() : string
 		{
-			return $this->path('.', 'vendor');
+			return $this->path('.', 'vendor')->getRealPath();
 		});
 
 		$this->registerPath('bin', function() : string
 		{
-			return $this->path('app', 'bin');
+			return $this->path('app', 'bin')->getRealPath();
 		});
 
 		$this->registerPath('cache', function() : string
 		{
-			return $this->path('app', 'cache');
+			return $this->path('app', 'cache')->getRealPath();
 		});
 
 		$this->registerPath('configs', function() : string
 		{
-			return $this->path('app', 'configs');
+			return $this->path('app', 'configs')->getRealPath();
 		});
 
 		$this->registerPath('locales', function() : string
 		{
-			return $this->path('app', 'locales');
+			return $this->path('app', 'locales')->getRealPath();
 		});
 
 		$this->registerPath('log', function() : string
 		{
-			return $this->path('app', 'log');
+			return $this->path('app', 'log')->getRealPath();
 		});
 
 		$this->registerPath('resources', function() : string
 		{
-			return $this->path('app', 'resources');
+			return $this->path('app', 'resources')->getRealPath();
+		});
+
+		$this->registerPath('routes', function() : string
+		{
+			return $this->path('app', 'routes')->getRealPath();
 		});
 
 		$this->registerPath('views', function() : string
 		{
-			return $this->path('app', 'views');
+			return $this->path('app', 'views')->getRealPath();
 		});
 
 		$this->registerPath('assets', function() : string
 		{
-			return $this->path('public', 'assets');
+			return $this->path('public', 'assets')->getRealPath();
 		});
 
 		$this->registerPath('upload', function() : string
 		{
-			return $this->path('public', 'upload');
+			return $this->path('public', 'upload')->getRealPath();
 		});
 
 		$this->registerPath('core', function() : string
@@ -169,24 +174,24 @@ final class Fenric
 		 */
 		$this->registerResolvableSharedService('config', function(string $resolver = 'default') : Collection
 		{
-			if (file_exists($this->path('configs', "{$resolver}.local.php")))
+			if ($this->path('configs', "{$resolver}.local.php")->isFile())
 			{
-				return new Collection(include $this->path('configs', "{$resolver}.local.php"));
+				return new Collection(include $this->path('configs', "{$resolver}.local.php")->getRealPath());
 			}
 
-			if (file_exists($this->path('configs', getenv('ENVIRONMENT'), "{$resolver}.php")))
+			if ($this->path('configs', getenv('ENVIRONMENT'), "{$resolver}.php")->isFile())
 			{
-				return new Collection(include $this->path('configs', getenv('ENVIRONMENT'), "{$resolver}.php"));
+				return new Collection(include $this->path('configs', getenv('ENVIRONMENT'), "{$resolver}.php")->getRealPath());
 			}
 
-			if (file_exists($this->path('configs', "{$resolver}.php")))
+			if ($this->path('configs', "{$resolver}.php")->isFile())
 			{
-				return new Collection(include $this->path('configs', "{$resolver}.php"));
+				return new Collection(include $this->path('configs', "{$resolver}.php")->getRealPath());
 			}
 
-			if (file_exists($this->path('configs', "{$resolver}.example.php")))
+			if ($this->path('configs', "{$resolver}.example.php")->isFile())
 			{
-				return new Collection(include $this->path('configs', "{$resolver}.example.php"));
+				return new Collection(include $this->path('configs', "{$resolver}.example.php")->getRealPath());
 			}
 
 			throw new RuntimeException(sprintf('Unable to find config [%s].', $resolver));
@@ -197,24 +202,24 @@ final class Fenric
 		 */
 		$this->registerResolvableSharedService('locale', function(string $resolver = 'default') : Collection
 		{
-			if (file_exists($this->path('locales', $this->getApplicationLanguage(), "{$resolver}.local.php")))
+			if ($this->path('locales', $this->getApplicationLanguage(), "{$resolver}.local.php")->isFile())
 			{
-				return new Collection(include $this->path('locales', $this->getApplicationLanguage(), "{$resolver}.local.php"));
+				return new Collection(include $this->path('locales', $this->getApplicationLanguage(), "{$resolver}.local.php")->getRealPath());
 			}
 
-			if (file_exists($this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.local.php")))
+			if ($this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.local.php")->isFile())
 			{
-				return new Collection(include $this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.local.php"));
+				return new Collection(include $this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.local.php")->getRealPath());
 			}
 
-			if (file_exists($this->path('locales', $this->getApplicationLanguage(), "{$resolver}.php")))
+			if ($this->path('locales', $this->getApplicationLanguage(), "{$resolver}.php")->isFile())
 			{
-				return new Collection(include $this->path('locales', $this->getApplicationLanguage(), "{$resolver}.php"));
+				return new Collection(include $this->path('locales', $this->getApplicationLanguage(), "{$resolver}.php")->getRealPath());
 			}
 
-			if (file_exists($this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.php")))
+			if ($this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.php")->isFile())
 			{
-				return new Collection(include $this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.php"));
+				return new Collection(include $this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.php")->getRealPath());
 			}
 
 			throw new RuntimeException(sprintf('Unable to find locale [%s].', $resolver));
@@ -286,32 +291,32 @@ final class Fenric
 	 */
 	public function registerBaseClassLoaders() : void
 	{
-		$this->registerClassLoader(function(string $filename, string $classname) : bool
+		$this->registerClassLoader(function(string $filename) : bool
 		{
-			if (file_exists($this->path('app', 'classes', "{$filename}.local.php")))
+			if ($this->path('app', 'classes', "{$filename}.local.php")->isFile())
 			{
-				require_once $this->path('app', 'classes', "{$filename}.local.php");
+				require_once $this->path('app', 'classes', "{$filename}.local.php")->getRealPath();
 
 				return true;
 			}
 
-			if (file_exists($this->path('app', 'classes', "{$filename}.php")))
+			if ($this->path('app', 'classes', "{$filename}.php")->isFile())
 			{
-				require_once $this->path('app', 'classes', "{$filename}.php");
+				require_once $this->path('app', 'classes', "{$filename}.php")->getRealPath();
 
 				return true;
 			}
 
-			if (file_exists($this->path('app', 'classes', "{$filename}.example.php")))
+			if ($this->path('app', 'classes', "{$filename}.example.php")->isFile())
 			{
-				require_once $this->path('app', 'classes', "{$filename}.example.php");
+				require_once $this->path('app', 'classes', "{$filename}.example.php")->getRealPath();
 
 				return true;
 			}
 
-			if (file_exists($this->path('core', 'classes', "{$filename}.php")))
+			if ($this->path('core', 'classes', "{$filename}.php")->isFile())
 			{
-				require_once $this->path('core', 'classes', "{$filename}.php");
+				require_once $this->path('core', 'classes', "{$filename}.php")->getRealPath();
 
 				return true;
 			}
@@ -323,7 +328,7 @@ final class Fenric
 	/**
 	 * Сборка пути
 	 */
-	public function path(string ...$parts) : string
+	public function path(string ...$parts) : SplFileInfo
 	{
 		$ds = DIRECTORY_SEPARATOR;
 
@@ -338,7 +343,7 @@ final class Fenric
 				$built .= $ds . join($ds, $parts);
 			}
 
-			return $built;
+			return new SplFileInfo($built);
 		}
 
 		throw new RuntimeException(sprintf('Alias path [%s] is not registered.', $alias));
@@ -605,7 +610,7 @@ final class Fenric
 
 		foreach ($context as $key => $value)
 		{
-			$substitutable['{' . $key . '}'] = $value;
+			$substitutable["{{$key}}"] = $value;
 		}
 
 		return strtr($message, $substitutable);
@@ -626,30 +631,37 @@ final class Fenric
 				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'local');
 				break;
 
+			case 'dev' :
 			case 'development' :
 				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'development');
 				break;
 
+			case 'test' :
 			case 'testing' :
 				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'testing');
 				break;
 
+			case 'stage' :
 			case 'staging' :
 				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'staging');
 				break;
 
+			case 'prod' :
 			case 'production' :
 				return 0 === strcasecmp(getenv('ENVIRONMENT'), 'production');
 				break;
 
+			case 'unix' :
 			case 'linux' :
 				return 0 === strcasecmp(PHP_OS, 'linux');
 				break;
 
+			case 'mac' :
 			case 'darwin' :
 				return 0 === strcasecmp(PHP_OS, 'darwin');
 				break;
 
+			case 'win' :
 			case 'windows' :
 				return 0 === strncasecmp(PHP_OS, 'win', 3);
 				break;
@@ -673,6 +685,20 @@ function fenric(string $alias = null, $params = null)
 
 	if (isset($alias))
 	{
+		if (strcmp($alias, '/') === 0)
+		{
+			return $self->path('.');
+		}
+
+		if (strpos($alias, '/') === 0)
+		{
+			$alias = substr($alias, 1);
+
+			$segments = explode('/', $alias);
+
+			return $self->path(...$segments);
+		}
+
 		if (strpos($alias, '::') !== false)
 		{
 			list($alias, $resolver) = explode('::', $alias, 2);
