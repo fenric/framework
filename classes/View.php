@@ -2,8 +2,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <a.fenric@gmail.com>
- * @copyright Copyright (c) 2013-2017 by Fenric Laboratory
+ * @author Anatoly Fenric <anatoly.fenric@gmail.com>
+ * @copyright Copyright (c) 2013-2018 by Fenric Laboratory
  * @license https://github.com/fenric/framework/blob/master/LICENSE.md
  * @link https://github.com/fenric/framework
  */
@@ -57,21 +57,21 @@ class View
 	/**
 	 * Получение файла представления
 	 */
-	public function getFile() : ?string
+	public function getFile() :? string
 	{
-		if (file_exists(fenric()->path('views', $this->getName() . '.local.phtml')))
+		if (fenric()->path('views', $this->getName() . '.local.phtml')->isFile())
 		{
-			return fenric()->path('views', $this->getName() . '.local.phtml');
+			return fenric()->path('views', $this->getName() . '.local.phtml')->getRealPath();
 		}
 
-		if (file_exists(fenric()->path('views', $this->getName() . '.phtml')))
+		if (fenric()->path('views', $this->getName() . '.phtml')->isFile())
 		{
-			return fenric()->path('views', $this->getName() . '.phtml');
+			return fenric()->path('views', $this->getName() . '.phtml')->getRealPath();
 		}
 
-		if (file_exists(fenric()->path('views', $this->getName() . '.example.phtml')))
+		if (fenric()->path('views', $this->getName() . '.example.phtml')->isFile())
 		{
-			return fenric()->path('views', $this->getName() . '.example.phtml');
+			return fenric()->path('views', $this->getName() . '.example.phtml')->getRealPath();
 		}
 
 		return null;
@@ -120,19 +120,19 @@ class View
 	/**
 	 * Получение содержимого участка представления
 	 */
-	protected function section(string $id) : ?string
+	protected function section(string $section) :? string
 	{
-		return $this->sections[$id] ?? null;
+		return $this->sections[$section] ?? null;
 	}
 
 	/**
 	 * Запись содержимого участка представления
 	 */
-	protected function start(string $id) : void
+	protected function start(string $section) : void
 	{
 		ob_start();
 
-		$this->sections[$id] = null;
+		$this->sections[$section] = null;
 	}
 
 	/**
@@ -142,9 +142,11 @@ class View
 	{
 		end($this->sections);
 
-		$id = key($this->sections);
+		$section = key($this->sections);
 
-		$this->sections[$id] = ob_get_clean();
+		reset($this->sections);
+
+		$this->sections[$section] = ob_get_clean();
 	}
 
 	/**
