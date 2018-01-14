@@ -2,8 +2,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <a.fenric@gmail.com>
- * @copyright Copyright (c) 2013-2017 by Fenric Laboratory
+ * @author Anatoly Fenric <anatoly.fenric@gmail.com>
+ * @copyright Copyright (c) 2013-2018 by Fenric Laboratory
  * @license https://github.com/fenric/framework/blob/master/LICENSE.md
  * @link https://github.com/fenric/framework
  */
@@ -121,6 +121,16 @@ class Collection
 	}
 
 	/**
+	 * Фильтрация коллекции
+	 */
+	public function filter(...$options) : self
+	{
+		$this->items = array_filter($this->items, ...$options);
+
+		return $this;
+	}
+
+	/**
 	 * Получение всех элементов коллекции
 	 */
 	public function all() : array
@@ -153,9 +163,17 @@ class Collection
 	}
 
 	/**
+	 * Получение коллекции в виде массива
+	 */
+	public function toArray() : array
+	{
+		return $this->items;
+	}
+
+	/**
 	 * Получение коллекции в виде JSON данных
 	 */
-	public function toJSON(...$options)
+	public function toJson(...$options)
 	{
 		return json_encode($this->items, ...$options);
 	}
@@ -163,8 +181,16 @@ class Collection
 	/**
 	 * Получение коллекции в виде QueryString данных
 	 */
-	public function toQueryString(...$options)
+	public function toQueryString(...$options) : string
 	{
 		return http_build_query($this->items, ...$options);
+	}
+
+	/**
+	 * Клонирование коллекции
+	 */
+	public function clone() : Collection
+	{
+		return clone $this;
 	}
 }
