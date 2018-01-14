@@ -2,8 +2,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <a.fenric@gmail.com>
- * @copyright Copyright (c) 2013-2017 by Fenric Laboratory
+ * @author Anatoly Fenric <anatoly.fenric@gmail.com>
+ * @copyright Copyright (c) 2013-2018 by Fenric Laboratory
  * @license https://github.com/fenric/framework/blob/master/LICENSE.md
  * @link https://github.com/fenric/framework
  */
@@ -15,11 +15,6 @@ namespace Fenric;
  */
 abstract class Controller
 {
-
-	/**
-	 * Экземпляр маршрутизатора инициализировавшего контроллер
-	 */
-	protected $router;
 
 	/**
 	 * Экземпляр HTTP объекта для обработки запросов клиента
@@ -34,19 +29,10 @@ abstract class Controller
 	/**
 	 * Конструктор класса
 	 */
-	final public function __construct(Router $router, Request $request, Response $response)
+	final public function __construct(Request $request, Response $response)
 	{
-		$this->router = $router;
 		$this->request = $request;
 		$this->response = $response;
-	}
-
-	/**
-	 * Получение экземпляра маршрутизатора инициализировавшего контроллер
-	 */
-	final public function getRouter() : Router
-	{
-		return $this->router;
 	}
 
 	/**
