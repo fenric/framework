@@ -34,9 +34,14 @@ class Router
 	protected $groups = [];
 
 	/**
+	 * Шаблоны параметров маршрутов
+	 */
+	protected $patterns = [];
+
+	/**
 	 * Контроллер по умолчанию
 	 */
-	protected $fallback;
+	protected $default;
 
 	/**
 	 * Загрузка карты маршрутов
@@ -85,6 +90,16 @@ class Router
 	}
 
 	/**
+	 * Установка глобального шаблона для параметров маршрутов
+	 */
+	public function pattern(string $key, string $pattern) : self
+	{
+		$this->patterns[$key] = $pattern;
+
+		return $this;
+	}
+
+	/**
 	 * Установка контроллера для домашнего адреса
 	 */
 	public function home($controller) : self
@@ -95,9 +110,9 @@ class Router
 	/**
 	 * Установка контроллера по умолчанию
 	 */
-	public function fallback($controller) : self
+	public function default($controller) : self
 	{
-		$this->fallback = $controller;
+		$this->default = $controller;
 
 		return $this;
 	}
@@ -212,14 +227,10 @@ class Router
 			$middleware = $this->groups[$key]['middleware'];
 		}
 
-		$this->map[] = [
-			'methods' => $methods,
-			'location' => $location,
-			'controller' => $controller,
-			'middleware' => $middleware ?? function() {
-				return true;
-			},
-		];
+		$this->map[] = [$methods, $location, $controller, $middleware ?? function() : bool
+		{
+			return true;
+		}];
 
 		return $this;
 	}
@@ -325,17 +336,19 @@ class Router
 		{
 			foreach ($this->map as $route)
 			{
-				if (in_array($request->method(), $route['methods']))
+				list($methods, $location, $controller, $middleware) = $route;
+
+				if (in_array($request->method(), $methods))
 				{
-					$route['regexp'] = $this->convertRoutePathToRegularExpression($request->root() . $route['location']);
+					$pattern = $this->convertRoutePathToRegularExpression($request->root() . $location);
 
-					if (preg_match($route['regexp'], $request->path(), $route['parameters']))
+					if (preg_match($pattern, $request->path(), $parameters))
 					{
-						$request->parameters->upgrade($route['parameters'])->filter();
+						$request->parameters->upgrade($parameters)->filter();
 
-						if ($route['middleware']($request, $response))
+						if ($middleware($request, $response))
 						{
-							if ($this->execute($route['controller'], $request, $response))
+							if ($this->execute($controller, $request, $response))
 							{
 								return true;
 							}
@@ -345,7 +358,7 @@ class Router
 			}
 		}
 
-		if ($this->execute($this->fallback, $request, $response))
+		if ($this->execute($this->default, $request, $response))
 		{
 			return true;
 		}
@@ -435,7 +448,7 @@ class Router
 
 			foreach ($matches as $match)
 			{
-				$extractedExpressions[$match[1]] = $match[2] ?? '[^/]+';
+				$extractedExpressions[$match[1]] = $match[2] ?? $this->patterns[$match[1]] ?? '[^/]+';
 			}
 		}
 
