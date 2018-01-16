@@ -88,6 +88,12 @@ class Response
 	public const STATUS_511 = [511, 'Network Authentication Required'];
 
 	/**
+	 * List of the response events
+	 */
+	public const EVENT_AFTER_SEND = 'response.after.send';
+	public const EVENT_BEFORE_SEND = 'response.before.send';
+
+	/**
 	 * Status of the response
 	 */
 	protected $statusCode = 200;
@@ -191,6 +197,26 @@ class Response
 	}
 
 	/**
+	 * Sends the response to the client
+	 */
+	public function send() : void
+	{
+		fenric()->callSharedService('event', [self::EVENT_BEFORE_SEND])->run([$this]);
+
+		$this->sendStatus()->sendHeaders()->sendCookies()->sendContent();
+
+		fenric()->callSharedService('event', [self::EVENT_AFTER_SEND])->run([$this]);
+
+		/**
+		 * @link http://php.net/fastcgi_finish_request
+		 */
+		if (function_exists('fastcgi_finish_request'))
+		{
+			fastcgi_finish_request();
+		}
+	}
+
+	/**
 	 * Gets the response status code
 	 */
 	public function getStatusCode() : int
@@ -239,17 +265,33 @@ class Response
 	}
 
 	/**
+	 * Checks whether the response is OK
+	 */
+	public function isOk() : bool
+	{
+		return in_array($this->getStatusCode(), [200, 201]);
+	}
+
+	/**
+	 * Checks whether the response is empty
+	 */
+	public function isEmpty() : bool
+	{
+		return in_array($this->getStatusCode(), [204, 304]);
+	}
+
+	/**
 	 * Checks whether the response status code is invalid
 	 */
 	public function isInvalid() : bool
 	{
-		return ($this->getStatusCode() < 100 || $this->getStatusCode() >= 600);
+		return ($this->getStatusCode() >= 600 || $this->getStatusCode() < 100);
 	}
 
 	/**
-	 * Checks whether the response status code is informational
+	 * Checks whether the response status code is information
 	 */
-	public function isInformational() : bool
+	public function isInformation() : bool
 	{
 		return ($this->getStatusCode() >= 100 && $this->getStatusCode() < 200);
 	}
@@ -287,46 +329,20 @@ class Response
 	}
 
 	/**
-	 * Checks whether the response is OK
+	 * Sends the response status to the client
 	 */
-	public function isOk() : bool
+	public function sendStatus() : self
 	{
-		return $this->getStatusCode() === 200;
+		http_response_code($this->getStatusCode());
+
+		return $this;
 	}
 
 	/**
-	 * Checks whether the response is forbidden error
+	 * Sends the response headers to the client
 	 */
-	public function isForbidden() : bool
+	public function sendHeaders() : self
 	{
-		return $this->getStatusCode() === 403;
-	}
-
-	/**
-	 * Checks whether the response is page not found error
-	 */
-	public function isNotFound() : bool
-	{
-		return $this->getStatusCode() === 404;
-	}
-
-	/**
-	 * Checks whether the response is empty
-	 */
-	public function isEmpty() : bool
-	{
-		return in_array($this->getStatusCode(), [204, 304]);
-	}
-
-	/**
-	 * Sends the response to the client
-	 */
-	public function send() : void
-	{
-		http_response_code(
-			$this->getStatusCode()
-		);
-
 		if (count($this->getHeaders()) > 0)
 		{
 			foreach ($this->getHeaders() as $header)
@@ -344,11 +360,21 @@ class Response
 			}
 		}
 
+		return $this;
+	}
+
+	/**
+	 * Sends the response cookies to the client
+	 */
+	public function sendCookies() : self
+	{
 		if (count($this->getCookies()) > 0)
 		{
 			foreach ($this->getCookies() as $cookie)
 			{
 				list($name, $value, $lifetime, $options) = $cookie;
+
+				$options += fenric('config::cookies')->toArray();
 
 				if ($value === null)
 				{
@@ -359,23 +385,44 @@ class Response
 					$lifetime += time();
 				}
 
-				extract($options + fenric('config::cookies')->all(), EXTR_OVERWRITE);
-
-				setcookie($name, $value, $lifetime, $path, $domain, $httpsOnly, $httpOnly);
+				setcookie(
+					$name,
+					$value,
+					$lifetime,
+					$options['path'] ?? null,
+					$options['domain'] ?? null,
+					$options['httpsOnly'] ?? false,
+					$options['httpOnly' ?? false]
+				);
 			}
 		}
 
+		return $this;
+	}
+
+	/**
+	 * Sends the response content to the client
+	 */
+	public function sendContent() : self
+	{
 		if ($this->getContent())
 		{
 			echo $this->getContent();
 		}
 
-		/**
-		 * @link http://php.net/fastcgi_finish_request
-		 */
-		if (function_exists('fastcgi_finish_request'))
+		return $this;
+	}
+
+	/**
+	 * Cleans sent content
+	 */
+	public function clean() : self
+	{
+		while (ob_get_level() > 0)
 		{
-			fastcgi_finish_request();
+			ob_end_clean();
 		}
+
+		return $this;
 	}
 }
