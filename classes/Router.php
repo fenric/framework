@@ -24,6 +24,12 @@ class Router
 {
 
 	/**
+	 * События маршрутизатора
+	 */
+	public const EVENT_API_MIDDLEWARE = 'router.api.middleware';
+	public const EVENT_WEB_MIDDLEWARE = 'router.web.middleware';
+
+	/**
 	 * Карта маршрутов
 	 */
 	protected $map = [];
@@ -50,6 +56,11 @@ class Router
 	{
 		$this->group(function()
 		{
+			$this->middleware(function($request, $response)
+			{
+				return fenric()->callSharedService('event', [self::EVENT_API_MIDDLEWARE])->run([$request, $response]);
+			});
+
 			$this->namespace('\\Fenric\\Controllers\\Api\\');
 
 			$this->prefix('/api');
@@ -70,6 +81,11 @@ class Router
 
 		$this->group(function()
 		{
+			$this->middleware(function($request, $response)
+			{
+				return fenric()->callSharedService('event', [self::EVENT_WEB_MIDDLEWARE])->run([$request, $response]);
+			});
+
 			$this->namespace('\\Fenric\\Controllers\\');
 
 			if (fenric('/routes/web.local.php')->isFile())
@@ -192,16 +208,6 @@ class Router
 	}
 
 	/**
-	 * Добавление маршрута соответствующего CRUD подходу
-	 */
-	public function crud(string $location, $controller) : self
-	{
-		$methods = ['GET', 'POST', 'PATCH', 'DELETE'];
-
-		return $this->add($methods, $location, $controller);
-	}
-
-	/**
 	 * Добавление маршрута
 	 */
 	public function add(array $methods, string $location, $controller) : self
@@ -257,7 +263,7 @@ class Router
 	}
 
 	/**
-	 * Добавление префикса для группы маршрутов
+	 * Установка префикса для группы маршрутов
 	 */
 	public function prefix(string $prefix) : self
 	{
@@ -278,7 +284,7 @@ class Router
 	}
 
 	/**
-	 * Добавление пространства имен для группы маршрутов
+	 * Установка пространства имен для группы маршрутов
 	 */
 	public function namespace(string $namespace) : self
 	{
@@ -299,7 +305,7 @@ class Router
 	}
 
 	/**
-	 * Добавление промежуточной логики для группы маршрутов
+	 * Установка промежуточной логики для группы маршрутов
 	 */
 	public function middleware(Closure $middleware) : self
 	{
