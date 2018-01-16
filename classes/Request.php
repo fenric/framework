@@ -190,7 +190,7 @@ class Request extends Collection
 	 */
 	public function url(array $params = []) : string
 	{
-		$url = $this->scheme(true) . $this->host() . $this->path();
+		$url = $this->origin() . $this->path();
 
 		$query = $this->query->clone()->upgrade($params);
 
@@ -200,6 +200,14 @@ class Request extends Collection
 		}
 
 		return $url;
+	}
+
+	/**
+	 * Gets the request origin
+	 */
+	public function origin() : string
+	{
+		return $this->scheme(true) . $this->host();
 	}
 
 	/**
@@ -219,7 +227,7 @@ class Request extends Collection
 	}
 
 	/**
-	 * Checks whether the request from root
+	 * Checks whether the request is root
 	 */
 	public function isRoot() : bool
 	{
@@ -283,19 +291,23 @@ class Request extends Collection
 	}
 
 	/**
-	 * Checks whether the request via HTTPS
+	 * Checks whether the request is secure
 	 */
 	public function isSecure() : bool
 	{
-		return 0 === strcasecmp($this->environment->get('HTTPS'), 'on');
+		$signature = $this->environment->get('HTTPS');
+
+		return ! empty($signature) && 0 !== strcasecmp($signature, 'off');
 	}
 
 	/**
-	 * Checks whether the request via AJAX
+	 * Checks whether the request is ajax
 	 */
 	public function isAjax() : bool
 	{
-		return 0 === strcasecmp($this->environment->get('HTTP_X_REQUESTED_WITH'), 'XMLHttpRequest');
+		$signature = $this->environment->get('HTTP_X_REQUESTED_WITH');
+
+		return 0 === strcasecmp($signature, 'XMLHttpRequest');
 	}
 
 	/**
