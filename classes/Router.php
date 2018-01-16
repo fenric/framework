@@ -48,7 +48,7 @@ class Router
 	 */
 	public function map() : self
 	{
-		$this->group(function() : void
+		$this->group(function()
 		{
 			$this->namespace('\\Fenric\\Controllers\\Api\\');
 
@@ -68,7 +68,7 @@ class Router
 			}
 		});
 
-		$this->group(function() : void
+		$this->group(function()
 		{
 			$this->namespace('\\Fenric\\Controllers\\');
 
@@ -227,7 +227,7 @@ class Router
 			$middleware = $this->groups[$key]['middleware'];
 		}
 
-		$this->map[] = [$methods, $location, $controller, $middleware ?? function() : bool
+		$this->map[] = [$methods, $location, $controller, $middleware ?? function()
 		{
 			return true;
 		}];
