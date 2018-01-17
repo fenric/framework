@@ -22,25 +22,15 @@ class Session extends Collection
 {
 
 	/**
-	 * Запуск сессии
+	 * Handles the session
 	 */
-	public function start(SessionHandlerInterface $handler) : bool
+	public function handle(SessionHandlerInterface $handler) : bool
 	{
 		if ($this->isReady())
 		{
 			if (session_set_save_handler($handler, false))
 			{
-				if (session_start(fenric('config::session')->all()))
-				{
-					$this->update($_SESSION);
-
-					register_shutdown_function(function() : void
-					{
-						$this->close();
-					});
-
-					return true;
-				}
+				return true;
 			}
 		}
 
@@ -48,14 +38,45 @@ class Session extends Collection
 	}
 
 	/**
-	 * Перезапуск сессии
+	 * Starts the session
+	 */
+	public function start() : bool
+	{
+		if ($this->isReady())
+		{
+			fenric('event::session.before.start')->run([$this]);
+
+			if (session_start(fenric('config::session')->toArray()))
+			{
+				fenric('event::session.after.start')->run([$this]);
+
+				$this->update($_SESSION);
+
+				register_shutdown_function(function() : void
+				{
+					$this->close();
+				});
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Restarts the session
 	 */
 	public function restart() : bool
 	{
 		if ($this->isStarted())
 		{
+			fenric('event::session.before.restart')->run([$this]);
+
 			if (session_regenerate_id(true))
 			{
+				fenric('event::session.after.restart')->run([$this]);
+
 				return true;
 			}
 		}
@@ -64,14 +85,18 @@ class Session extends Collection
 	}
 
 	/**
-	 * Разрушение сессии
+	 * Destroys the session
 	 */
 	public function destroy() : bool
 	{
 		if ($this->isStarted())
 		{
+			fenric('event::session.before.destroy')->run([$this]);
+
 			if (session_destroy())
 			{
+				fenric('event::session.after.destroy')->run([$this]);
+
 				return true;
 			}
 		}
@@ -80,36 +105,40 @@ class Session extends Collection
 	}
 
 	/**
-	 * Закрытие сессии
+	 * Closes the session
 	 */
 	public function close() : void
 	{
 		if ($this->isStarted())
 		{
-			$_SESSION = $this->all();
+			$_SESSION = $this->toArray();
+
+			fenric('event::session.before.close')->run([$this]);
 
 			session_write_close();
+
+			fenric('event::session.after.close')->run([$this]);
 		}
 	}
 
 	/**
-	 * Готов ли механизм сессий к запуску
+	 * Checks whether the session is ready
 	 */
 	public function isReady() : bool
 	{
-		return (session_status() === PHP_SESSION_NONE);
+		return session_status() === PHP_SESSION_NONE;
 	}
 
 	/**
-	 * Запущен ли механизм сессий
+	 * Checks whether the session is started
 	 */
 	public function isStarted() : bool
 	{
-		return (session_status() === PHP_SESSION_ACTIVE);
+		return session_status() === PHP_SESSION_ACTIVE;
 	}
 
 	/**
-	 * Получение идентификатора сессии
+	 * Gets ID of the session
 	 */
 	public function getId() :? string
 	{
