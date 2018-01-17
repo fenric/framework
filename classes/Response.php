@@ -386,7 +386,7 @@ class Response
 					$options['path'] ?? null,
 					$options['domain'] ?? null,
 					$options['httpsOnly'] ?? false,
-					$options['httpOnly' ?? false]
+					$options['httpOnly'] ?? false
 				);
 			}
 		}
