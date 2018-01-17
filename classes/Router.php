@@ -24,12 +24,6 @@ class Router
 {
 
 	/**
-	 * События маршрутизатора
-	 */
-	public const EVENT_API_MIDDLEWARE = 'router.api.middleware';
-	public const EVENT_WEB_MIDDLEWARE = 'router.web.middleware';
-
-	/**
 	 * Карта маршрутов
 	 */
 	protected $map = [];
@@ -56,14 +50,14 @@ class Router
 	{
 		$this->group(function()
 		{
-			$this->middleware(function($request, $response)
-			{
-				return fenric()->callSharedService('event', [self::EVENT_API_MIDDLEWARE])->run([$request, $response]);
-			});
+			$this->prefix('/api');
 
 			$this->namespace('\\Fenric\\Controllers\\Api\\');
 
-			$this->prefix('/api');
+			$this->middleware(function($request, $response)
+			{
+				return fenric('event::router.api.middleware')->run([$request, $response]);
+			});
 
 			if (fenric('/routes/api.local.php')->isFile())
 			{
@@ -81,12 +75,12 @@ class Router
 
 		$this->group(function()
 		{
+			$this->namespace('\\Fenric\\Controllers\\');
+
 			$this->middleware(function($request, $response)
 			{
-				return fenric()->callSharedService('event', [self::EVENT_WEB_MIDDLEWARE])->run([$request, $response]);
+				return fenric('event::router.web.middleware')->run([$request, $response]);
 			});
-
-			$this->namespace('\\Fenric\\Controllers\\');
 
 			if (fenric('/routes/web.local.php')->isFile())
 			{
@@ -106,7 +100,7 @@ class Router
 	}
 
 	/**
-	 * Установка глобального шаблона для параметров маршрутов
+	 * Установка глобального шаблона для параметра маршрутов
 	 */
 	public function pattern(string $key, string $pattern) : self
 	{
@@ -368,6 +362,10 @@ class Router
 		{
 			return true;
 		}
+
+		/**
+		 * @todo maybe, throw exception?
+		 */
 
 		return false;
 	}
