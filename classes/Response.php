@@ -88,12 +88,6 @@ class Response
 	public const STATUS_511 = [511, 'Network Authentication Required'];
 
 	/**
-	 * List of the response events
-	 */
-	public const EVENT_AFTER_SEND = 'response.after.send';
-	public const EVENT_BEFORE_SEND = 'response.before.send';
-
-	/**
 	 * Status of the response
 	 */
 	protected $statusCode = 200;
@@ -201,11 +195,11 @@ class Response
 	 */
 	public function send() : void
 	{
-		fenric()->callSharedService('event', [self::EVENT_BEFORE_SEND])->run([$this]);
+		fenric('event::response.before.send')->run([$this]);
 
 		$this->sendStatus()->sendHeaders()->sendCookies()->sendContent();
 
-		fenric()->callSharedService('event', [self::EVENT_AFTER_SEND])->run([$this]);
+		fenric('event::response.after.send')->run([$this]);
 
 		/**
 		 * @link http://php.net/fastcgi_finish_request
@@ -416,7 +410,7 @@ class Response
 	/**
 	 * Cleans sent content
 	 */
-	public function clean() : self
+	public function purge() : self
 	{
 		while (ob_get_level() > 0)
 		{
