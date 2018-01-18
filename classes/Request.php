@@ -227,6 +227,14 @@ class Request extends Collection
 	}
 
 	/**
+	 * Gets the client IP address
+	 */
+	public function ip(string $default = '127.0.0.1') : string
+	{
+		return $this->environment->get('REMOTE_ADDR', $default);
+	}
+
+	/**
 	 * Checks whether the request is root
 	 */
 	public function isRoot() : bool
