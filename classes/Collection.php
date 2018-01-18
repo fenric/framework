@@ -181,7 +181,7 @@ class Collection
 	/**
 	 * Получение коллекции в виде QueryString данных
 	 */
-	public function toQueryString(...$options) : string
+	public function toQueryString(...$options)
 	{
 		return http_build_query($this->items, ...$options);
 	}
