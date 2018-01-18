@@ -60,10 +60,7 @@ class Event
 	 */
 	public function subscribe(callable $subscriber) : void
 	{
-		$this->subscribers[] = function(...$arguments) use($subscriber)
-		{
-			return call_user_func($subscriber, ...$arguments);
-		};
+		$this->subscribers[] = $subscriber;
 	}
 
 	/**
