@@ -37,6 +37,14 @@ class Event
 	public function __construct(string $name)
 	{
 		$this->name = $name;
+
+		if (fenric('config::events')->exists($name))
+		{
+			foreach (fenric('config::events')->get($name) as $subscriber)
+			{
+				$this->subscribe(new $subscriber);
+			}
+		}
 	}
 
 	/**
@@ -50,9 +58,12 @@ class Event
 	/**
 	 * Подписка на событие
 	 */
-	public function subscribe(Closure $subscriber) : void
+	public function subscribe(callable $subscriber) : void
 	{
-		$this->subscribers[] = $subscriber;
+		$this->subscribers[] = function(...$arguments) use($subscriber)
+		{
+			return call_user_func($subscriber, ...$arguments);
+		};
 	}
 
 	/**
