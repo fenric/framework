@@ -283,9 +283,9 @@ class Response
 	}
 
 	/**
-	 * Checks whether the response status code is information
+	 * Checks whether the response status code is informational
 	 */
-	public function isInformation() : bool
+	public function isInformational() : bool
 	{
 		return ($this->getStatusCode() >= 100 && $this->getStatusCode() < 200);
 	}
