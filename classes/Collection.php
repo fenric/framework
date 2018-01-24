@@ -69,11 +69,11 @@ class Collection
 	{
 		if (array_key_exists($key, $this->items))
 		{
-			$removed = $this->items[$key];
+			$value = $this->items[$key];
 
 			unset($this->items[$key]);
 
-			return $removed;
+			return $value;
 		}
 	}
 
