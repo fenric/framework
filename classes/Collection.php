@@ -282,4 +282,36 @@ class Collection implements IteratorAggregate
 	{
 		return new static($this);
 	}
+
+	/**
+	 * Alias of add
+	 */
+	public function push(...$options)
+	{
+		return $this->add(...$options);
+	}
+
+	/**
+	 * Alias of set
+	 */
+	public function put(...$options)
+	{
+		return $this->set(...$options);
+	}
+
+	/**
+	 * Alias of remove
+	 */
+	public function pull(...$options)
+	{
+		return $this->remove(...$options);
+	}
+
+	/**
+	 * Alias of exists
+	 */
+	public function has(...$options)
+	{
+		return $this->exists(...$options);
+	}
 }
