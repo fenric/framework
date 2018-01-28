@@ -11,11 +11,6 @@
 namespace Fenric;
 
 /**
- * Import classes
- */
-use Closure;
-
-/**
  * Event
  */
 class Event
