@@ -32,7 +32,7 @@ final class Fenric
 	/**
 	 * Версия фреймворка
 	 */
-	public const VERSION = '2.0.6';
+	public const VERSION = '2.0.7';
 
 	/**
 	 * Зарегистрированные пути
@@ -195,7 +195,7 @@ final class Fenric
 				return new Collection(include $this->path('configs', "{$resolver}.example.php")->getRealPath());
 			}
 
-			throw new RuntimeException(sprintf('Unable to find config [%s].', $resolver));
+			return new Collection();
 		});
 
 		/**
@@ -223,7 +223,7 @@ final class Fenric
 				return new Collection(include $this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.php")->getRealPath());
 			}
 
-			throw new RuntimeException(sprintf('Unable to find locale [%s].', $resolver));
+			return new Collection();
 		});
 
 		/**
