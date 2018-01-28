@@ -28,8 +28,12 @@ class Session extends Collection
 	{
 		if ($this->isReady())
 		{
+			fenric('event::session.before.handle')->run([$this, $handler]);
+
 			if (session_set_save_handler($handler, false))
 			{
+				fenric('event::session.after.handle')->run([$this, $handler]);
+
 				return true;
 			}
 		}
@@ -138,10 +142,18 @@ class Session extends Collection
 	}
 
 	/**
-	 * Gets ID of the session
+	 * Gets id of the session
 	 */
-	public function getId() :? string
+	public function getId() : string
 	{
-		return session_id() ?: null;
+		return session_id();
+	}
+
+	/**
+	 * Gets name of the session
+	 */
+	public function getName() : string
+	{
+		return session_name();
 	}
 }
