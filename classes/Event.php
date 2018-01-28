@@ -22,17 +22,17 @@ class Event
 {
 
 	/**
-	 * Имя события
+	 * Name of the event
 	 */
 	protected $name;
 
 	/**
-	 * Подписчики события
+	 * Subscribers of the event
 	 */
 	protected $subscribers = [];
 
 	/**
-	 * Конструктор класса
+	 * Constructor of the class
 	 */
 	public function __construct(string $name)
 	{
@@ -48,7 +48,7 @@ class Event
 	}
 
 	/**
-	 * Получение имени события
+	 * Gets name of the event
 	 */
 	public function getName() : string
 	{
@@ -56,7 +56,7 @@ class Event
 	}
 
 	/**
-	 * Подписка на событие
+	 * Subscribes on the event
 	 */
 	public function subscribe(callable $subscriber) : void
 	{
@@ -64,7 +64,7 @@ class Event
 	}
 
 	/**
-	 * Запуск события
+	 * Runs the event
 	 */
 	public function run(array $params = []) : bool
 	{
