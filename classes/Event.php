@@ -33,7 +33,7 @@ class Event
 	{
 		$this->name = $name;
 
-		if (fenric('config::events')->exists($name))
+		if (fenric('config::events')->has($name))
 		{
 			foreach (fenric('config::events')->get($name) as $subscriber)
 			{
