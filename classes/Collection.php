@@ -11,26 +11,45 @@
 namespace Fenric;
 
 /**
+ * Import classes
+ */
+use Closure;
+use Traversable;
+use ArrayIterator;
+use IteratorAggregate;
+
+/**
  * Collection
  */
-class Collection
+class Collection implements IteratorAggregate
 {
 
 	/**
-	 * Элементы коллекции
+	 * Items of the collection
 	 */
-	protected $items;
+	protected $items = [];
 
 	/**
-	 * Конструктор класса
+	 * Constructor of the class
 	 */
-	public function __construct(array $items = [])
+	public function __construct(iterable $items = [])
 	{
-		$this->items = $items;
+		foreach ($items as $key => $value)
+		{
+			$this->set($key, $value);
+		}
 	}
 
 	/**
-	 * Добавление элемента коллекции
+	 * Gets an external iterator
+	 */
+	public function getIterator()
+	{
+		return new ArrayIterator($this->items);
+	}
+
+	/**
+	 * Adds an item to the collection
 	 */
 	public function add($value) : self
 	{
@@ -40,7 +59,7 @@ class Collection
 	}
 
 	/**
-	 * Установка элемента коллекции
+	 * Sets an item to the collection
 	 */
 	public function set($key, $value) : self
 	{
@@ -50,7 +69,7 @@ class Collection
 	}
 
 	/**
-	 * Получение элемента коллекции
+	 * Gets an item from the collection
 	 */
 	public function get($key, $default = null)
 	{
@@ -63,9 +82,9 @@ class Collection
 	}
 
 	/**
-	 * Извлечение элемента коллекции
+	 * Removes an item from the collection
 	 */
-	public function remove($key)
+	public function remove($key, $default = null)
 	{
 		if (array_key_exists($key, $this->items))
 		{
@@ -75,10 +94,12 @@ class Collection
 
 			return $value;
 		}
+
+		return $default;
 	}
 
 	/**
-	 * Существование элемента коллекции
+	 * Checks if an item exists in the collection
 	 */
 	public function exists($key) : bool
 	{
@@ -91,7 +112,36 @@ class Collection
 	}
 
 	/**
-	 * Очистка коллекции
+	 * Checks if an item contains in the collection
+	 */
+	public function contains($value) : bool
+	{
+		if (in_array($value, $this->items))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Gets size of the collection
+	 */
+	public function count() : int
+	{
+		return count($this->items);
+	}
+
+	/**
+	 * Gets items of the collection
+	 */
+	public function all() : array
+	{
+		return $this->items;
+	}
+
+	/**
+	 * Clears the collection
 	 */
 	public function clear() : self
 	{
@@ -101,7 +151,40 @@ class Collection
 	}
 
 	/**
-	 * Дополнение коллекции
+	 * Sorts the collection
+	 */
+	public function sort(Closure $callback) : self
+	{
+		uasort($this->items, $callback);
+
+		return $this;
+	}
+
+	/**
+	 * Transforms the collection
+	 *
+	 * The callback function must return an array.
+	 */
+	public function transform(Closure $callback) : self
+	{
+		$items = [];
+
+		$iteration = 0;
+
+		foreach ($this->items as $key => $value)
+		{
+			$items += $callback($key, $value, $iteration++);
+		}
+
+		$this->items = $items;
+
+		return $this;
+	}
+
+	/**
+	 * Updates the collection
+	 *
+	 * Do not replace existing collection items.
 	 */
 	public function update(array $items) : self
 	{
@@ -111,7 +194,9 @@ class Collection
 	}
 
 	/**
-	 * Обновление коллекции
+	 * Upgrades the collection
+	 *
+	 * Replaces existing collection items.
 	 */
 	public function upgrade(array $items) : self
 	{
@@ -121,7 +206,7 @@ class Collection
 	}
 
 	/**
-	 * Фильтрация коллекции
+	 * Filters the collection
 	 */
 	public function filter(...$options) : self
 	{
@@ -131,63 +216,57 @@ class Collection
 	}
 
 	/**
-	 * Получение всех элементов коллекции
+	 * Unifies the collection
 	 */
-	public function all() : array
+	public function unique(...$options) : self
 	{
-		return $this->items;
+		$this->items = array_unique($this->items, ...$options);
+
+		return $this;
 	}
 
 	/**
-	 * Получение ключей элементов коллекции
-	 */
-	public function keys() : array
-	{
-		return array_keys($this->items);
-	}
-
-	/**
-	 * Получение значений элементов коллекции
-	 */
-	public function values() : array
-	{
-		return array_values($this->items);
-	}
-
-	/**
-	 * Получение количества элементов коллекции
-	 */
-	public function count() : int
-	{
-		return count($this->items);
-	}
-
-	/**
-	 * Получение коллекции в виде массива
+	 * Converts the collection to Array
 	 */
 	public function toArray() : array
 	{
-		return $this->items;
+		return array_map(function($item)
+		{
+			if ($item instanceof Collection)
+			{
+				return $item->toArray();
+			}
+
+			if ($item instanceof Traversable)
+			{
+				$item = new Collection($item);
+
+				return $item->toArray();
+			}
+
+			return $item;
+
+		}, $this->items);
 	}
 
 	/**
-	 * Получение коллекции в виде JSON данных
+	 * Converts the collection to JSON
 	 */
-	public function toJson(...$options)
+	public function toJson(...$options) : string
 	{
-		return json_encode($this->items, ...$options);
+		return json_encode($this->toArray(), ...$options);
 	}
 
 	/**
-	 * Получение коллекции в виде QueryString данных
+	 * Converts the collection to QueryString
 	 */
-	public function toQueryString(...$options)
+	public function toQueryString(...$options) : string
 	{
-		return http_build_query($this->items, ...$options);
+		return http_build_query($this->toArray(), ...$options);
 	}
 
 	/**
-	 * Клонирование коллекции
+	 * Clones the collection
 	 */
 	public function clone() : Collection
 	{
