@@ -272,4 +272,14 @@ class Collection implements IteratorAggregate
 	{
 		return clone $this;
 	}
+
+	/**
+	 * Copies the collection
+	 *
+	 * Consumes more memory than cloning.
+	 */
+	public function copy() : Collection
+	{
+		return new static($this);
+	}
 }
