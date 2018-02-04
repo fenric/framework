@@ -285,6 +285,8 @@ class Collection implements IteratorAggregate
 
 	/**
 	 * Alias of add
+	 *
+	 * Backward compatibility.
 	 */
 	public function push(...$options)
 	{
@@ -293,6 +295,8 @@ class Collection implements IteratorAggregate
 
 	/**
 	 * Alias of set
+	 *
+	 * Backward compatibility.
 	 */
 	public function put(...$options)
 	{
@@ -301,6 +305,8 @@ class Collection implements IteratorAggregate
 
 	/**
 	 * Alias of remove
+	 *
+	 * Backward compatibility.
 	 */
 	public function pull(...$options)
 	{
@@ -309,6 +315,8 @@ class Collection implements IteratorAggregate
 
 	/**
 	 * Alias of exists
+	 *
+	 * Backward compatibility.
 	 */
 	public function has(...$options)
 	{
