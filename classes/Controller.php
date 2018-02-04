@@ -17,17 +17,17 @@ abstract class Controller
 {
 
 	/**
-	 * Экземпляр HTTP объекта для обработки запросов клиента
+	 * Request object
 	 */
 	protected $request;
 
 	/**
-	 * Экземпляр HTTP объекта для генерации ответа клиенту
+	 * Response object
 	 */
 	protected $response;
 
 	/**
-	 * Конструктор класса
+	 * Constructor of the class
 	 */
 	final public function __construct(Request $request, Response $response)
 	{
@@ -36,7 +36,7 @@ abstract class Controller
 	}
 
 	/**
-	 * Получение экземпляра HTTP объекта для обработки запросов клиента
+	 * Gets Request object
 	 */
 	final public function getRequest() : Request
 	{
@@ -44,7 +44,7 @@ abstract class Controller
 	}
 
 	/**
-	 * Получение экземпляра HTTP объекта для генерации ответа клиенту
+	 * Gets Response object
 	 */
 	final public function getResponse() : Response
 	{
@@ -52,7 +52,7 @@ abstract class Controller
 	}
 
 	/**
-	 * Предварительная инициализация контроллера
+	 * Pre-inits of the controller
 	 */
 	public function preInit() : bool
 	{
@@ -60,13 +60,13 @@ abstract class Controller
 	}
 
 	/**
-	 * Инициализация контроллера
+	 * Inits of the controller
 	 */
 	public function init() : void
 	{}
 
 	/**
-	 * Рендеринг контроллера
+	 * Renders of the controller
 	 */
 	abstract public function render() : void;
 }
