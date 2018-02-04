@@ -1,9 +1,8 @@
 The Fenric framework.
 
-It is free open-source software.
-An released and distributed under the MIT License.
+It's free open-source software released under the MIT License.
 
-Copyright © 2013-2016 by Fenric Laboratory (https://www.fenric.ru)
+Copyright © 2013-2018 by Fenric Laboratory (https://www.fenric.ru)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
