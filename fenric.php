@@ -32,7 +32,7 @@ final class Fenric
 	/**
 	 * Версия фреймворка
 	 */
-	public const VERSION = '2.0.8';
+	public const VERSION = '2.0.9';
 
 	/**
 	 * Зарегистрированные пути
@@ -66,22 +66,24 @@ final class Fenric
 	/**
 	 * Инициализация фреймворка
 	 */
-	public function init() : void
+	public function init(string $root) : void
 	{
+		$this->registerPath('.', function() use($root) : string
+		{
+			return $root;
+		});
+
 		$this->registerBasePaths();
 		$this->registerBaseServices();
 		$this->registerBaseClassLoaders();
-	}
 
-	/**
-	 * Расширенная инициализация фреймворка
-	 */
-	public function advancedInit() : void
-	{
-		$this->init();
 		$this->autoload();
 		$this->handleErrors();
 		$this->handleUncaughtExceptions();
+
+		date_default_timezone_set(
+			$this->getApplicationTimezone()
+		);
 	}
 
 	/**
@@ -89,11 +91,6 @@ final class Fenric
 	 */
 	public function registerBasePaths() : void
 	{
-		$this->registerPath('.', function() : string
-		{
-			return realpath(__DIR__ . '/..');
-		});
-
 		$this->registerPath('app', function() : string
 		{
 			return $this->path('.', 'app')->getRealPath();
@@ -104,16 +101,6 @@ final class Fenric
 			return $this->path('.', 'public')->getRealPath();
 		});
 
-		$this->registerPath('vendor', function() : string
-		{
-			return $this->path('.', 'vendor')->getRealPath();
-		});
-
-		$this->registerPath('bin', function() : string
-		{
-			return $this->path('app', 'bin')->getRealPath();
-		});
-
 		$this->registerPath('cache', function() : string
 		{
 			return $this->path('app', 'cache')->getRealPath();
@@ -122,11 +109,6 @@ final class Fenric
 		$this->registerPath('configs', function() : string
 		{
 			return $this->path('app', 'configs')->getRealPath();
-		});
-
-		$this->registerPath('locales', function() : string
-		{
-			return $this->path('app', 'locales')->getRealPath();
 		});
 
 		$this->registerPath('log', function() : string
@@ -142,6 +124,11 @@ final class Fenric
 		$this->registerPath('routes', function() : string
 		{
 			return $this->path('app', 'routes')->getRealPath();
+		});
+
+		$this->registerPath('translations', function() : string
+		{
+			return $this->path('app', 'translations')->getRealPath();
 		});
 
 		$this->registerPath('views', function() : string
@@ -180,11 +167,6 @@ final class Fenric
 				return new Collection(include $this->path('configs', "{$resolver}.local.php")->getRealPath());
 			}
 
-			if ($this->path('configs', getenv('ENVIRONMENT'), "{$resolver}.php")->isFile())
-			{
-				return new Collection(include $this->path('configs', getenv('ENVIRONMENT'), "{$resolver}.php")->getRealPath());
-			}
-
 			if ($this->path('configs', "{$resolver}.php")->isFile())
 			{
 				return new Collection(include $this->path('configs', "{$resolver}.php")->getRealPath());
@@ -201,26 +183,26 @@ final class Fenric
 		/**
 		 * Регистрация именованной службы для работы с локализационными файлами
 		 */
-		$this->registerResolvableSharedService('locale', function(string $resolver = 'default') : Collection
+		$this->registerResolvableSharedService('translation', function(string $resolver = 'default') : Collection
 		{
-			if ($this->path('locales', $this->getApplicationLanguage(), "{$resolver}.local.php")->isFile())
+			if ($this->path('translations', $this->getApplicationLanguage(), "{$resolver}.local.php")->isFile())
 			{
-				return new Collection(include $this->path('locales', $this->getApplicationLanguage(), "{$resolver}.local.php")->getRealPath());
+				return new Collection(include $this->path('translations', $this->getApplicationLanguage(), "{$resolver}.local.php")->getRealPath());
 			}
 
-			if ($this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.local.php")->isFile())
+			if ($this->path('translations', $this->getApplicationDefaultLanguage(), "{$resolver}.local.php")->isFile())
 			{
-				return new Collection(include $this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.local.php")->getRealPath());
+				return new Collection(include $this->path('translations', $this->getApplicationDefaultLanguage(), "{$resolver}.local.php")->getRealPath());
 			}
 
-			if ($this->path('locales', $this->getApplicationLanguage(), "{$resolver}.php")->isFile())
+			if ($this->path('translations', $this->getApplicationLanguage(), "{$resolver}.php")->isFile())
 			{
-				return new Collection(include $this->path('locales', $this->getApplicationLanguage(), "{$resolver}.php")->getRealPath());
+				return new Collection(include $this->path('translations', $this->getApplicationLanguage(), "{$resolver}.php")->getRealPath());
 			}
 
-			if ($this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.php")->isFile())
+			if ($this->path('translations', $this->getApplicationDefaultLanguage(), "{$resolver}.php")->isFile())
 			{
-				return new Collection(include $this->path('locales', $this->getApplicationDefaultLanguage(), "{$resolver}.php")->getRealPath());
+				return new Collection(include $this->path('translations', $this->getApplicationDefaultLanguage(), "{$resolver}.php")->getRealPath());
 			}
 
 			return new Collection();
@@ -283,9 +265,9 @@ final class Fenric
 
 			if (empty($connections[$connection]))
 			{
-				if ($this->callSharedService('config', ['database'])->exists($connection))
+				if ($this->config('database')->exists($connection))
 				{
-					$options = $this->callSharedService('config', ['database'])->get($connection);
+					$options = $this->config('database')->get($connection);
 
 					if (isset($options['dsn'], $options['user'], $options['password']))
 					{
@@ -585,19 +567,43 @@ final class Fenric
 	}
 
 	/**
+	 * Получение коллекции с конфигурационной группой
+	 */
+	public function config(string $group) : Collection
+	{
+		return $this->callSharedService('config', [$group]);
+	}
+
+	/**
+	 * Установка часового пояса приложения
+	 */
+	public function setApplicationTimezone(string $timezone) : void
+	{
+		$this->config('app')->set('timezone', $timezone);
+	}
+
+	/**
+	 * Получение часового пояса приложения
+	 */
+	public function getApplicationTimezone(string $default = 'UTC') : string
+	{
+		return $this->config('app')->get('timezone', $default);
+	}
+
+	/**
 	 * Установка языка приложения
 	 */
 	public function setApplicationLanguage(string $language) : void
 	{
-		$this->callSharedService('config', ['app'])->set('language', $language);
+		$this->config('app')->set('language', $language);
 	}
 
 	/**
 	 * Получение языка приложения
 	 */
-	public function getApplicationLanguage(string $default = 'ru') : string
+	public function getApplicationLanguage(string $default = 'ru_RU') : string
 	{
-		return $this->callSharedService('config', ['app'])->get('language', $default);
+		return $this->config('app')->get('language', $default);
 	}
 
 	/**
@@ -605,25 +611,25 @@ final class Fenric
 	 */
 	public function setApplicationDefaultLanguage(string $language) : void
 	{
-		$this->callSharedService('config', ['app'])->set('language.default', $language);
+		$this->config('app')->set('language.default', $language);
 	}
 
 	/**
 	 * Получение языка приложения по умолчанию
 	 */
-	public function getApplicationDefaultLanguage(string $default = 'en-us') : string
+	public function getApplicationDefaultLanguage(string $default = 'en_GB') : string
 	{
-		return $this->callSharedService('config', ['app'])->get('language.default', $default);
+		return $this->config('app')->get('language.default', $default);
 	}
 
 	/**
-	 * Локализация сообщения
+	 * Перевод сообщения
 	 */
-	public function translate(string $section, string $message, array $context = []) : string
+	public function translate(string $group, string $message, array $context = []) : string
 	{
-		if ($this->callSharedService('locale', [$section])->exists($message))
+		if ($this->callSharedService('translation', [$group])->exists($message))
 		{
-			$message = $this->callSharedService('locale', [$section])->get($message);
+			$message = $this->callSharedService('translation', [$group])->get($message);
 		}
 
 		return $this->interpolate($message, $context);
