@@ -36,7 +36,7 @@ abstract class Controller
 	}
 
 	/**
-	 * Gets Request object
+	 * Gets the request object
 	 */
 	final public function getRequest() : Request
 	{
@@ -44,7 +44,7 @@ abstract class Controller
 	}
 
 	/**
-	 * Gets Response object
+	 * Gets the response object
 	 */
 	final public function getResponse() : Response
 	{
@@ -52,7 +52,7 @@ abstract class Controller
 	}
 
 	/**
-	 * Pre-inits of the controller
+	 * Pre-initializes of the controller
 	 */
 	public function preInit() : bool
 	{
@@ -60,7 +60,7 @@ abstract class Controller
 	}
 
 	/**
-	 * Inits of the controller
+	 * Initializes of the controller
 	 */
 	public function init() : void
 	{}
