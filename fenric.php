@@ -84,6 +84,8 @@ final class Fenric
 		date_default_timezone_set(
 			$this->getApplicationTimezone()
 		);
+
+		mb_internal_encoding('UTF-8');
 	}
 
 	/**
