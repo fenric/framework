@@ -16,45 +16,49 @@ namespace Fenric;
 class Console extends Collection
 {
 
-	public const STYLE_BOLD         = [1, 22];
-	public const STYLE_UNDERLINE    = [4, 24];
-	public const STYLE_BLINK        = [5, 25];
-	public const STYLE_REVERSE      = [7, 27];
-	public const STYLE_HIDDEN       = [8, 28];
-
-	public const FOREGROUND_BLACK   = [30, 39];
-	public const FOREGROUND_RED     = [31, 39];
-	public const FOREGROUND_GREEN   = [32, 39];
-	public const FOREGROUND_YELLOW  = [33, 39];
-	public const FOREGROUND_BLUE    = [34, 39];
-	public const FOREGROUND_PURPLE  = [35, 39];
-	public const FOREGROUND_CYAN    = [36, 39];
-	public const FOREGROUND_WHITE   = [37, 39];
-	public const FOREGROUND_DEFAULT = [39, 39];
-	public const FOREGROUND_RESET   = [39, 39];
-
-	public const BACKGROUND_BLACK   = [40, 49];
-	public const BACKGROUND_RED     = [41, 49];
-	public const BACKGROUND_GREEN   = [42, 49];
-	public const BACKGROUND_YELLOW  = [43, 49];
-	public const BACKGROUND_BLUE    = [44, 49];
-	public const BACKGROUND_PURPLE  = [45, 49];
-	public const BACKGROUND_CYAN    = [46, 49];
-	public const BACKGROUND_WHITE   = [47, 49];
-	public const BACKGROUND_DEFAULT = [49, 49];
-	public const BACKGROUND_RESET   = [49, 49];
-
 	/**
-	 * Консольные команды
+	 * Output styles
 	 */
-	protected $commands = [];
+	public const STYLE_BOLD          = ['1', '22'];
+	public const STYLE_UNDERLINE     = ['4', '24'];
+	public const STYLE_BLINK         = ['5', '25'];
+	public const STYLE_REVERSE       = ['7', '27'];
+	public const STYLE_HIDDEN        = ['8', '28'];
 
 	/**
-	 * Конструктор класса
+	 * Foreground colors
+	 */
+	public const FOREGROUND_BLACK   = ['30', '39'];
+	public const FOREGROUND_RED     = ['31', '39'];
+	public const FOREGROUND_GREEN   = ['32', '39'];
+	public const FOREGROUND_YELLOW  = ['33', '39'];
+	public const FOREGROUND_BLUE    = ['34', '39'];
+	public const FOREGROUND_PURPLE  = ['35', '39'];
+	public const FOREGROUND_CYAN    = ['36', '39'];
+	public const FOREGROUND_WHITE   = ['37', '39'];
+	public const FOREGROUND_DEFAULT = ['39', '39'];
+	public const FOREGROUND_RESET   = ['39', '39'];
+
+	/**
+	 * Background colors
+	 */
+	public const BACKGROUND_BLACK   = ['40', '49'];
+	public const BACKGROUND_RED     = ['41', '49'];
+	public const BACKGROUND_GREEN   = ['42', '49'];
+	public const BACKGROUND_YELLOW  = ['43', '49'];
+	public const BACKGROUND_BLUE    = ['44', '49'];
+	public const BACKGROUND_PURPLE  = ['45', '49'];
+	public const BACKGROUND_CYAN    = ['46', '49'];
+	public const BACKGROUND_WHITE   = ['47', '49'];
+	public const BACKGROUND_DEFAULT = ['49', '49'];
+	public const BACKGROUND_RESET   = ['49', '49'];
+
+	/**
+	 * Constructor of the class
 	 */
 	public function __construct(array $tokens)
 	{
-		// Всегда содержит имя файла
+		// Contains the file name
 		unset($tokens[0]);
 
 		parent::__construct(
@@ -63,117 +67,7 @@ class Console extends Collection
 	}
 
 	/**
-	 * Создание жирной строки
-	 */
-	public function bold(string $string) : string
-	{
-		return $this->style($string, [
-			self::STYLE_BOLD,
-		]);
-	}
-
-	/**
-	 * Создание подчеркнутой строки
-	 */
-	public function underline(string $string) : string
-	{
-		return $this->style($string, [
-			self::STYLE_UNDERLINE,
-		]);
-	}
-
-	/**
-	 * Создание мигающей строки
-	 */
-	public function blink(string $string) : string
-	{
-		return $this->style($string, [
-			self::STYLE_BLINK,
-		]);
-	}
-
-	/**
-	 * Создание строки черного цвета
-	 */
-	public function black(string $string) : string
-	{
-		return $this->style($string, [
-			self::FOREGROUND_BLACK,
-		]);
-	}
-
-	/**
-	 * Создание строки красного цвета
-	 */
-	public function red(string $string) : string
-	{
-		return $this->style($string, [
-			self::FOREGROUND_RED,
-		]);
-	}
-
-	/**
-	 * Создание строки зелёного цвета
-	 */
-	public function green(string $string) : string
-	{
-		return $this->style($string, [
-			self::FOREGROUND_GREEN,
-		]);
-	}
-
-	/**
-	 * Создание строки жёлтого цвета
-	 */
-	public function yellow(string $string) : string
-	{
-		return $this->style($string, [
-			self::FOREGROUND_YELLOW,
-		]);
-	}
-
-	/**
-	 * Создание строки синего цвета
-	 */
-	public function blue(string $string) : string
-	{
-		return $this->style($string, [
-			self::FOREGROUND_BLUE,
-		]);
-	}
-
-	/**
-	 * Создание строки пурпурного цвета
-	 */
-	public function purple(string $string) : string
-	{
-		return $this->style($string, [
-			self::FOREGROUND_PURPLE,
-		]);
-	}
-
-	/**
-	 * Создание строки бирюзового цвета
-	 */
-	public function cyan(string $string) : string
-	{
-		return $this->style($string, [
-			self::FOREGROUND_CYAN,
-		]);
-	}
-
-	/**
-	 * Создание строки белого цвета
-	 */
-	public function white(string $string) : string
-	{
-		return $this->style($string, [
-			self::FOREGROUND_WHITE,
-		]);
-	}
-
-	/**
-	 * Вывод информации
+	 * Outputs info
 	 */
 	public function info(string $string)
 	{
@@ -183,7 +77,7 @@ class Console extends Collection
 	}
 
 	/**
-	 * Вывод сообщения
+	 * Outputs comment
 	 */
 	public function comment(string $string)
 	{
@@ -193,7 +87,7 @@ class Console extends Collection
 	}
 
 	/**
-	 * Вывод предупреждения
+	 * Outputs warning
 	 */
 	public function warning(string $string)
 	{
@@ -204,7 +98,7 @@ class Console extends Collection
 	}
 
 	/**
-	 * Вывод ошибки
+	 * Outputs error
 	 */
 	public function error(string $string)
 	{
@@ -215,15 +109,7 @@ class Console extends Collection
 	}
 
 	/**
-	 * Чтение очищенной от пробельных символов строки из потока ввода
-	 */
-	public function read()
-	{
-		return trim($this->stdin());
-	}
-
-	/**
-	 * Запись в поток вывода строки с последующим разрывом строки
+	 * Outputs line
 	 */
 	public function line(string $string)
 	{
@@ -231,7 +117,89 @@ class Console extends Collection
 	}
 
 	/**
-	 * Чтение потока ввода
+	 * Outputs break line
+	 */
+	public function breakLine(int $count)
+	{
+		return $this->stdout(
+			str_repeat("\x0A", $count)
+		);
+	}
+
+	/**
+	 * Outputs backspace
+	 */
+	public function backspace(int $count)
+	{
+		return $this->stdout(
+			str_repeat("\x08", $count)
+		);
+	}
+
+	/**
+	 * Outputs progress
+	 */
+	public function progress(int $max, callable $callback, array $options = [])
+	{
+		$time = microtime(true);
+		$memory = memory_get_peak_usage(true);
+
+		$render = function($step, $max) use($time, $memory, $options)
+		{
+			$progress = $step / $max;
+			$percent = round($progress * 100);
+
+			$time = round(microtime(true) - $time);
+			$memory = round(memory_get_peak_usage(true) - $memory);
+
+			$remaining = round(($time / ($step ?: 1)) * ($max - $step));
+			$estimated = round(($time / ($step ?: 1)) * ($max));
+
+			$width = 25;
+			$filled = floor($width * $progress);
+			$unfilled = $width - $filled;
+
+			$context[':bar'] = $this->style(str_repeat('▓', $filled), [
+				self::FOREGROUND_GREEN,
+			]);
+
+			$context[':bar'] .= $this->style(str_repeat('░', $unfilled), [
+				self::FOREGROUND_DEFAULT,
+			]);
+
+			$context[':step'] = $step;
+			$context[':max'] = $max;
+			$context[':percent'] = $percent;
+			$context[':time'] = $time;
+			$context[':remaining'] = $remaining;
+			$context[':estimated'] = $estimated;
+			$context[':memory'] = round($memory / (1024 ** 2));
+			$context[':limit'] = ini_get('memory_limit');
+
+			$pattern = ':step / :max   :percent% :bar   :time sec. (≈ :estimated sec.)   :memory MiB (:limit)';
+
+			$this->stdout("\x0D\x1B[2K" . strtr($pattern, $context));
+		};
+
+		$render(0, $max);
+
+		for ($step = 1; $step <= $max; $step++)
+		{
+			if ($callback() === null)
+			{
+				$render($step, $max);
+
+				continue;
+			}
+
+			$render($max, $max);
+		}
+
+		$this->breakLine(1);
+	}
+
+	/**
+	 * Reads the stdin stream
 	 */
 	public function stdin()
 	{
@@ -239,23 +207,23 @@ class Console extends Collection
 	}
 
 	/**
-	 * Запись в поток вывода
+	 * Writes to the stdout stream
 	 */
 	public function stdout(string $string)
 	{
-		return fwrite(STDOUT, $this->format($string));
+		return fwrite(STDOUT, $string);
 	}
 
 	/**
-	 * Запись в поток вывода ошибок
+	 * Writes to the stderr stream
 	 */
 	public function stderr(string $string)
 	{
-		return fwrite(STDERR, $this->format($string));
+		return fwrite(STDERR, $string);
 	}
 
 	/**
-	 * Стилизация строки
+	 * Stylizes a string
 	 */
 	public function style(string $string, array $styles) : string
 	{
@@ -270,7 +238,7 @@ class Console extends Collection
 	}
 
 	/**
-	 * Разбор вводных токенов
+	 * Parse a tokens
 	 */
 	public function parse(array $tokens) : array
 	{
@@ -336,7 +304,7 @@ class Console extends Collection
 				}
 			}
 
-			// Option value
+			// Last option value
 			if (strlen($lastOption) > 0)
 			{
 				$result[$lastOption] = $token;
@@ -346,7 +314,7 @@ class Console extends Collection
 				continue;
 			}
 
-			// Arguments...
+			// Other arguments
 			$result[] = $token;
 		}
 
