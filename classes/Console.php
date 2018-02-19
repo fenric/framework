@@ -54,6 +54,12 @@ class Console extends Collection
 	public const BACKGROUND_RESET   = ['49', '49'];
 
 	/**
+	 * Size of the screen
+	 */
+	public $width;
+	public $height;
+
+	/**
 	 * Constructor of the class
 	 */
 	public function __construct(array $tokens)
@@ -64,6 +70,9 @@ class Console extends Collection
 		parent::__construct(
 			$this->parse($tokens)
 		);
+
+		$this->width = exec('tput cols');
+		$this->height = exec('tput lines');
 	}
 
 	/**
@@ -87,14 +96,25 @@ class Console extends Collection
 	}
 
 	/**
+	 * Outputs success
+	 */
+	public function success(string $string)
+	{
+		return $this->block($string, [
+			self::FOREGROUND_BLACK,
+			self::BACKGROUND_GREEN,
+		]);
+	}
+
+	/**
 	 * Outputs warning
 	 */
 	public function warning(string $string)
 	{
-		return $this->line($this->style($string, [
+		return $this->block($string, [
 			self::FOREGROUND_BLACK,
 			self::BACKGROUND_YELLOW,
-		]));
+		]);
 	}
 
 	/**
@@ -102,49 +122,21 @@ class Console extends Collection
 	 */
 	public function error(string $string)
 	{
-		return $this->line($this->style($string, [
+		return $this->block($string, [
 			self::FOREGROUND_WHITE,
 			self::BACKGROUND_RED,
-		]));
-	}
-
-	/**
-	 * Outputs line
-	 */
-	public function line(string $string)
-	{
-		return $this->stdout($string . PHP_EOL);
-	}
-
-	/**
-	 * Outputs break line
-	 */
-	public function breakLine(int $count)
-	{
-		return $this->stdout(
-			str_repeat("\x0A", $count)
-		);
-	}
-
-	/**
-	 * Outputs backspace
-	 */
-	public function backspace(int $count)
-	{
-		return $this->stdout(
-			str_repeat("\x08", $count)
-		);
+		]);
 	}
 
 	/**
 	 * Outputs progress
 	 */
-	public function progress(int $max, callable $callback, array $options = [])
+	public function progress(int $max, callable $callback)
 	{
 		$time = microtime(true);
 		$memory = memory_get_peak_usage(true);
 
-		$render = function($step, $max) use($time, $memory, $options)
+		$render = function($step, $max) use($time, $memory)
 		{
 			$progress = $step / $max;
 			$percent = round($progress * 100);
@@ -155,30 +147,27 @@ class Console extends Collection
 			$remaining = round(($time / ($step ?: 1)) * ($max - $step));
 			$estimated = round(($time / ($step ?: 1)) * ($max));
 
-			$width = 25;
+			$width = 20;
 			$filled = floor($width * $progress);
 			$unfilled = $width - $filled;
 
-			$context[':bar'] = $this->style(str_repeat('▓', $filled), [
-				self::FOREGROUND_GREEN,
-			]);
-
-			$context[':bar'] .= $this->style(str_repeat('░', $unfilled), [
-				self::FOREGROUND_DEFAULT,
-			]);
+			$context[':bar'] = str_repeat('▓', $filled);
+			$context[':bar'] .= str_repeat('░', $unfilled);
 
 			$context[':step'] = $step;
 			$context[':max'] = $max;
 			$context[':percent'] = $percent;
+
 			$context[':time'] = $time;
 			$context[':remaining'] = $remaining;
 			$context[':estimated'] = $estimated;
+
 			$context[':memory'] = round($memory / (1024 ** 2));
 			$context[':limit'] = ini_get('memory_limit');
 
-			$pattern = ':step / :max   :percent% :bar   :time sec. (≈ :estimated sec.)   :memory MiB (:limit)';
+			$template = ':step / :max   :percent% :bar   :time sec. (≈ :estimated sec.)   :memory MiB (:limit)';
 
-			$this->stdout("\x0D\x1B[2K" . strtr($pattern, $context));
+			$this->stdout("\015\033\1332K" . strtr($template, $context));
 		};
 
 		$render(0, $max);
@@ -195,7 +184,47 @@ class Console extends Collection
 			$render($max, $max);
 		}
 
-		$this->breakLine(1);
+		$this->eol(1);
+	}
+
+	/**
+	 * Outputs block
+	 */
+	public function block(string $string, array $styles) : string
+	{
+		$width = 120;
+		$padding = 3;
+
+		if ($width > $this->width) {
+			$width = $this->width;
+		}
+
+		$lines = explode(PHP_EOL, wordwrap(PHP_EOL . trim($string) . PHP_EOL, $width - ($padding * 2), PHP_EOL, true));
+
+		foreach ($lines as & $line)
+		{
+			$line = $this->style(str_repeat(' ', $padding) . ltrim($line) . str_repeat(' ', $padding) . str_repeat(' ', $width - ($padding * 2) - $this->length(trim($line))), $styles);
+		}
+
+		return $this->line(implode(PHP_EOL, $lines));
+	}
+
+	/**
+	 * Outputs line
+	 */
+	public function line(string $string)
+	{
+		return $this->stdout($string . PHP_EOL);
+	}
+
+	/**
+	 * Outputs end of line
+	 */
+	public function eol(int $count)
+	{
+		return $this->stdout(
+			str_repeat(PHP_EOL, $count)
+		);
 	}
 
 	/**
@@ -234,7 +263,29 @@ class Console extends Collection
 			list($open[], $close[]) = $style;
 		}
 
-		return sprintf("\033[%sm%s\033[%sm", join(';', $open), $string, join(';', $close));
+		$format = "\033\133%sm%s\033\133%sm";
+
+		return sprintf($format, join(';', $open), $string, join(';', $close));
+	}
+
+	/**
+	 * Unstylizes a string
+	 */
+	public function unstyle(string $string) : string
+	{
+		$regexp = "/\033\133[\d;]*\w/";
+
+		return preg_replace($regexp, '', $string);
+	}
+
+	/**
+	 * Length of string
+	 */
+	public function length(string $string) : int
+	{
+		return mb_strlen(
+			$this->unstyle($string)
+		);
 	}
 
 	/**
