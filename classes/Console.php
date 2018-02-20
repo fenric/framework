@@ -54,10 +54,15 @@ class Console extends Collection
 	public const BACKGROUND_RESET   = ['49', '49'];
 
 	/**
-	 * Size of the screen
+	 * Screen size
 	 */
 	public $width;
 	public $height;
+
+	/**
+	 * Command history
+	 */
+	public $history = [];
 
 	/**
 	 * Constructor of the class
@@ -78,9 +83,9 @@ class Console extends Collection
 	/**
 	 * Outputs info
 	 */
-	public function info(string $string)
+	public function info(string $message)
 	{
-		return $this->line($this->style($string, [
+		return $this->line($this->style($message, [
 			self::FOREGROUND_GREEN,
 		]));
 	}
@@ -88,9 +93,9 @@ class Console extends Collection
 	/**
 	 * Outputs comment
 	 */
-	public function comment(string $string)
+	public function comment(string $message)
 	{
-		return $this->line($this->style($string, [
+		return $this->line($this->style($message, [
 			self::FOREGROUND_YELLOW,
 		]));
 	}
@@ -98,9 +103,9 @@ class Console extends Collection
 	/**
 	 * Outputs success
 	 */
-	public function success(string $string)
+	public function success(string $message)
 	{
-		return $this->block($string, [
+		return $this->block($message, [
 			self::FOREGROUND_BLACK,
 			self::BACKGROUND_GREEN,
 		]);
@@ -109,9 +114,9 @@ class Console extends Collection
 	/**
 	 * Outputs warning
 	 */
-	public function warning(string $string)
+	public function warning(string $message)
 	{
-		return $this->block($string, [
+		return $this->block($message, [
 			self::FOREGROUND_BLACK,
 			self::BACKGROUND_YELLOW,
 		]);
@@ -120,9 +125,9 @@ class Console extends Collection
 	/**
 	 * Outputs error
 	 */
-	public function error(string $string)
+	public function error(string $message)
 	{
-		return $this->block($string, [
+		return $this->block($message, [
 			self::FOREGROUND_WHITE,
 			self::BACKGROUND_RED,
 		]);
@@ -151,8 +156,13 @@ class Console extends Collection
 			$filled = floor($width * $progress);
 			$unfilled = $width - $filled;
 
-			$context[':bar'] = str_repeat('▓', $filled);
-			$context[':bar'] .= str_repeat('░', $unfilled);
+			$context[':bar'] = $this->style(str_repeat('▓', $filled), [
+				self::FOREGROUND_GREEN,
+			]);
+
+			$context[':bar'] .= $this->style(str_repeat('░', $unfilled), [
+				self::FOREGROUND_DEFAULT,
+			]);
 
 			$context[':step'] = $step;
 			$context[':max'] = $max;
@@ -193,20 +203,27 @@ class Console extends Collection
 	public function block(string $string, array $styles) : string
 	{
 		$width = 120;
-		$padding = 3;
+		$padding = 1;
 
 		if ($width > $this->width) {
 			$width = $this->width;
 		}
 
-		$lines = explode(PHP_EOL, wordwrap(PHP_EOL . trim($string) . PHP_EOL, $width - ($padding * 2), PHP_EOL, true));
+		$lines = explode(PHP_EOL, PHP_EOL . wordwrap(trim($string), $width - ($padding * 2), PHP_EOL, true) . PHP_EOL);
 
 		foreach ($lines as & $line)
 		{
-			$line = $this->style(str_repeat(' ', $padding) . ltrim($line) . str_repeat(' ', $padding) . str_repeat(' ', $width - ($padding * 2) - $this->length(trim($line))), $styles);
+			$line = $this->style(str_repeat(' ', $padding) . trim($line) . str_repeat(' ', $width - $padding - $this->length(trim($line))), $styles);
 		}
 
-		return $this->line(implode(PHP_EOL, $lines));
+		$lines = PHP_EOL . implode(PHP_EOL, $lines) . PHP_EOL;
+
+		if (count($this->history) > 0)
+		{
+			$lines = str_repeat(PHP_EOL, 2 - substr_count(end($this->history), PHP_EOL, -2)) . ltrim($lines);
+		}
+
+		return $this->line($lines);
 	}
 
 	/**
@@ -240,7 +257,7 @@ class Console extends Collection
 	 */
 	public function stdout(string $string)
 	{
-		return fwrite(STDOUT, $string);
+		return $this->write(STDOUT, $string);
 	}
 
 	/**
@@ -248,7 +265,17 @@ class Console extends Collection
 	 */
 	public function stderr(string $string)
 	{
-		return fwrite(STDERR, $string);
+		return $this->write(STDERR, $string);
+	}
+
+	/**
+	 * Writes to stream output
+	 */
+	public function write($stream, string $string)
+	{
+		$this->history[] = $string;
+
+		return fwrite($stream, $string);
 	}
 
 	/**
