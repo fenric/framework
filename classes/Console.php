@@ -134,6 +134,33 @@ class Console extends Collection
 	}
 
 	/**
+	 * Outputs prompt
+	 */
+	public function prompt(string $label, bool $required = true)
+	{
+		$label = sprintf('%s:', $this->style($label, [
+			self::FOREGROUND_GREEN,
+		]));
+
+		while (true)
+		{
+			$this->line($label);
+			$this->stdout('> ');
+
+			$input = trim($this->stdin());
+
+			if ($required && strlen($input) === 0)
+			{
+				$this->error('A value is required.');
+
+				continue;
+			}
+
+			return $input;
+		}
+	}
+
+	/**
 	 * Outputs progress
 	 */
 	public function progress(int $max, callable $callback)
@@ -156,13 +183,8 @@ class Console extends Collection
 			$filled = floor($width * $progress);
 			$unfilled = $width - $filled;
 
-			$context[':bar'] = $this->style(str_repeat('▓', $filled), [
-				self::FOREGROUND_GREEN,
-			]);
-
-			$context[':bar'] .= $this->style(str_repeat('░', $unfilled), [
-				self::FOREGROUND_DEFAULT,
-			]);
+			$context[':bar'] = str_repeat('▓', $filled);
+			$context[':bar'] .= str_repeat('░', $unfilled);
 
 			$context[':step'] = $step;
 			$context[':max'] = $max;
@@ -184,14 +206,12 @@ class Console extends Collection
 
 		for ($step = 1; $step <= $max; $step++)
 		{
-			if ($callback() === null)
+			if ($callback() === false)
 			{
-				$render($step, $max);
-
-				continue;
+				break;
 			}
 
-			$render($max, $max);
+			$render($step, $max);
 		}
 
 		$this->eol(1);
