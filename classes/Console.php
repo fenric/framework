@@ -162,9 +162,35 @@ class Console extends Collection
 	/**
 	 * Outputs confirm
 	 */
-	public function confirm(string $label, bool $default = false)
+	public function confirm(string $label)
 	{
-		// @continue
+		while (true)
+		{
+			$this->line(sprintf('%s (y/n):', $this->style($label, [
+				self::FOREGROUND_GREEN,
+			])));
+
+			$this->stdout('> ');
+
+			$input = trim($this->stdin());
+
+			switch (strtolower($input))
+			{
+				case 'y' :
+				case 'yes' :
+					return true;
+					break;
+
+				case 'n' :
+				case 'no' :
+					return false;
+					break;
+
+				default :
+					$this->error('You must enter a value.');
+					break;
+			}
+		}
 	}
 
 	/**
@@ -247,7 +273,7 @@ class Console extends Collection
 
 		if (count($this->history) > 0)
 		{
-			$lines = str_repeat(PHP_EOL, 2 - substr_count(end($this->history), PHP_EOL, -2)) . ltrim($lines);
+			$lines = str_repeat(PHP_EOL, 2 - substr_count(substr(end($this->history), -2), PHP_EOL)) . ltrim($lines);
 		}
 
 		return $this->line($lines);
@@ -349,13 +375,7 @@ class Console extends Collection
 	 */
 	public function format(string $string) : string
 	{
-		$regexp = '~<(?<type>)></$1>~';
-
-		return preg_replace_callback($regexp, function($match)
-		{
-			// @continue
-
-		}, $string);
+		return $string;
 	}
 
 	/**
