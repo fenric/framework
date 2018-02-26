@@ -19,11 +19,11 @@ class Console extends Collection
 	/**
 	 * Output styles
 	 */
-	public const STYLE_BOLD          = ['1', '22'];
-	public const STYLE_UNDERLINE     = ['4', '24'];
-	public const STYLE_BLINK         = ['5', '25'];
-	public const STYLE_REVERSE       = ['7', '27'];
-	public const STYLE_HIDDEN        = ['8', '28'];
+	public const STYLE_BOLD         = ['1', '22'];
+	public const STYLE_UNDERLINE    = ['4', '24'];
+	public const STYLE_BLINK        = ['5', '25'];
+	public const STYLE_REVERSE      = ['7', '27'];
+	public const STYLE_HIDDEN       = ['8', '28'];
 
 	/**
 	 * Foreground colors
@@ -138,26 +138,33 @@ class Console extends Collection
 	 */
 	public function prompt(string $label, bool $required = true)
 	{
-		$label = sprintf('%s:', $this->style($label, [
-			self::FOREGROUND_GREEN,
-		]));
-
 		while (true)
 		{
-			$this->line($label);
+			$this->line(sprintf('%s:', $this->style($label, [
+				self::FOREGROUND_GREEN,
+			])));
+
 			$this->stdout('> ');
 
 			$input = trim($this->stdin());
 
 			if ($required && strlen($input) === 0)
 			{
-				$this->error('A value is required.');
+				$this->error('You must enter a value.');
 
 				continue;
 			}
 
 			return $input;
 		}
+	}
+
+	/**
+	 * Outputs confirm
+	 */
+	public function confirm(string $label, bool $default = false)
+	{
+		// @continue
 	}
 
 	/**
@@ -199,7 +206,7 @@ class Console extends Collection
 
 			$template = ':step / :max   :percent% :bar   :time sec. (≈ :estimated sec.)   :memory MiB (:limit)';
 
-			$this->stdout("\015\033\1332K" . strtr($template, $context));
+			$this->stdout("\015\033[2K" . strtr($template, $context));
 		};
 
 		$render(0, $max);
@@ -255,7 +262,7 @@ class Console extends Collection
 	}
 
 	/**
-	 * Outputs end of line
+	 * Outputs end of line character
 	 */
 	public function eol(int $count)
 	{
@@ -293,6 +300,8 @@ class Console extends Collection
 	 */
 	public function write($stream, string $string)
 	{
+		$string = $this->format($string);
+
 		$this->history[] = $string;
 
 		return fwrite($stream, $string);
@@ -326,7 +335,7 @@ class Console extends Collection
 	}
 
 	/**
-	 * Length of string
+	 * Length of a string
 	 */
 	public function length(string $string) : int
 	{
@@ -336,7 +345,21 @@ class Console extends Collection
 	}
 
 	/**
-	 * Parse a tokens
+	 * Formats a string
+	 */
+	public function format(string $string) : string
+	{
+		$regexp = '~<(?<type>)></$1>~';
+
+		return preg_replace_callback($regexp, function($match)
+		{
+			// @continue
+
+		}, $string);
+	}
+
+	/**
+	 * Parses a tokens
 	 */
 	public function parse(array $tokens) : array
 	{
