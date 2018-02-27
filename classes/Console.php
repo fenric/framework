@@ -101,7 +101,7 @@ class Console extends Collection
 	}
 
 	/**
-	 * Outputs success
+	 * Outputs success message
 	 */
 	public function success(string $message)
 	{
@@ -112,7 +112,7 @@ class Console extends Collection
 	}
 
 	/**
-	 * Outputs warning
+	 * Outputs warning message
 	 */
 	public function warning(string $message)
 	{
@@ -123,7 +123,7 @@ class Console extends Collection
 	}
 
 	/**
-	 * Outputs error
+	 * Outputs error message
 	 */
 	public function error(string $message)
 	{
@@ -136,13 +136,15 @@ class Console extends Collection
 	/**
 	 * Outputs prompt
 	 */
-	public function prompt(string $label, bool $required = true)
+	public function prompt(string $title, bool $required = true)
 	{
+		$title = $this->style($title, [
+			self::FOREGROUND_GREEN,
+		]);
+
 		while (true)
 		{
-			$this->line(sprintf('%s:', $this->style($label, [
-				self::FOREGROUND_GREEN,
-			])));
+			$this->line(sprintf('%s:', $title));
 
 			$this->stdout('> ');
 
@@ -162,34 +164,40 @@ class Console extends Collection
 	/**
 	 * Outputs confirm
 	 */
-	public function confirm(string $label)
+	public function confirm(string $title, bool $default = false)
 	{
+		$title = $this->style($title, [
+			self::FOREGROUND_GREEN,
+		]);
+
+		$tooltip = $this->style($default ? 'yes' : 'no', [
+			self::FOREGROUND_YELLOW,
+		]);
+
 		while (true)
 		{
-			$this->line(sprintf('%s (y/n):', $this->style($label, [
-				self::FOREGROUND_GREEN,
-			])));
+			$this->line(sprintf('%s (yes/no) [%s]:', $title, $tooltip));
 
 			$this->stdout('> ');
 
 			$input = trim($this->stdin());
 
-			switch (strtolower($input))
+			if (0 === strlen($input))
 			{
-				case 'y' :
-				case 'yes' :
-					return true;
-					break;
-
-				case 'n' :
-				case 'no' :
-					return false;
-					break;
-
-				default :
-					$this->error('You must enter a value.');
-					break;
+				return $default;
 			}
+
+			if (0 === strncasecmp($input, 'y', 1))
+			{
+				return true;
+			}
+
+			if (0 === strncasecmp($input, 'n', 1))
+			{
+				return false;
+			}
+
+			$this->error('You must enter a value.');
 		}
 	}
 
@@ -216,8 +224,8 @@ class Console extends Collection
 			$filled = floor($width * $progress);
 			$unfilled = $width - $filled;
 
-			$context[':bar'] = str_repeat('▓', $filled);
-			$context[':bar'] .= str_repeat('░', $unfilled);
+			$context[':bar'] = str_repeat('■', $filled);
+			$context[':bar'] .= str_repeat('□', $unfilled);
 
 			$context[':step'] = $step;
 			$context[':max'] = $max;
@@ -230,9 +238,9 @@ class Console extends Collection
 			$context[':memory'] = round($memory / (1024 ** 2));
 			$context[':limit'] = ini_get('memory_limit');
 
-			$template = ':step / :max   :percent% :bar   :time sec. (≈ :estimated sec.)   :memory MiB (:limit)';
+			$template = ':step / :max   :percent% [:bar]   :time sec. (≈ :estimated sec.)   :memory MiB (:limit)';
 
-			$this->stdout("\015\033[2K" . strtr($template, $context));
+			$this->stdout("\012\033[1A\033[2K" . strtr($template, $context));
 		};
 
 		$render(0, $max);
