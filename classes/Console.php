@@ -11,6 +11,11 @@
 namespace Fenric;
 
 /**
+ * Import classes
+ */
+use Throwable;
+
+/**
  * Console
  */
 class Console extends Collection
@@ -63,6 +68,11 @@ class Console extends Collection
 	 * Command history
 	 */
 	public $history = [];
+
+	/**
+	 * Console commands
+	 */
+	protected $commands = [];
 
 	/**
 	 * Constructor of the class
@@ -468,5 +478,13 @@ class Console extends Collection
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Throws a errors
+	 */
+	public function throws(Throwable $error)
+	{
+		// @todo
 	}
 }
